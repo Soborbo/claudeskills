@@ -1,3 +1,8 @@
+---
+name: 21-calculator-configurator
+version: 1.0
+---
+
 # 21 - Calculator Configurator Agent
 
 ## Role

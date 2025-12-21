@@ -95,6 +95,23 @@ When facing a conflict not listed:
 4. If still unclear: ASK, don't assume
 5. Document decision in code comments
 
+## Veto Loop Arbitration
+
+When guardian agents issue vetoes:
+
+1. **Single Veto**: Original agent must address all issues before resubmitting
+2. **Second Veto on Same Issue**: Escalate to 04-orchestrator for final decision
+3. **Guardian vs Guardian Conflict**: Orchestrator decides using this priority matrix
+4. **Orchestrator Override**: Requires documented reason in _PROJECT-STATE.md
+
+**Veto priority (when guardians conflict):**
+1. 09-security (safety-critical)
+2. 03-performance-guardian (user experience)
+3. 10-consistency-guardian (maintainability)
+4. 07-search-intent-guard (business value)
+5. 17-typescript-quality (code quality)
+6. 11-qa (final validation)
+
 ## Override Conditions
 
 Client can override Tier 3-6 decisions with explicit written approval.

@@ -1,3 +1,8 @@
+---
+name: 07-search-intent-guard
+version: 1.0
+---
+
 # 07 - Search Intent Guard Agent
 
 ## Role

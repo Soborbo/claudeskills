@@ -13,7 +13,7 @@
 - **astro-architecture** — Tech stack foundation and project structure
 
 ### 2. Core Skills (load for every Astro project)
-- **astro-forms** OR **lead-gen-calculator** (not both)
+- **astro-forms** OR **lead-gen-calculator** — Use calculator for quote/pricing tools (includes form patterns internally); use astro-forms standalone only for simple contact forms
 - **astro-images** — Image optimization patterns
 - **astro-seo** — Technical SEO essentials
 - **astro-security** — Security headers and protections

@@ -23,33 +23,46 @@ Make websites appear in AI assistant recommendations and citations. Different fr
 
 ## LLM Crawlers to Support
 
-| LLM | Crawler | robots.txt |
-|-----|---------|------------|
-| ChatGPT | OAI-SearchBot, ChatGPT-User | Allow |
-| Google Gemini | Google-Extended | Allow |
-| Perplexity | PerplexityBot | Allow |
-| Claude | ClaudeBot, anthropic-ai | Allow |
-| Microsoft Copilot | Bingbot | Allow |
+| LLM | Crawlers | Notes |
+|-----|----------|-------|
+| OpenAI/ChatGPT | GPTBot, OAI-SearchBot, ChatGPT-User | GPTBot = training, others = real-time |
+| Google Gemini | Google-Extended | robots.txt control token, not a distinct UA |
+| Perplexity | PerplexityBot, Perplexity-User | Bot = indexing, User = real-time fetch |
+| Claude | ClaudeBot, Claude-User, Claude-SearchBot | Official Anthropic crawlers |
+| Microsoft Copilot | Bingbot | Uses Bing's crawler |
 
 ## robots.txt Configuration
 
 ```txt
+# OpenAI crawlers
+User-agent: GPTBot
+Allow: /
+
 User-agent: OAI-SearchBot
 Allow: /
 
 User-agent: ChatGPT-User
 Allow: /
 
+# Google AI (control token)
 User-agent: Google-Extended
 Allow: /
 
+# Perplexity crawlers
 User-agent: PerplexityBot
 Allow: /
 
+User-agent: Perplexity-User
+Allow: /
+
+# Anthropic/Claude crawlers
 User-agent: ClaudeBot
 Allow: /
 
-User-agent: anthropic-ai
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
 Allow: /
 ```
 

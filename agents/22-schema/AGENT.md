@@ -1,3 +1,8 @@
+---
+name: 22-schema
+version: 1.0
+---
+
 # 22 - Schema Agent
 
 ## Role

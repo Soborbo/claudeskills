@@ -1,3 +1,8 @@
+---
+name: 01-market-intelligence
+version: 1.0
+---
+
 # 01 - Market Intelligence Agent
 
 ## Role

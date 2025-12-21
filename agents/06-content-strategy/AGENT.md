@@ -1,3 +1,8 @@
+---
+name: 06-content-strategy
+version: 1.0
+---
+
 # 06 - Content Strategy Agent
 
 ## Role

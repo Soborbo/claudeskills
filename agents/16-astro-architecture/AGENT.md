@@ -1,3 +1,8 @@
+---
+name: 16-astro-architecture
+version: 1.0
+---
+
 # 16 - Astro Architecture Agent
 
 ## Role

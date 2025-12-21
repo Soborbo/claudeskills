@@ -1,3 +1,8 @@
+---
+name: 19-landing-generator
+version: 1.0
+---
+
 # 19 - Landing Generator Agent
 
 ## Role
