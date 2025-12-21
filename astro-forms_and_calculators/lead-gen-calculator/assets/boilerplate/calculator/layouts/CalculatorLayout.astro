@@ -1,0 +1,121 @@
+---
+/**
+ * CalculatorLayout
+ * Minimal layout for calculator pages
+ * - No menu
+ * - CSP headers
+ * - Question centering
+ */
+
+import { siteConfig } from '../config/site';
+import Toast from '../components/Toast.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const { name, brand, gtm } = siteConfig;
+
+// CSP Header
+Astro.response.headers.set(
+  'Content-Security-Policy',
+  [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self'",
+    "connect-src 'self' https://www.google-analytics.com",
+    "frame-ancestors 'none'",
+  ].join('; ')
+);
+---
+
+<!DOCTYPE html>
+<html lang={siteConfig.locale.split('-')[0]}>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  
+  <title>{title} | {name}</title>
+  {description && <meta name="description" content={description} />}
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+  <!-- GTM -->
+  {gtm.enabled && (
+    <script is:inline define:vars={{ gtmId: gtm.id }}>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer',gtmId);
+    </script>
+  )}
+  
+  <style is:global>
+    :root {
+      --color-primary: {brand.primaryColor};
+    }
+    
+    /* Question centering for desktop */
+    @media (min-width: 768px) {
+      .calculator-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+    
+    /* Tailwind primary color utility */
+    .bg-primary { background-color: var(--color-primary); }
+    .text-primary { color: var(--color-primary); }
+    .border-primary { border-color: var(--color-primary); }
+    .ring-primary { --tw-ring-color: var(--color-primary); }
+    
+    .bg-primary-dark { 
+      background-color: color-mix(in srgb, var(--color-primary) 85%, black);
+    }
+    .hover\:bg-primary-dark:hover {
+      background-color: color-mix(in srgb, var(--color-primary) 85%, black);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gray-50 text-gray-900 antialiased">
+  <!-- GTM noscript -->
+  {gtm.enabled && (
+    <noscript>
+      <iframe 
+        src={`https://www.googletagmanager.com/ns.html?id=${gtm.id}`}
+        height="0" 
+        width="0" 
+        style="display:none;visibility:hidden"
+      ></iframe>
+    </noscript>
+  )}
+  
+  <!-- No header/menu - minimal chrome -->
+  
+  <main class="calculator-container px-4 py-8">
+    <div class="w-full max-w-2xl mx-auto">
+      <slot />
+    </div>
+  </main>
+  
+  <!-- Toast notifications -->
+  <Toast />
+  
+  <!-- No footer - minimal chrome -->
+</body>
+</html>

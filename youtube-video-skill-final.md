@@ -1,3 +1,8 @@
+---
+name: youtube-video-facade
+description: YouTube video facade pattern for performance. Lazy-load iframe on click, poster images, GA4 tracking, Schema.org markup.
+---
+
 # YouTube Video Facade Skill
 
 ## Alapelv

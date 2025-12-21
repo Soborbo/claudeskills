@@ -1,0 +1,43 @@
+---
+/**
+ * PriceBreakdown
+ * Displays itemized price calculation
+ */
+
+import type { PriceResult } from '../lib/pricing';
+import { siteConfig } from '../config/site';
+import { i18n, formatPrice } from '../config/i18n';
+
+interface Props {
+  price: PriceResult;
+}
+
+const { price } = Astro.props;
+const t = i18n[siteConfig.locale];
+---
+
+<div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+  <h3 class="font-semibold text-lg mb-4">{t.priceBreakdown || 'Árajánlat'}</h3>
+  
+  <div class="space-y-2">
+    {price.breakdown.map(item => (
+      <div class="flex justify-between text-sm">
+        <span class:list={[
+          item.type === 'discount' ? 'text-green-600' : 'text-gray-600'
+        ]}>
+          {item.label}
+        </span>
+        <span class:list={[
+          item.type === 'discount' ? 'text-green-600' : 'text-gray-900'
+        ]}>
+          {item.type === 'discount' ? '' : '+'}{formatPrice(item.amount)}
+        </span>
+      </div>
+    ))}
+  </div>
+  
+  <div class="border-t border-gray-200 mt-4 pt-4 flex justify-between font-semibold text-lg">
+    <span>{t.total || 'Összesen'}</span>
+    <span class="text-primary">{price.formatted}</span>
+  </div>
+</div>

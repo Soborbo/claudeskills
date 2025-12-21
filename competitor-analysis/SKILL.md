@@ -160,8 +160,7 @@ Same input → same output structure. Always.
 
 - [schema-messaging.md](references/schema-messaging.md) — Full messaging schema
 - [schema-trust.md](references/schema-trust.md) — Full trust schema
-- [schema-pricing.md](references/schema-pricing.md) — Full pricing schema
-- [schema-cta.md](references/schema-cta.md) — Full CTA schema
+- [schema-pricing-cta.md](references/schema-pricing-cta.md) — Full pricing & CTA schema
 
 ## Definition of Done
 
