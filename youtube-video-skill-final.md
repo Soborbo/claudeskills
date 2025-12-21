@@ -1,0 +1,157 @@
+# YouTube Video Facade Skill
+
+## Alapelv
+
+Kattintás előtt: csak poster image + play gomb (semmi YouTube).
+Kattintásra: iframe csere + GA4 event + autoplay.
+
+---
+
+## Poster image
+
+1. Letöltés: `https://i.ytimg.com/vi/{VIDEO_ID}/maxresdefault.jpg` (fallback: `sddefault.jpg`)
+2. Konvertálás: **Picture Skill szerint** (avif, webp, jpg)
+3. Lokális tárolás: `src/assets/videos/{slug}.jpg`
+
+Poster mindig lokális asset, `inferSize` nem használható.
+
+---
+
+## Component
+
+```astro
+---
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  videoId: string;
+  title: string;
+  poster: ImageMetadata;
+  class?: string;
+  priority?: boolean;
+}
+
+const { videoId, title, poster, class: className, priority = false } = Astro.props;
+---
+
+<div
+  class:list={["video-facade aspect-[16/9] relative cursor-pointer group", className]}
+  data-video-id={videoId}
+  data-video-title={title}
+  role="button"
+  tabindex="0"
+  aria-label={`Videó lejátszása: ${title}`}
+>
+  <Picture
+    src={poster}
+    alt={title}
+    formats={['avif', 'webp']}
+    fallbackFormat="jpg"
+    widths={[480, 640, 800, 1280]}
+    sizes="(max-width: 800px) 100vw, 800px"
+    loading={priority ? "eager" : "lazy"}
+    decoding={priority ? "sync" : "async"}
+    class="absolute inset-0 w-full h-full object-cover"
+  />
+  
+  <div class="absolute inset-0 flex items-center justify-center">
+    <div class="w-16 h-16 md:w-20 md:h-20 bg-red-600 rounded-full flex items-center justify-center group-hover:bg-red-700 transition-colors shadow-lg">
+      <svg class="w-6 h-6 md:w-8 md:h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initVideoFacades() {
+    document.querySelectorAll('.video-facade').forEach(facade => {
+      if (facade.dataset.initialized) return;
+      facade.dataset.initialized = 'true';
+      
+      let played = false;
+      
+      const handler = () => {
+        if (played) return;
+        played = true;
+        
+        const videoId = facade.dataset.videoId;
+        const title = facade.dataset.videoTitle;
+        
+        // GA4 Event (GTM kompatibilis)
+        if (window.dataLayer) {
+          window.dataLayer.push({
+            event: 'video_play',
+            video_id: videoId,
+            video_title: title
+          });
+        }
+        
+        // Iframe csere
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+        iframe.title = title;
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        iframe.className = 'absolute inset-0 w-full h-full';
+        
+        facade.replaceChildren(iframe);
+      };
+      
+      facade.addEventListener('click', handler);
+      facade.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handler();
+        }
+      });
+    });
+  }
+  
+  initVideoFacades();
+  document.addEventListener('astro:page-load', initVideoFacades);
+</script>
+```
+
+---
+
+## GA4 Event
+
+| Event | Paraméterek |
+|-------|-------------|
+| `video_play` | `video_id`, `video_title` |
+
+---
+
+## Schema.org
+
+```astro
+<script type="application/ld+json" set:html={JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": title,
+  "description": description, // opcionális
+  "thumbnailUrl": `${Astro.site}${posterUrl}`,
+  "uploadDate": uploadDate, // opcionális, ha nincs pontos adat
+  "contentUrl": `https://www.youtube.com/watch?v=${videoId}`,
+  "embedUrl": `https://www.youtube-nocookie.com/embed/${videoId}`
+})} />
+```
+
+---
+
+## Megjegyzés
+
+Autoplay mobilen nem garantált (iOS korlátozás). Az `autoplay=1` csak kísérlet.
+
+---
+
+## Tiltott
+
+- YouTube iframe/script kattintás előtt
+- `youtube.com` (csak `youtube-nocookie.com`)
+- `fetchpriority="high"` videó facade-en
+- YouTube logo play gombként
+- Remote poster (mindig lokális)
+- Hiányzó poster image vagy title
