@@ -17,13 +17,9 @@ Handles all image optimization for Astro projects. Performance-focused patterns.
 4. **Lazy load below fold** — Only hero gets eager loading
 5. **Prevent CLS** — Always set aspect-ratio
 
-## Quick Reference
+## References
 
-See [astro-picture-skill.md](../astro-picture-skill.md) for detailed patterns including:
-- Format configurations
-- Component patterns (HeroImage, ContentImage, CardImage, etc.)
-- Loading strategies by position
-- CLS prevention with aspect-ratio
+- [Picture Patterns](references/picture-patterns.md) — Component configs, loading strategies, CLS prevention
 
 ## Image Types
 
