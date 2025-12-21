@@ -1,0 +1,8 @@
+<svg width="150" height="150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#F3F4F6"/>
+  <rect x="4" y="4" width="142" height="142" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-dasharray="6,3"/>
+  <rect x="50" y="50" width="50" height="35" rx="4" fill="#D1D5DB"/>
+  <circle cx="75" cy="67" r="10" fill="#F3F4F6"/>
+  <rect x="65" y="45" width="20" height="8" rx="2" fill="#D1D5DB"/>
+  <text x="75" y="115" text-anchor="middle" fill="#9CA3AF" font-family="system-ui" font-size="10">150 × 150</text>
+</svg>

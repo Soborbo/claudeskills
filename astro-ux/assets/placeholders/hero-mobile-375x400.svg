@@ -1,0 +1,7 @@
+<svg width="375" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#F3F4F6"/>
+  <rect x="8" y="8" width="359" height="384" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="187" y="185" text-anchor="middle" fill="#6B7280" font-family="system-ui" font-size="18">Hero Mobile</text>
+  <text x="187" y="215" text-anchor="middle" fill="#9CA3AF" font-family="system-ui" font-size="14">375 × 400</text>
+  <circle cx="187" cy="260" r="20" fill="none" stroke="#D1D5DB" stroke-width="2"/>
+</svg>
