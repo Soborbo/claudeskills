@@ -1,3 +1,8 @@
+---
+name: 09-security
+version: 1.0
+---
+
 # 09 - Security Agent
 
 ## Role

@@ -1,3 +1,8 @@
+---
+name: 23-internal-linking
+version: 1.0
+---
+
 # 23 - Internal Linking Agent
 
 ## Role

@@ -1,3 +1,8 @@
+---
+name: 02-copy
+version: 1.0
+---
+
 # 02 - Copy Agent
 
 ## Role

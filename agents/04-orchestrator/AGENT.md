@@ -1,3 +1,8 @@
+---
+name: 04-orchestrator
+version: 1.0
+---
+
 # 04 - Orchestrator Agent
 
 ## Role

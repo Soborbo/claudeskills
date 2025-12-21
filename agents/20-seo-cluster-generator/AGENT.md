@@ -1,3 +1,8 @@
+---
+name: 20-seo-cluster-generator
+version: 1.0
+---
+
 # 20 - SEO Cluster Generator Agent
 
 ## Role

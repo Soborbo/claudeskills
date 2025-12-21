@@ -1,3 +1,8 @@
+---
+name: 24-llm-optimization
+version: 1.0
+---
+
 # 24 - LLM Optimization Agent
 
 ## Role

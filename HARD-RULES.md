@@ -24,7 +24,7 @@ Claude MUST stop and ask if:
 | Total CSS | < 50KB | > 75KB |
 
 ### Performance Mandates
-- No `client:load` without documented justification
+- No `client:load` (use `client:visible` or `client:idle` instead)
 - No Google Fonts API (self-host only)
 - No unoptimized images (always use Picture component)
 - No third-party scripts blocking render
@@ -44,7 +44,7 @@ Claude MUST stop and ask if:
 # NEVER commit these - .env.example only
 SECRET_*
 API_KEY_*
-TURNSTILE_SECRET
+TURNSTILE_SECRET_KEY
 RESEND_API_KEY
 ```
 

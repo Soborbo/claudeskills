@@ -1,3 +1,8 @@
+---
+name: 15-ux-ui-architecture
+version: 1.0
+---
+
 # 15 - UX/UI Architecture Agent
 
 ## Role

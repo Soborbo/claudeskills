@@ -4,6 +4,8 @@
 
 Speakable schema tells AI assistants which parts of your page are best for voice/text responses.
 
+> **Important:** Speakable is officially supported by Google **only for news content** (Article, NewsArticle types). For non-news local business/service pages, it functions as an LLM hint but is not a guaranteed Google feature. Still valuable for AI assistants that read schema.
+
 ## Implementation
 
 ### Option 1: CSS Selector (Recommended)

@@ -81,7 +81,7 @@ Run before ANY deployment. ALL must pass.
 - [ ] Email delivery confirmed (check spam)
 - [ ] Google Sheets integration working (if used)
 - [ ] CRM webhook delivering (if used)
-- [ ] Form works with JavaScript disabled (graceful degradation)
+- [ ] If JS disabled: form shows friendly message with phone/email fallback (no silent failure)
 
 ## Content
 

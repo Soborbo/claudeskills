@@ -1,3 +1,8 @@
+---
+name: 05-discovery
+version: 1.0
+---
+
 # 05 - Discovery Agent
 
 ## Role
