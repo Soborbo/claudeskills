@@ -1,3 +1,8 @@
+---
+name: 03-performance-guardian
+version: 1.0
+---
+
 # 03 - Performance Guardian Agent
 
 ## Role

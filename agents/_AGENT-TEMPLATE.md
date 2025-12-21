@@ -1,3 +1,8 @@
+---
+name: XX-agent-name
+version: 1.0
+---
+
 # XX - [Agent Name]
 
 ## Role

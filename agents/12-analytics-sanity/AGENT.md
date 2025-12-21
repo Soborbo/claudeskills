@@ -1,3 +1,8 @@
+---
+name: 12-analytics-sanity
+version: 1.0
+---
+
 # 12 - Analytics Sanity Agent
 
 ## Role

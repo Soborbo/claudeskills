@@ -1,3 +1,8 @@
+---
+name: 10-consistency-guardian
+version: 1.0
+---
+
 # 10 - Consistency Guardian Agent
 
 ## Role

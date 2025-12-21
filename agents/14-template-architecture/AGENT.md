@@ -1,3 +1,8 @@
+---
+name: 14-template-architecture
+version: 1.0
+---
+
 # 14 - Template Architecture Agent
 
 ## Role

@@ -1,3 +1,8 @@
+---
+name: 11-qa
+version: 1.0
+---
+
 # 11 - QA Agent
 
 ## Role

@@ -1,3 +1,8 @@
+---
+name: 17-typescript-quality
+version: 1.0
+---
+
 # 17 - TypeScript Quality Agent
 
 ## Role

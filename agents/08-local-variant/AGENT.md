@@ -1,3 +1,8 @@
+---
+name: 08-local-variant
+version: 1.0
+---
+
 # 08 - Local Variant Agent
 
 ## Role
