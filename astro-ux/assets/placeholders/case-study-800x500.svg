@@ -1,0 +1,10 @@
+<svg width="800" height="500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#F3F4F6"/>
+  <rect x="10" y="10" width="780" height="480" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="400" y="235" text-anchor="middle" fill="#6B7280" font-family="system-ui" font-size="20">Case Study Image</text>
+  <text x="400" y="270" text-anchor="middle" fill="#9CA3AF" font-family="system-ui" font-size="14">800 × 500</text>
+  <rect x="365" y="150" width="70" height="55" rx="4" fill="#D1D5DB"/>
+  <line x1="375" y1="168" x2="425" y2="168" stroke="#F3F4F6" stroke-width="2"/>
+  <line x1="375" y1="180" x2="415" y2="180" stroke="#F3F4F6" stroke-width="2"/>
+  <line x1="375" y1="192" x2="420" y2="192" stroke="#F3F4F6" stroke-width="2"/>
+</svg>
