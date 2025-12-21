@@ -16,10 +16,10 @@
 | Component creation | 13-implementation | 16-astro-architecture |
 | Form implementation | 13-implementation | 09-security |
 | Calculator build | 21-calculator-configurator | - |
-| SEO meta tags | 07-search-intent-guard | 20-seo-cluster |
+| SEO meta tags | 07-search-intent-guard | 20-seo-cluster-generator |
 | Schema markup | 22-schema | 08-local-variant |
-| Local/area pages | 08-local-variant | 20-seo-cluster |
-| Internal linking | 23-internal-linking | 20-seo-cluster |
+| Local/area pages | 08-local-variant | 20-seo-cluster-generator |
+| Internal linking | 23-internal-linking | 20-seo-cluster-generator |
 | Image optimization | 03-performance-guardian | - |
 | Speed issues | 03-performance-guardian | - |
 | Security audit | 09-security | 11-qa |

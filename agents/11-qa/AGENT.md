@@ -8,6 +8,20 @@ Final quality assurance before deployment. Comprehensive testing and validation.
 
 > Agents may READ `_PROJECT-STATE.md`. Only 04-orchestrator may MODIFY it.
 
+## Guardian Status
+
+> **This is a GUARDIAN agent with VETO authority.**
+> Can reject deployments that fail quality gates.
+
+## Veto Rules
+
+Issue VETO if:
+- Lighthouse Performance < 90
+- Accessibility score < 95 or critical violations
+- Any form submission fails
+- Broken links detected
+- Security vulnerabilities found
+
 ## Uses Skills
 
 ```yaml

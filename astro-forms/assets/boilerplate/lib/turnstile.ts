@@ -15,9 +15,13 @@ export async function verifyTurnstile(
   token: string,
   ip?: string
 ): Promise<TurnstileResult> {
-  // Skip in dev if not configured
+  // SECURITY: Fail closed in production, allow skip only in dev
   if (!TURNSTILE_SECRET) {
-    console.warn('TURNSTILE_SECRET_KEY not configured - skipping verification');
+    if (import.meta.env.PROD) {
+      console.error('CRITICAL: TURNSTILE_SECRET_KEY not configured in production');
+      return { success: false, error: 'Turnstile not configured' };
+    }
+    console.warn('TURNSTILE_SECRET_KEY not configured - dev mode skip');
     return { success: true };
   }
   
