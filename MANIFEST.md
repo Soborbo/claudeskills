@@ -34,6 +34,7 @@
 - **Content**: lead-gen-copy, keyword-research, competitor-analysis
 - **Technical**: schema-patterns, astro-animations, design-tokens
 - **Operations**: email-templates, crm-integrations, client-handoff
+- **AI Visibility**: llm-optimization
 
 ## Skill Conflicts
 
@@ -64,6 +65,9 @@ speed-monitoring
 
 ab-testing
 └── requires: analytics-measurement (GA4 events)
+
+llm-optimization
+└── requires: schema-patterns (Speakable schema)
 ```
 
 ## Skill Categories
@@ -124,6 +128,7 @@ ab-testing
 | crm-integrations | CRM webhooks |
 | email-templates | Email design |
 | schema-patterns | Structured data |
+| llm-optimization | AI assistant visibility |
 
 ### Operations
 | Skill | Purpose |
