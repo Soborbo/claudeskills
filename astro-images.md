@@ -1,3 +1,8 @@
+---
+name: astro-picture
+description: Astro Picture component patterns for optimized images. Formats, loading strategies, CLS prevention. Use for any image implementation.
+---
+
 # Astro Picture Skill
 
 ## Alapszabály

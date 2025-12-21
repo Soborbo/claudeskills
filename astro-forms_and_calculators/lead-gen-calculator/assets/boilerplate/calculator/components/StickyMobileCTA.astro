@@ -1,0 +1,37 @@
+---
+/**
+ * StickyMobileCTA
+ * Fixed bottom button on mobile for checkbox steps
+ * Only visible on screens < 768px
+ */
+
+import { siteConfig } from '../config/site';
+import { i18n } from '../config/i18n';
+
+interface Props {
+  label?: string;
+  stepId?: string;
+}
+
+const { label, stepId } = Astro.props;
+const t = i18n[siteConfig.locale];
+const buttonLabel = label || t.next;
+---
+
+<!-- Sticky CTA - Mobile only -->
+<div 
+  class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg md:hidden z-50"
+  id="sticky-mobile-cta"
+>
+  <button
+    type="button"
+    data-action="next"
+    data-step-id={stepId}
+    class="w-full py-3.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark active:scale-[0.98] transition-all"
+  >
+    {buttonLabel} →
+  </button>
+</div>
+
+<!-- Spacer to prevent content overlap on mobile -->
+<div class="h-20 md:hidden" aria-hidden="true"></div>

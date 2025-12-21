@@ -1,3 +1,8 @@
+---
+name: calculator
+description: Multi-step calculator patterns for lead generation. Flow, validation, GA4 events, UTM tracking. Quick reference for calculator implementation.
+---
+
 # Calculator Skill
 
 ## Alapelv

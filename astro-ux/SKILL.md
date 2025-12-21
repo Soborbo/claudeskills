@@ -1,110 +1,90 @@
 ---
 name: astro-ux
-description: UX/UI patterns for high-converting Astro lead generation websites. Use when building landing pages, service pages, or multi-page lead gen sites for UK service businesses. Covers section structure, CTA placement, mobile patterns, trust elements, CRO, microinteractions, and HIG compliance.
+description: UX patterns and section templates for Astro lead generation sites. Hero, features, testimonials, CTAs, FAQ sections. Use for page section design.
 ---
 
 # Astro UX Skill
 
-**UX always serves CRO.** Every element earns its place.
+## Purpose
 
-## Section Order (Strict)
+Provides UX patterns and section templates for lead generation pages.
 
-| # | Section | CTA |
-|---|---------|-----|
-| 1 | Hero | ✓ |
-| 2 | USP/Trust Strip | - |
-| 3 | Problem-Solution | - |
-| 4 | Benefits (with images) | ✓ |
-| 5 | How It Works | - |
-| 6 | Social Proof | ✓ |
-| 7 | Calculator/Quote Tool | - |
-| 8 | Why Choose Us | ✓ |
-| 9 | Comparison Table | - |
-| 10 | Trust Logos | - |
-| 11 | Common Concerns | ✓ |
-| 12 | About | - |
-| 13 | FAQ | - |
-| 14 | Customer Showcase | ✓ |
-| 15 | Final CTA | ✓ |
-| 16 | Footer | - |
+## Core Rules
 
-**CTA Rule:** Only every 2nd viewport. Never compete with yourself.
+1. **Mobile-first design** — 375px base, scale up
+2. **Clear visual hierarchy** — One primary CTA per viewport
+3. **Trust before ask** — Social proof before form
+4. **Minimal friction** — Short forms, clear labels
+5. **Accessible** — Keyboard nav, focus states, contrast
 
-## Above The Fold (Strict)
+## Section Types
 
-Desktop must show WITHOUT scroll:
-1. Hero (headline, CTA, image) — MUST fit completely
-2. USP/Trust strip — last fold element
+### Conversion Sections
 
-Hero: `max-height: calc(100vh - header - usp)`. Never overflow.
+| Section | Purpose | Key Elements |
+|---------|---------|--------------|
+| Hero | First impression + CTA | Headline, subhead, CTA, trust badge |
+| CTA Banner | Mid-page conversion | Headline, button, urgency |
+| Form Section | Lead capture | Form, benefits, trust |
+| Final CTA | Last chance | Summary, strong CTA |
 
-## Desktop Header Behavior
+### Trust Sections
 
-1. **Initial:** Normal header with full navigation
-2. **After scrolling past fold:** Header hides
-3. **On scroll UP:** Sticky compact header appears with: Logo + Address + Phone + CTA
-4. **Long pages (10+ sections):** Add sticky side TOC on left
+| Section | Purpose | Key Elements |
+|---------|---------|--------------|
+| Testimonials | Social proof | Quote, name, photo, stars |
+| Logos | Authority | Client/partner logos |
+| Stats | Credibility | Numbers, context |
+| Reviews | Third-party proof | Google/Trustpilot reviews |
 
-## WhatsApp Button (Desktop)
+### Content Sections
 
-- Position: Bottom-right corner, floating
-- Appears after 6 seconds
-- Subtle fade-in + pulse animation
-
-See [desktop-cta.md](references/desktop-cta.md).
+| Section | Purpose | Key Elements |
+|---------|---------|--------------|
+| Features | Benefits | Icon, title, description |
+| How It Works | Process | Numbered steps |
+| FAQ | Objection handling | Questions, answers |
+| About | Trust building | Story, team, values |
 
 ## Mobile Patterns
 
-- **Sticky bottom bar:** WhatsApp + Quote (2 buttons only)
-- **Menu animation:** Spectacular entrance (slide + fade + stagger)
-- **Tables:** Horizontal scroll with fade hint
-- **Process cards:** Swipeable, 2nd card ~20% visible
-- **Gallery:** CSS scroll-snap only, no heavy libs
+- Sticky mobile CTA bar
+- Thumb-friendly buttons (44px min)
+- Collapsible navigation
+- Touch-friendly form inputs
 
-See [mobile.md](references/mobile.md).
+## Page Flow
 
-## Animation Rules
-
-- **Above fold:** No entrance animations. Hover/feedback only.
-- **Below fold:** In-view animations allowed (fade-up, slide-in)
-- **Microinteractions required:** See [microinteractions.md](references/microinteractions.md)
-
-## HIG Compliance
-
-Apple HIG + Material Design: 44px touch targets, 8px grid, visual feedback on every interaction.
-
-## Build Process (Important)
-
-Before implementing, ALWAYS propose and get approval for:
-
-1. **5 smart details** — Present 6-8 options, client picks 5
-2. **2-4 unique ideas** — Present ideas with CRO reasoning, client validates
-
-Format for proposals:
 ```
-## Smart Details Options (pick 5)
-1. [Detail] — [Why it helps]
-2. [Detail] — [Why it helps]
-...
-
-## Unique Ideas (pick 2-4)
-1. **[Idea]** — [Description]
-   CRO benefit: [Why it increases conversion]
+Hero (with CTA)
+↓
+Trust Signal (logos/stats)
+↓
+Features/Benefits
+↓
+Social Proof (testimonials)
+↓
+How It Works
+↓
+CTA Banner
+↓
+FAQ
+↓
+Final CTA
+↓
+Footer
 ```
 
-Do NOT implement until approved.
+## Related Skills
 
-## Section Details
+- `section-skeleton` — Component structure
+- `page-structure` — Section ordering
+- `astro-components` — UI components
 
-See [sections.md](references/sections.md) for:
-- Problem-Solution: first sentence 2px larger
-- Benefits: must have images
-- All placeholder sizes
+## Definition of Done
 
-## References
-
-- [sections.md](references/sections.md) — Section patterns
-- [mobile.md](references/mobile.md) — Mobile patterns
-- [desktop-cta.md](references/desktop-cta.md) — Header behavior, WhatsApp
-- [microinteractions.md](references/microinteractions.md) — Animations
-- [placeholders.md](references/placeholders.md) — Image sizes
+- [ ] Mobile-first responsive
+- [ ] Clear CTA hierarchy
+- [ ] Trust elements before forms
+- [ ] Accessible (a11y checked)
+- [ ] Fast loading (no heavy assets in viewport)

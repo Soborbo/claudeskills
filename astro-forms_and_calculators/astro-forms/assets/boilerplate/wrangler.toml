@@ -1,0 +1,8 @@
+name = "astro-app"
+compatibility_date = "2024-01-01"
+
+# Rate limiting KV namespace
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "your-kv-namespace-id"
+# Create: wrangler kv:namespace create "RATE_LIMIT_KV"

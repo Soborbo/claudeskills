@@ -1,0 +1,95 @@
+---
+/**
+ * Toast
+ * Success/error notification component
+ * Triggered via showToast() from client.ts
+ */
+
+interface Props {
+  id?: string;
+}
+
+const { id = 'toast' } = Astro.props;
+---
+
+<div
+  id={id}
+  class="fixed bottom-4 right-4 max-w-sm transform translate-y-full opacity-0 transition-all duration-300 ease-out z-50 pointer-events-none"
+  role="alert"
+  aria-live="polite"
+  data-toast
+>
+  <div 
+    class="px-5 py-4 rounded-xl shadow-lg flex items-center gap-3"
+    data-toast-content
+  >
+    <!-- Icon -->
+    <span data-toast-icon class="text-xl flex-shrink-0"></span>
+    
+    <!-- Message -->
+    <span data-toast-message class="text-sm font-medium"></span>
+  </div>
+</div>
+
+<style>
+  /* Success state */
+  [data-toast][data-type="success"] [data-toast-content] {
+    @apply bg-green-600 text-white;
+  }
+  [data-toast][data-type="success"] [data-toast-icon]::before {
+    content: '✓';
+  }
+  
+  /* Error state */
+  [data-toast][data-type="error"] [data-toast-content] {
+    @apply bg-red-600 text-white;
+  }
+  [data-toast][data-type="error"] [data-toast-icon]::before {
+    content: '✕';
+  }
+  
+  /* Info state */
+  [data-toast][data-type="info"] [data-toast-content] {
+    @apply bg-blue-600 text-white;
+  }
+  [data-toast][data-type="info"] [data-toast-icon]::before {
+    content: 'ℹ';
+  }
+  
+  /* Visible state */
+  [data-toast].visible {
+    @apply translate-y-0 opacity-100 pointer-events-auto;
+  }
+</style>
+
+<script>
+  /**
+   * Show toast notification
+   * Usage: showToast('success', 'Message here', 3000)
+   */
+  export function showToast(
+    type: 'success' | 'error' | 'info',
+    message: string,
+    duration: number = 3000
+  ): void {
+    const toast = document.querySelector('[data-toast]') as HTMLElement;
+    const messageEl = toast?.querySelector('[data-toast-message]');
+    
+    if (!toast || !messageEl) return;
+    
+    // Set content
+    toast.setAttribute('data-type', type);
+    messageEl.textContent = message;
+    
+    // Show
+    toast.classList.add('visible');
+    
+    // Auto-hide
+    setTimeout(() => {
+      toast.classList.remove('visible');
+    }, duration);
+  }
+  
+  // Make globally available
+  (window as any).showToast = showToast;
+</script>

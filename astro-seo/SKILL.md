@@ -1,172 +1,116 @@
 ---
 name: astro-seo
-description: Technical SEO implementation for Astro lead generation websites. Use when adding meta tags, Schema.org markup, sitemaps, or any search engine optimization. Works with astro-architecture for base setup.
+description: SEO markup patterns for Astro lead generation sites. Meta tags, Open Graph, Schema.org, sitemap, robots. Use for all SEO implementation.
 ---
 
 # Astro SEO Skill
 
-Technical and on-page SEO for lead generation sites. No keyword research, no content strategy, no link building — pure technical implementation.
+## Purpose
 
-## Core Rules (Non-Negotiable)
+Handles all SEO markup for Astro projects. Technical SEO patterns.
 
-Every indexable page MUST have:
+## Core Rules
 
-1. **Unique `<title>`** — 50-60 chars, primary keyword near start
-2. **Unique `<meta description>`** — 150-160 chars, includes CTA hint
-3. **Self-referencing canonical** — Points to itself, absolute URL
-4. **Exactly one `<h1>`** — Matches page intent
-5. **Indexable content without JS** — Content in initial HTML
-6. **At least one internal link pointing to it** — No orphan pages
-7. **Schema.org markup** — Minimum: Organization or LocalBusiness
+1. **Every page needs unique title + description**
+2. **Open Graph for social sharing**
+3. **Schema.org for rich results**
+4. **Canonical URLs always set**
+5. **Sitemap auto-generated**
 
-## URL & Crawl Policy
+## Required Meta Tags
 
-- URLs MUST be lowercase
-- URLs MUST NOT have trailing slash (pick one, be consistent)
-- One URL = one intent (no duplicate content)
-- Query parameter URLs MUST be noindex or canonicalized
-- Faceted/filter URLs MUST be noindex
-- Pagination page 2+ SHOULD be noindex, canonical to page 1
-- Paginated pages MUST NOT canonicalize to page 1 unless intentionally consolidated
+```astro
+---
+const { title, description, image, noindex = false } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
 
-## HTTP Status Code Policy
+<head>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalURL} />
+  {noindex && <meta name="robots" content="noindex,nofollow" />}
 
-| Code | Use For |
-|------|---------|
-| 200 | Indexable content only |
-| 301 | Permanent redirects (content moved forever) |
-| 302 | Temporary redirects (campaigns, A/B tests) |
-| 404 | Non-existing content |
-| 410 | Intentionally removed content |
+  <!-- Open Graph -->
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:image" content={image} />
+  <meta property="og:type" content="website" />
 
-Never return 200 for error states or empty pages.
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+</head>
+```
 
-## Internal Linking Rules
+## Schema.org Patterns
 
-- No indexable page may be orphaned (FAIL if unreachable)
-- Breadcrumbs REQUIRED for hierarchical pages (service > sub-service)
-- Anchor text MUST be descriptive (❌ "click here", ❌ "read more")
-- Footer links don't count as primary internal links
+### LocalBusiness (Homepage)
 
-## Forbidden (STOP)
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "Business Name",
+  "address": { "@type": "PostalAddress", ... },
+  "telephone": "+44...",
+  "openingHours": "Mo-Fr 08:00-18:00"
+}
+```
 
-STOP and fix if any of these occur:
+### Service Pages
 
-- ❌ Duplicate `<title>` across pages
-- ❌ Duplicate `<meta description>` across pages
-- ❌ Missing or wrong canonical URL
-- ❌ Multiple `<h1>` tags on page
-- ❌ Orphan page (no internal links pointing to it)
-- ❌ Indexable page with only JS-rendered content
-- ❌ Hydration that changes indexable content (client-side content swap)
-- ❌ Soft 404 (200 status with no real content)
-- ❌ Placeholder/thin content on indexable URLs
-- ❌ Schema.org validation errors
-- ❌ Missing OG image
-- ❌ Broken internal links (404s)
-- ❌ Query string URLs indexed
-- ❌ Staging/dev URLs indexed
-- ❌ Review schema without real reviews
-- ❌ Auto-generated schema spam
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Service Name",
+  "provider": { "@type": "LocalBusiness", ... }
+}
+```
 
-## Structured Data Rules
+### FAQ
 
-### Mandatory (Every Site)
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [...]
+}
+```
 
-| Schema | Where |
-|--------|-------|
-| Organization OR LocalBusiness | Homepage |
-| WebSite | Homepage |
-| BreadcrumbList | All pages except homepage |
+## Sitemap
 
-### Conditional
+```javascript
+// astro.config.mjs
+import sitemap from '@astrojs/sitemap';
 
-| Schema | When |
-|--------|------|
-| FAQPage | If FAQ section exists |
-| Service | Service pages |
-| Article | Blog posts |
-| Product | E-commerce (rare for lead gen) |
+export default {
+  site: 'https://yourdomain.com',
+  integrations: [sitemap()]
+}
+```
 
-### Forbidden
+## Noindex Pages
 
-- Review/AggregateRating without real reviews
-- Schema that doesn't match visible content
-- Excessive schema (more than 3-4 types per page)
+- Thank you pages
+- 404/410 pages
+- Admin/preview pages
+- Duplicate content
 
-## Required Elements Per Page
+## Related Skills
 
-| Element | Location | Required |
-|---------|----------|----------|
-| `<title>` | `<head>` | ✓ Always |
-| `<meta name="description">` | `<head>` | ✓ Always |
-| `<link rel="canonical">` | `<head>` | ✓ Always |
-| `<meta property="og:*">` | `<head>` | ✓ Always |
-| `<meta name="twitter:*">` | `<head>` | ✓ Always |
-| Schema.org JSON-LD | `<head>` or `<body>` | ✓ Always |
-| hreflang | `<head>` | If multi-lang |
-| `<meta name="robots">` | `<head>` | If noindex needed |
-
-## OG Image Spec
-
-| Property | Value |
-|----------|-------|
-| Size | 1200 × 630px |
-| Format | JPG or PNG |
-| Max file size | 300KB |
-| Content | Logo + tagline + brand colors |
-| Location | `/public/og-image.jpg` |
-
-Create page-specific OG images for key landing pages.
-
-## References
-
-### Required (Always Read)
-
-- [meta.md](references/meta.md) — Meta tags, OG, Twitter implementation
-- [schema.md](references/schema.md) — All Schema.org components
-
-### Conditional
-
-- [sitemap.md](references/sitemap.md) — Sitemap + robots.txt setup
-- [validation.md](references/validation.md) — Testing and validation tools
+- `local-seo` — GBP, citations, area pages
+- `heading-tree` — H1-H4 structure
+- `keyword-research` — Keyword targeting
 
 ## Definition of Done
 
-SEO is complete when ALL are true:
-
-### Meta & Content (Zero Tolerance)
-- [ ] 0 duplicate `<title>` tags
-- [ ] 0 duplicate `<meta description>` tags
-- [ ] 0 pages with multiple `<h1>`
-- [ ] 0 orphan pages
-- [ ] 0 broken internal links
-
-### Technical
-- [ ] Lighthouse SEO score = 100
-- [ ] Every page has self-referencing canonical
-- [ ] Content renders without JavaScript
-- [ ] OG image exists and is 1200×630px
-- [ ] Sitemap contains only indexable URLs
-- [ ] robots.txt exists with sitemap reference
-- [ ] No query parameter URLs in sitemap
-
-### Schema
-- [ ] Homepage has LocalBusiness + WebSite schema
-- [ ] All pages have BreadcrumbList (except homepage)
-- [ ] FAQ sections have FAQPage schema
-- [ ] 0 schema validation errors (test at schema.org validator)
-- [ ] 0 errors in Google Rich Results Test
-
-### Multi-Language (if applicable)
-- [ ] hreflang on every page including x-default
-- [ ] Each language has own sitemap or sitemap entries
-
-### Pre-Launch
-- [ ] Staging has noindex
-- [ ] Production has index
-- [ ] Sitemap submitted to Search Console
-
-### Monitoring (Required)
-- [ ] Google Search Console configured for production domain
-- [ ] Index coverage errors reviewed before launch
+- [ ] Unique title + description per page
+- [ ] Open Graph tags set
+- [ ] LocalBusiness schema on homepage
+- [ ] Service schema on service pages
+- [ ] FAQ schema where applicable
+- [ ] Sitemap configured
+- [ ] Canonical URLs set
+- [ ] Thank you pages noindexed

@@ -1,0 +1,84 @@
+---
+/**
+ * LoadingSkeleton
+ * Animated placeholder during API calls
+ */
+
+interface Props {
+  variant?: 'card' | 'text' | 'button' | 'form';
+  count?: number;
+}
+
+const { variant = 'card', count = 1 } = Astro.props;
+---
+
+{variant === 'card' && (
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+    {Array.from({ length: count }).map(() => (
+      <div class="animate-pulse">
+        <div class="aspect-square bg-gray-200 rounded-xl mb-2"></div>
+        <div class="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+      </div>
+    ))}
+  </div>
+)}
+
+{variant === 'text' && (
+  <div class="space-y-3 animate-pulse">
+    {Array.from({ length: count }).map(() => (
+      <div class="h-4 bg-gray-200 rounded w-full"></div>
+    ))}
+  </div>
+)}
+
+{variant === 'button' && (
+  <div class="animate-pulse">
+    <div class="h-12 bg-gray-200 rounded-xl w-full"></div>
+  </div>
+)}
+
+{variant === 'form' && (
+  <div class="space-y-4 animate-pulse">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <div class="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+        <div class="h-11 bg-gray-200 rounded-lg"></div>
+      </div>
+      <div>
+        <div class="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+        <div class="h-11 bg-gray-200 rounded-lg"></div>
+      </div>
+    </div>
+    <div>
+      <div class="h-4 bg-gray-200 rounded w-16 mb-2"></div>
+      <div class="h-11 bg-gray-200 rounded-lg"></div>
+    </div>
+    <div>
+      <div class="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+      <div class="h-11 bg-gray-200 rounded-lg"></div>
+    </div>
+    <div class="h-12 bg-gray-200 rounded-xl mt-6"></div>
+  </div>
+)}
+
+<style>
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  .animate-pulse > div {
+    background: linear-gradient(
+      90deg,
+      #e5e7eb 0%,
+      #f3f4f6 50%,
+      #e5e7eb 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+</style>

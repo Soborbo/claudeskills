@@ -1,152 +1,99 @@
 ---
 name: lead-gen-copy
-description: Copywriting for lead generation websites. Use when writing headlines, CTAs, section copy, or any conversion-focused text. Works with astro-ux for placement and astro-seo for meta content.
+description: Copywriting patterns for UK lead generation websites. Headlines, CTAs, benefit statements, objection handling. Use for all website copy.
 ---
 
 # Lead Gen Copy Skill
 
-Conversion-focused copywriting for service business websites. No brand manifesto, no content strategy — pure lead generation copy.
+## Purpose
 
-## Core Rules (Non-Negotiable)
+Provides copywriting patterns for lead generation websites. UK service business focused.
 
-1. **Problem first, solution second** — MUST lead with pain, then relief
-2. **Benefit over feature** — MUST state outcome, not capability
-3. **Specific over vague** — "47 seconds" not "quick", "4.98★" not "high rated"
-4. **One CTA per viewport** — MUST NOT compete with yourself
-5. **You > We** — MUST talk about them, not yourself
-6. **Active voice only** — "We move your furniture" not "Your furniture is moved"
-7. **Reading level: Year 8** — MUST use simple words, short sentences
-8. **Every claim needs proof** — No proof = FAIL
+## Core Rules
 
-## CRO Page Order (Mandatory)
+1. **Benefits over features** — What they get, not what you do
+2. **Clear CTAs** — Action verbs, urgency where appropriate
+3. **Local relevance** — Area references build trust
+4. **Social proof integration** — Numbers, names, specifics
+5. **Objection handling** — Address concerns proactively
 
-Sections MUST follow this conversion logic:
+## Headline Patterns
 
-1. **Hero** — Outcome-driven promise + primary CTA
-2. **Proof** — Trust signals, ratings, logos (immediate credibility)
-3. **Problem** — Empathy, agitation (they feel understood)
-4. **Solution** — How you solve it (relief)
-5. **Benefits** — What they get (desire)
-6. **Objection handling** — FAQ, guarantees (remove friction)
-7. **Final CTA** — Urgency + reassurance (action)
+### Hero Headlines
 
-Deviation from this order MUST be justified.
+```
+[Benefit] + [Location] + [Qualifier]
+"Stress-Free House Removals in Bristol — Trusted by 2,000+ Families"
 
-## Forbidden (STOP)
+[Problem] → [Solution]
+"Moving Home? We Handle Everything So You Don't Have To"
 
-STOP and fix if any of these occur:
+[Social Proof] + [Service]
+"Bristol's #1 Rated Removal Company — 500+ 5-Star Reviews"
+```
 
-### Language
-- ❌ Passive voice in CTAs
-- ❌ Corporate jargon ("leverage", "synergy", "solutions", "utilize")
-- ❌ Buzzwords: "innovative", "best-in-class", "leading", "cutting-edge", "world-class"
-- ❌ Vague superlatives without proof ("best", "top", "leading")
-- ❌ Questions as headlines without immediate answer
-- ❌ "Click here", "Submit", "Send" as CTA text
+### Section Headlines
 
-### Structure
-- ❌ Multiple CTAs competing in same viewport
-- ❌ Wall of text over 80 words without break
-- ❌ Feature-only copy (no benefit stated)
-- ❌ Claim without proof (numbers, testimonial, or credential)
+```
+Benefits: "Why Choose [Business]?"
+Process: "How It Works"
+Trust: "What Our Customers Say"
+FAQ: "Common Questions"
+CTA: "Ready to Get Started?"
+```
 
-### Quality
-- ❌ Negative framing without resolution
-- ❌ Lorem ipsum or placeholder text in deliverable
-- ❌ Form without microcopy (privacy, effort, error states)
+## CTA Patterns
 
-## Headline Formula
+| Context | CTA Text |
+|---------|----------|
+| Primary | "Get Your Free Quote" |
+| Secondary | "Call Us Now" |
+| Soft | "Learn More" |
+| Urgency | "Book Today — Limited Slots" |
 
-**Structure:** [Outcome] + [Timeframe/Ease] + [Without Pain Point]
+## Benefit Statements
 
-**Examples:**
-- "Get Your Free Quote in 47 Seconds"
-- "Move House Without the Stress"
-- "Save £200 on Your Next Move"
+```
+Feature → Benefit
+"Fully insured" → "Peace of mind — you're protected"
+"20 years experience" → "Expert handling — nothing gets damaged"
+"Local team" → "We know Bristol — faster, cheaper moves"
+```
 
-**H1 must contain:**
-- Primary service/outcome
-- Location (if local business)
-- Differentiator or proof point
+## Trust Copy
 
-## CTA Text Rules
+- Specific numbers: "2,347 moves completed"
+- Named reviews: "Sarah M., Clifton"
+- Credentials: "Which? Trusted Trader"
+- Guarantees: "No hidden fees — ever"
 
-| Context | Pattern | Examples |
-|---------|---------|----------|
-| Primary CTA | Action + Benefit | "Get Free Quote", "Book Your Move" |
-| Soft CTA | Lower commitment | "See Pricing", "How It Works" |
-| Phone CTA | Urgency + Human | "Speak to Jay Now", "Call for Same-Day Quote" |
-| WhatsApp | Casual + Fast | "Message Us", "Quick Question?" |
+## Objection Handling
 
-**Power words for CTAs:** Free, Instant, Now, Today, Your, My, Get, Start
+| Objection | Response |
+|-----------|----------|
+| "Too expensive" | Transparent pricing, value focus |
+| "Don't trust movers" | Insurance, reviews, guarantees |
+| "Too much hassle" | Full-service option, simplicity |
+| "Bad timing" | Flexible scheduling, storage |
 
-## Tone of Voice
+## Tone
 
-| Tone | When | Example |
-|------|------|---------|
-| Empathetic | Problem section | "We know moving is stressful" |
-| Confident | Solution section | "That's exactly why we exist" |
-| Reassuring | Trust section | "Your belongings are safe with us" |
-| Urgent | CTA section | "Limited slots this week" |
+- Professional but friendly
+- Confident not arrogant
+- Helpful not pushy
+- Local not generic
 
-**Voice consistency:**
-- Professional but warm (not corporate)
-- Direct but not pushy
-- Confident but not arrogant
-- Like a trusted friend who's an expert
+## Related Skills
 
-## Section-Specific Copy
-
-| Section | Focus | Word Count |
-|---------|-------|------------|
-| Hero | One clear promise + CTA | 20-40 words |
-| USP Strip | 3-4 proof points | 5-8 words each |
-| Problem | Empathy + agitation | 40-80 words |
-| Solution | Relief + capability | 40-80 words |
-| Benefits | Outcome per benefit | 15-25 words each |
-| Social Proof | Real quotes, specific | Verbatim |
-| FAQ | Clear answers, no fluff | 30-60 words each |
-| Final CTA | Urgency + reassurance | 20-40 words |
-
-## References
-
-### Required
-- [headlines.md](references/headlines.md) — Headline templates by section
-- [cta.md](references/cta.md) — CTA text patterns and A/B winners
-
-### Conditional
-- [tone.md](references/tone.md) — Industry-specific tone adjustments
-- [power-words.md](references/power-words.md) — Conversion-tested word list
+- `keyword-research` — Target keywords
+- `heading-tree` — Heading structure
+- `competitor-analysis` — Competitive positioning
 
 ## Definition of Done
 
-Copy is complete when ALL are true:
-
-### Structure
-- [ ] Page follows CRO Page Order (Hero → Proof → Problem → Solution → Benefits → Objections → CTA)
-- [ ] Every section has one clear message
-- [ ] Maximum one CTA visible per viewport
-- [ ] No wall of text over 80 words without break
-
-### Language
-- [ ] Zero passive voice in CTAs
-- [ ] Zero corporate jargon or buzzwords
-- [ ] Every claim has proof (number, quote, or credential)
-- [ ] Reading level ≤ Year 8 (check at hemingwayapp.com)
-
-### Conversion Elements
-- [ ] H1 contains service + location + differentiator
-- [ ] Every CTA states benefit, not just action
-- [ ] Social proof uses real names/companies (or realistic placeholders)
-- [ ] Urgency element present (scarcity, time, demand)
-
-### Form Microcopy (MUST have all)
-- [ ] Privacy reassurance near submit ("We never share your data")
-- [ ] Effort expectation ("Takes 60 seconds")
-- [ ] Error state copy (not just red borders)
-- [ ] Success state copy (what happens next)
-
-### Quality
-- [ ] Proofread for typos and grammar
-- [ ] Phone numbers are clickable (tel:)
-- [ ] Zero placeholder text in deliverable
+- [ ] Headlines are benefit-focused
+- [ ] CTAs are clear and action-oriented
+- [ ] Local references included
+- [ ] Social proof integrated
+- [ ] Objections addressed
+- [ ] Tone is appropriate for audience
