@@ -1,5 +1,11 @@
 # Skill Manifest
 
+> **Before starting any project:** Read these files first:
+> - `HARD-RULES.md` — Non-negotiable constraints
+> - `CONFLICT-MATRIX.md` — How to resolve rule conflicts
+> - `MINIMUM-INPUT.md` — Required information checklist
+> - `CONTEXT-LOADING.md` — Token optimization guide
+
 ## Load Order (Priority)
 
 ### 1. Always Load First
