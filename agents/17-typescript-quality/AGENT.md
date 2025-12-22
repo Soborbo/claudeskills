@@ -25,6 +25,7 @@ Issue VETO if:
 - Unjustified `any` types found
 - Component props not typed
 - Unsafe type assertions without justification
+- Generic variable names: `data`, `result`, `item`, `temp`, `info`, `response`
 
 ## Uses Skills
 

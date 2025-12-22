@@ -71,6 +71,7 @@ RESEND_API_KEY
 - ✅ Strict mode enabled
 - ❌ No `any` types
 - ❌ No `@ts-ignore` without issue link
+- ❌ No generic variable names: `data`, `result`, `item`, `temp`, `info`, `response`
 - ✅ Explicit return types on functions
 
 ### Astro
