@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "astro-images",
+  "version": "1.1.0",
+  "description": "Machine-readable rules for Astro responsive image validation. This is the CANONICAL source for width arrays.",
+
+  "widthPresets": {
+    "HERO": [640, 750, 828, 1080, 1200, 1920, 2048, 2560],
+    "CONTENT": [320, 640, 960, 1280, 1920],
+    "THUMBNAIL": [256, 384, 512, 640, 750],
+    "ZOOMABLE": [640, 750, 828, 1080, 1200, 1920, 2048, 2560, 3840]
+  },
+
+  "patterns": {
+    "hero": {
+      "widths": "$ref:widthPresets.HERO",
+      "sizes": "100vw",
+      "quality": 60,
+      "formats": ["avif", "webp"],
+      "loading": "eager",
+      "fetchpriority": "high",
+      "maxInstances": 1
+    },
+    "content": {
+      "widths": "$ref:widthPresets.CONTENT",
+      "sizes": "(min-width: 1024px) 720px, 100vw",
+      "quality": 60,
+      "formats": ["avif", "webp"]
+    },
+    "thumbnail": {
+      "widths": "$ref:widthPresets.THUMBNAIL",
+      "sizes": "(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw",
+      "quality": 60,
+      "formats": ["avif", "webp"]
+    },
+    "fixed": {
+      "densities": ["1x", "2x"],
+      "quality": {
+        "1x": 80,
+        "2x": 60,
+        "3x": 50
+      }
+    },
+    "zoomable": {
+      "widths": "$ref:widthPresets.ZOOMABLE",
+      "sizes": "100vw",
+      "quality": 70,
+      "formats": ["avif", "webp"],
+      "requiredAttribute": "data-zoomable"
+    }
+  },
+
+  "sizesPresets": {
+    "full-width": "100vw",
+    "content-column": "(min-width: 1024px) 720px, 100vw",
+    "grid-2": "(min-width: 1024px) 50vw, 100vw",
+    "grid-3": "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw",
+    "grid-4": "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw",
+    "sidebar": "(min-width: 1024px) calc(25vw - 2rem), 100vw",
+    "fixed-card": "(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"
+  },
+
+  "rules": {
+    "require-widths": {
+      "severity": "error",
+      "message": "<Picture> must have widths prop with approved array from widthPresets",
+      "pattern": "<Picture[^>]*(?!widths=)"
+    },
+    "require-sizes": {
+      "severity": "error",
+      "message": "<Picture> with widths must have sizes prop",
+      "pattern": "<Picture[^>]*widths=[^>]*(?!sizes=)"
+    },
+    "require-quality": {
+      "severity": "error",
+      "message": "<Picture> must have quality prop (default: 60)",
+      "pattern": "<Picture[^>]*(?!quality=)"
+    },
+    "require-formats": {
+      "severity": "error",
+      "message": "<Picture> must have formats={['avif', 'webp']}",
+      "pattern": "<Picture[^>]*(?!formats=)"
+    },
+    "require-dimensions": {
+      "severity": "warning",
+      "message": "Image should have width AND height attributes (or Astro metadata must provide them)",
+      "pattern": "<Picture[^>]*(?!width=.*height=|height=.*width=)",
+      "note": "Astro may auto-infer dimensions from imports. Verify intrinsic dimensions exist."
+    },
+    "require-alt": {
+      "severity": "error",
+      "message": "Image must have alt attribute (use alt='' only for decorative images)",
+      "pattern": "<Picture[^>]*(?!alt=)"
+    },
+    "no-public-images": {
+      "severity": "error",
+      "message": "Images must not be in /public/ folder - move to /src/assets/",
+      "paths": ["public/**/*.jpg", "public/**/*.jpeg", "public/**/*.png", "public/**/*.webp", "public/**/*.avif"]
+    },
+    "no-defensive-100vw": {
+      "severity": "warning",
+      "message": "sizes='100vw' is only valid for HERO/ZOOMABLE patterns. Verify this is true full-width.",
+      "pattern": "sizes=\"100vw\"",
+      "allowedWhen": {
+        "widthsMatch": ["$ref:widthPresets.HERO", "$ref:widthPresets.ZOOMABLE"]
+      },
+      "note": "100vw on non-full-width images wastes 200-400% bandwidth"
+    },
+    "no-fetchpriority-in-loops": {
+      "severity": "error",
+      "message": "fetchpriority='high' must not appear in loops, maps, or repeated components",
+      "pattern": "\\.(map|forEach|filter)\\([^)]*fetchpriority"
+    },
+    "no-custom-widths": {
+      "severity": "error",
+      "message": "Width arrays must exactly match a widthPreset (HERO, CONTENT, THUMBNAIL, ZOOMABLE)",
+      "allowedArrays": "$ref:widthPresets"
+    },
+    "no-svg-through-picture": {
+      "severity": "error",
+      "message": "SVG files must not be processed through <Picture>. Use <img> or inline <svg>.",
+      "pattern": "<Picture[^>]*src=[^>]*\\.svg"
+    },
+    "no-animated-images": {
+      "severity": "warning",
+      "message": "Animated images (GIF/APNG) should be avoided. Use <video> or Lottie instead.",
+      "pattern": "\\.(gif|apng)"
+    },
+    "max-quality": {
+      "severity": "error",
+      "message": "quality must not exceed 80 (use 60 default, 70 for critical photography)",
+      "maxValue": 80
+    },
+    "max-width-requires-zoomable": {
+      "severity": "error",
+      "message": "3840 width requires data-zoomable='true' attribute",
+      "pattern": "3840",
+      "requiredAttribute": "data-zoomable"
+    },
+    "single-fetchpriority": {
+      "severity": "error",
+      "message": "Only one image per page should have fetchpriority='high'",
+      "maxInstances": 1
+    },
+    "aspect-ratio-consistency": {
+      "severity": "error",
+      "message": "Aspect ratio must match source image. Cropping requires explicit art direction.",
+      "note": "width/height attributes must preserve original aspect ratio"
+    },
+    "no-upscaling": {
+      "severity": "error",
+      "message": "Never upscale source images. Request larger asset or redesign if source is too small.",
+      "note": "Minimum source widths: Hero 2560px, Content 1920px, Thumbnail 800px"
+    }
+  },
+
+  "performanceBudget": {
+    "_note": "These are ADVISORY warnings, not blocking errors. Reduce quality before changing widths.",
+    "hero": {
+      "avif": { "bytes": 256000, "severity": "warning" },
+      "webp": { "bytes": 358400, "severity": "warning" },
+      "fallback": { "bytes": 409600, "severity": "warning" }
+    },
+    "content": {
+      "avif": { "bytes": 153600, "severity": "warning" },
+      "webp": { "bytes": 204800, "severity": "warning" },
+      "fallback": { "bytes": 256000, "severity": "warning" }
+    },
+    "thumbnail": {
+      "avif": { "bytes": 81920, "severity": "warning" },
+      "webp": { "bytes": 102400, "severity": "warning" },
+      "fallback": { "bytes": 122880, "severity": "warning" }
+    }
+  },
+
+  "sourceRequirements": {
+    "hero": {
+      "minWidth": 2560,
+      "maxWidth": 4096,
+      "aspectRatios": ["16:9", "21:9", "4:3"],
+      "formats": ["jpg", "png", "webp"],
+      "note": "Never upscale. Request larger source if below minWidth."
+    },
+    "content": {
+      "minWidth": 1920,
+      "maxWidth": 3000,
+      "formats": ["jpg", "png", "webp"],
+      "note": "Never upscale. Request larger source if below minWidth."
+    },
+    "thumbnail": {
+      "minWidth": 800,
+      "maxWidth": 1600,
+      "formats": ["jpg", "png", "webp"],
+      "note": "Never upscale. Request larger source if below minWidth."
+    },
+    "logo": {
+      "preferredFormat": "svg",
+      "fallbackFormats": ["png"],
+      "minWidth": 400,
+      "transparency": true
+    }
+  },
+
+  "validation": {
+    "commands": [
+      {
+        "name": "check-public-images",
+        "command": "find public -type f \\( -name '*.jpg' -o -name '*.png' -o -name '*.webp' \\) 2>/dev/null",
+        "expectEmpty": true,
+        "severity": "error"
+      },
+      {
+        "name": "check-picture-widths",
+        "command": "grep -r '<Picture' src --include='*.astro' | grep -v 'widths='",
+        "expectEmpty": true,
+        "severity": "error"
+      },
+      {
+        "name": "check-picture-quality",
+        "command": "grep -r '<Picture' src --include='*.astro' | grep -v 'quality='",
+        "expectEmpty": true,
+        "severity": "error"
+      },
+      {
+        "name": "check-picture-dimensions",
+        "command": "grep -r '<Picture' src --include='*.astro' | grep -v 'width=' | grep -v 'height='",
+        "expectEmpty": true,
+        "severity": "warning",
+        "note": "Astro may auto-infer. Verify manually."
+      },
+      {
+        "name": "check-fetchpriority-loops",
+        "command": "grep -r 'fetchpriority' src --include='*.astro' | grep -E '\\.(map|forEach)\\('",
+        "expectEmpty": true,
+        "severity": "error"
+      },
+      {
+        "name": "check-100vw-misuse",
+        "command": "grep -r 'sizes=\"100vw\"' src --include='*.astro'",
+        "expectEmpty": false,
+        "severity": "review",
+        "note": "Manually verify each 100vw is a true HERO pattern"
+      }
+    ]
+  }
+}
