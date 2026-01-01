@@ -30,6 +30,174 @@
 
 ---
 
+## Formatting Requirements (Critical for Readability)
+
+### H2 Section Density
+
+**Minimum:** 2-3 meaningful H2 sections with substantial content between them
+**Preferred:** 3-4 H2 sections for standard articles (1000-1500w)
+**Pillar articles:** 5-8 H2 sections (2500+w)
+
+Each H2 section should contain:
+- 200-400 words of prose minimum
+- At least 2-3 paragraphs
+- Supporting elements (images, lists, or tables where appropriate)
+
+❌ **Avoid:** Too many short sections (creates choppy reading experience)
+✅ **Prefer:** Fewer, meatier sections with depth
+
+---
+
+### Visual Breaking: Images and Videos
+
+**Purpose:** Long blocks of text decrease engagement. Break up content with visual elements.
+
+**Standard article (1000-1500w):**
+- Minimum 3-5 images (including hero)
+- Optional: 1 video (if relevant)
+- Image spacing: Every 250-350 words maximum
+
+**Pillar article (2500+w):**
+- Minimum 6-10 images
+- Recommended: 1-2 videos
+- Image spacing: Every 300-400 words maximum
+
+**Image types to include:**
+- Hero image (required, eager loading)
+- Process diagrams or infographics
+- Before/after comparisons
+- Screenshots of tools/systems (for E-E-A-T)
+- Team photos (for credibility)
+- Product/service examples
+
+**Video placement:**
+- Mid-article (after 40-60% of content)
+- Use facade loading (no auto-load YouTube iframes)
+- Always include transcript link or text summary
+
+---
+
+### Table of Contents (TOC)
+
+**Required for articles >800 words.**
+
+Place immediately after QueryAnswer and TL;DR, before first H2.
+
+```astro
+<TableOfContents
+  headings={[
+    { text: "How much does it cost?", id: "cost" },
+    { text: "What factors affect pricing?", id: "factors" },
+    { text: "How to save money", id: "savings" },
+    { text: "Getting quotes", id: "quotes" }
+  ]}
+/>
+```
+
+**Benefits:**
+- Improves scannability for users
+- Generates jump links for Google's featured snippets
+- Reduces bounce rate (users can navigate directly to relevant section)
+- Accessibility improvement (screen readers)
+
+**TOC Rules:**
+- Auto-generate from H2 headings only (not H3)
+- Include anchor links with smooth scroll
+- Sticky on desktop (optional)
+- Collapse on mobile below 768px
+
+---
+
+### External Links: Authority & Citation
+
+**Minimum requirement:** 4 external links to very high authority sites per article
+
+**Link types required:**
+
+1. **Citation link** (data/statistics source)
+   - Government statistics (ONS, gov.uk)
+   - Industry reports (peer-reviewed)
+   - Professional body publications
+
+2. **Authority link** (industry credibility)
+   - Trade associations (BAR, FMB, etc.)
+   - Regulatory bodies
+   - Academic institutions
+
+3. **Reputation link** (author/company verification)
+   - Author LinkedIn profile
+   - Professional credentials verification
+   - Company registration (Companies House)
+
+4. **Contextual link** (additional value)
+   - Complementary industry resource
+   - Consumer protection sites (Which?, Citizens Advice)
+   - Tool/calculator from authority site
+
+**External link quality standards:**
+
+✅ **High authority sites:**
+- gov.uk, ons.gov.uk (UK government)
+- which.co.uk (consumer rights)
+- citizensadvice.org.uk
+- Industry trade bodies (.org.uk professional associations)
+- linkedin.com (author profiles)
+- University research (.ac.uk domains)
+
+❌ **Avoid:**
+- Low-quality directories
+- Competitor sites
+- Unverified blogs
+- Thin affiliate sites
+
+**Link attributes:**
+```html
+<!-- Citation/Authority links -->
+<a href="https://..." rel="noopener noreferrer" data-link-type="citation">
+
+<!-- Affiliate links (if any) -->
+<a href="https://..." rel="noopener noreferrer nofollow sponsored" data-link-type="affiliate">
+
+<!-- Reputation links -->
+<a href="https://linkedin.com/in/..." rel="noopener noreferrer" data-link-type="reputation">
+```
+
+**Context requirement:** Every external link must have explanatory context
+
+❌ Bad: "According to this source, costs vary."
+✅ Good: "According to the Office for National Statistics' 2024 Housing Survey, UK home service costs increased 12% year-over-year."
+
+---
+
+### Internal Links
+
+**Standard article:** 2-4 internal links
+**Pillar article:** 8-12 internal links
+
+**Link types:**
+
+1. **Cluster links** - Related topic articles in same pillar
+2. **Pillar links** - Main pillar page if this is cluster content
+3. **Service links** - Commercial pages relevant to content
+4. **Tool links** - Calculators, quote forms, booking pages
+5. **Related posts** - Complementary content
+
+**Placement rules:**
+- First internal link within first 100 words
+- Spread naturally throughout content (not clustered at end)
+- Use InternalLinks component for 3+ related links mid-article
+- Anchor text must be descriptive (no "click here")
+
+**Example distribution (1500w article):**
+```
+0-100 words: 1 link to pillar or related guide
+400-600 words: InternalLinks component (3 links)
+1200 words: 1 link to calculator/tool
+End: Related Posts component (auto-generated)
+```
+
+---
+
 ## H2 Rules (Flexible Guidelines)
 
 **PREFER specific questions** (they rank better):
@@ -442,26 +610,45 @@ H1: [Title - max 60 chars]
 QueryAnswer:
 [Direct answer - max 120 words]
 
-TL;DR: (if >1000 words)
+TL;DR: (required if >1000 words)
 - [Takeaway 1]
 - [Takeaway 2]
 - [Takeaway 3]
 
-H2: [Specific question 1]
-- Key points to cover
-- EngagementHook: [type] at [position]
+TableOfContents: (required if >800 words)
+- Auto-generate from H2 headings
 
-H2: [Specific question 2]
+H2: [Specific question 1] (~200-400 words)
 - Key points to cover
-- InternalLinks block here
+- Image placement: [describe image type]
+- ExpertInsight or EngagementHook (if valuable)
+- Internal link: [to related content] within first 100 words
 
-H2: [Specific question 3]
+H2: [Specific question 2] (~200-400 words)
 - Key points to cover
-- EngagementHook: [type] at [position]
+- Image placement: [describe image type]
+- InternalLinks component (3+ related links)
+- External link: [citation to authority source with context]
 
-H2: [Conclusion heading]
+H2: [Specific question 3] (~200-400 words)
+- Key points to cover
+- Image/Video placement: [describe visual element]
+- External link: [authority link with context]
+- ExpertInsight or EngagementHook (if valuable)
+
+H2: [Conclusion heading] (~150-250 words)
 - Summary points
+- External link: [contextual resource]
 - CTA placement
+
+FORMATTING CHECKLIST:
+- [ ] H2 sections: 2-3 minimum (prefer 3-4)
+- [ ] Images: 3-5 standard / 6-10 pillar (every 250-350 words)
+- [ ] Videos: 0-1 standard / 1-2 pillar (with facade loading)
+- [ ] TOC: Required if >800 words
+- [ ] External links: Minimum 4 to high-authority sites
+- [ ] Internal links: 2-4 standard / 8-12 pillar
+- [ ] Component density: 5-7 total components max standard / 8-12 pillar
 
 WORD COUNT TARGET: [500-1500 standard / 2500+ pillar]
 ```

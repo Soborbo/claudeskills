@@ -90,21 +90,25 @@ experienceVerified: false  # true only after human checks ExperienceBlock data
 2. **Component density limits** - 5-7 max standard, 8-12 max pillar (total)
 3. **Intentional imperfection** - 2-4 typing errors per article (thier, recieve, definately, enviroment) NOT grammar errors
 4. Answer in first 120 words (QueryAnswer)
-5. H2s = prefer specific questions, allow contextual when natural
-6. Internal links: 2-4 standard, **8-12 for pillar** content
-7. **External links: min 3 (citation + authority + reputation)** with context
-8. All stats have sources
-9. TL;DR required if >1000 words
-10. CTA matches intent
-11. Experience required for commercial/comparison (can be woven in prose)
-12. **ExpertInsight sparingly** - 1-2 standard, 2-3 pillar (NOT one per H2!)
-13. Author credentials verifiable (LinkedIn + industry profile)
-14. ExperienceBlock data must be real or marked as placeholder
-15. ARIA labels on complex components
-16. **Transactional pages MUST have interactive tool/calculator**
-17. **External rel attrs: `noopener noreferrer`, `nofollow sponsored` for affiliate**
-18. **Performance: <100KB JS, <50KB CSS, ≥90 mobile Lighthouse**
-19. **No `client:load` - use `client:visible` or `client:idle`**
+5. **H2 section density** - 2-3 minimum (prefer 3-4) standard, 5-8 pillar
+6. H2s = prefer specific questions, allow contextual when natural
+7. **TOC required if >800 words**
+8. **Images: 3-5 standard, 6-10 pillar** (every 250-350 words)
+9. **Videos: 0-1 standard, 1-2 pillar** (facade loading, no auto-load)
+10. Internal links: 2-4 standard, **8-12 for pillar** content
+11. **External links: min 4 (citation + authority + reputation + contextual)** with context to high-authority sites
+12. All stats have sources
+13. TL;DR required if >1000 words
+14. CTA matches intent
+15. Experience required for commercial/comparison (can be woven in prose)
+16. **ExpertInsight sparingly** - 1-2 standard, 2-3 pillar (NOT one per H2!)
+17. Author credentials verifiable (LinkedIn + industry profile)
+18. ExperienceBlock data must be real or marked as placeholder
+19. ARIA labels on complex components
+20. **Transactional pages MUST have interactive tool/calculator**
+21. **External rel attrs: `noopener noreferrer`, `nofollow sponsored` for affiliate**
+22. **Performance: <100KB JS, <50KB CSS, ≥90 mobile Lighthouse**
+23. **No `client:load` - use `client:visible` or `client:idle`**
 
 ### File Structure
 ```

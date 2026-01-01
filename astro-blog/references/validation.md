@@ -198,6 +198,8 @@ du -sh dist/_astro/*.css | awk '{if ($1 > "50K") print "❌ CSS too large: " $0;
 | CTA matches intent | informational→guide, commercial→calculator, etc. |
 | Answer in first 120 words | QueryAnswer contains direct answer |
 | TL;DR present | Required if >1000 words |
+| **TOC present** | **Required if >800 words** |
+| **H2 section density** | **2-3 minimum (prefer 3-4) for standard, 5-8 for pillar** |
 | H2s specific | Prefer questions; allow contextual when natural |
 | Word count | ≥500 standard, ≥2500 pillar |
 | YMYL author | Named author if `ymyl: true` |
@@ -212,16 +214,20 @@ du -sh dist/_astro/*.css | awk '{if ($1 > "50K") print "❌ CSS too large: " $0;
 | Internal links | 2-4 standard, 8-12 pillar |
 | First link position | Within first 100 words |
 | Anchor text | Descriptive, no "click here" |
+| **Images** | **3-5 standard, 6-10 pillar (every 250-350 words)** |
+| **Videos** | **0-1 standard, 1-2 pillar (facade loading required)** |
+| **Visual spacing** | **No text blocks >350 words without visual break** |
 
 ### External Links (Elite Strategy)
 
 | Check | Pass Criteria |
 |-------|---------------|
-| **Minimum count** | **3+ (1 citation + 1 authority + 1 reputation)** |
+| **Minimum count** | **4+ (1 citation + 1 authority + 1 reputation + 1 contextual)** |
 | **Link types tagged** | All external links have `data-link-type` |
 | **Anchor text quality** | Source name + claim in anchor |
 | **Context sentences** | Every link has explanatory context |
 | **No vacuum links** | No "here", "source", "click here" anchors |
+| **Authority quality** | gov.uk, .ac.uk, Which?, trade bodies, LinkedIn profiles |
 
 **rel Attribute Validation:**
 
@@ -372,8 +378,15 @@ if (!frontmatter.intent) fail("Missing intent");
 if (!frontmatter.primaryCTA) fail("Missing primaryCTA");
 if (wordCount < 500) fail("Under 500 words");
 if (wordCount > 1000 && !hasTLDR) fail("Missing TL;DR");
+if (wordCount > 800 && !hasTOC) fail("Missing Table of Contents");
 if (ymyl && author === 'team') fail("YMYL needs named author");
 if (internalLinks < 2) fail("Need 2+ internal links");
+if (externalLinks < 4) fail("Need 4+ external authority links");
+if (h2Count < 2) fail("Need minimum 2 H2 sections");
+if (h2Count < 3 && wordCount > 1000) warn("Prefer 3-4 H2 sections for standard articles");
+if (imageCount < 3 && wordCount > 1000) fail("Need 3-5 images for standard article");
+if (imageCount < 6 && isPillar) fail("Need 6-10 images for pillar article");
+if (hasLongTextBlocks > 350) warn("Text block exceeds 350 words without visual break");
 if (hasVagueH2s) fail("Vague H2 detected");
 if (hasBadAnchors) fail("Bad anchor text");
 
@@ -381,6 +394,8 @@ if (hasBadAnchors) fail("Bad anchor text");
 if (!hasInformationGainSignals) warn("No Information Gain signals");
 if (!hasSourcedStats) warn("Statistics without sources");
 if (hasWeakOpenings) warn("Weak paragraph openings");
+if (externalLinks < 4) warn("Consider adding more authority links (min 4)");
+if (!hasAuthorityDomains) warn("Missing high-authority external links (gov.uk, .ac.uk, Which?, etc.)");
 ```
 
 ---
