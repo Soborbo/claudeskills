@@ -190,6 +190,144 @@ du -sh dist/_astro/*.css | awk '{if ($1 > "50K") print "❌ CSS too large: " $0;
 
 ---
 
+### Readability Metrics (Quality Standards)
+
+**Run readability analysis on final content before publishing.**
+
+#### Automated Scoring Tools
+
+Use these tools to verify human comprehension:
+
+1. **Hemingway Editor** (hemingwayapp.com)
+   - Target: Grade 6-8
+   - Max Grade 10 for general audience
+   - Highlights complex sentences (5+ recommended)
+   - Shows passive voice, adverb overuse
+
+2. **Flesch Reading Ease** (readabilityformulas.com)
+   - Target: 60-70 (Plain English)
+   - Formula: 206.835 - 1.015(total words/sentences) - 84.6(syllables/words)
+   - Scoring: 60-70 = Easily understood by 13-15 year olds
+
+3. **Flesch-Kincaid Grade Level**
+   - Target: Grade 8-10
+   - Max Grade 12 for technical content
+   - Formula: 0.39(words/sentences) + 11.8(syllables/words) - 15.59
+
+4. **Grammarly Clarity Score** (optional)
+   - Target: >80
+   - Checks sentence clarity, word choice, conciseness
+   - Flags jargon and complex phrasing
+
+#### Manual Readability Checks
+
+| Check | Pass Criteria | Your Score | Pass/Fail |
+|-------|--------------|------------|-----------|
+| Hemingway Grade | 6-8 (max 10) | _____ | ☐ |
+| Flesch Reading Ease | 60-70 | _____ | ☐ |
+| Flesch-Kincaid Grade | 8-10 (max 12) | _____ | ☐ |
+| Average sentence length | 15-20 words | _____ | ☐ |
+| Sentences >25 words | <20% of total | _____ | ☐ |
+| Passive voice | <10% of sentences | _____ | ☐ |
+
+#### Readability By Content Type
+
+| Content Type | Hemingway Grade | Flesch Ease | Target Audience |
+|--------------|----------------|-------------|-----------------|
+| General service | 6-7 | 65-75 | Homeowners |
+| Technical guide | 8-9 | 55-65 | DIY enthusiasts |
+| Professional | 9-10 | 50-60 | Trade/contractors |
+| YMYL (health/finance) | 6-8 | 60-70 | General public |
+
+#### What to Do If Scores Fail
+
+**Hemingway Grade > 10:**
+- Break long sentences (25+ words) into two
+- Replace complex words with simpler alternatives
+- Remove unnecessary adverbs ("very", "really", "extremely")
+- Convert passive voice to active
+
+**Flesch Reading Ease < 60:**
+- Reduce average sentence length (aim for 15-20 words)
+- Use shorter words (prefer 1-2 syllables)
+- Break up dense paragraphs (max 80 words)
+- Add transition sentences between complex ideas
+
+**Too many complex sentences:**
+- Vary sentence length (short + medium + long)
+- Start paragraphs with punchy short sentences (5-10 words)
+- Use lists for multi-step instructions
+- Add subheadings to break sections
+
+#### Readability Examples
+
+❌ **Bad (Hemingway Grade 14, Flesch 45):**
+```markdown
+Solar panel installation, which involves numerous considerations that homeowners need to carefully evaluate before proceeding with their decision, varies significantly based on multiple factors including your roof's size and orientation, the quality and efficiency rating of the panels you select, and whether you choose to add battery storage systems, which can substantially increase the total investment by thousands of pounds but provide valuable backup power capabilities during grid outages.
+```
+(92 words, 1 sentence, exhausting)
+
+✅ **Good (Hemingway Grade 7, Flesch 68):**
+```markdown
+Solar panel installation involves several key decisions.
+
+The cost varies based on your roof size, panel quality, and whether you add battery storage. Battery systems increase the total by £2,000-£3,000, but they provide backup power during outages.
+
+Most installations complete in 1-2 days. The planning process takes 4-6 weeks including surveys and quotes.
+```
+(Short opening + medium paragraphs, scannable)
+
+#### Tools Integration
+
+**Add to validation script:**
+
+```typescript
+// Readability score checks (using readability-metrics library)
+const readability = analyzeReadability(content);
+
+if (readability.hemingwayGrade > 10) {
+  warn(`Hemingway grade is ${readability.hemingwayGrade} (target: 6-8, max: 10)`);
+}
+
+if (readability.fleschReadingEase < 60) {
+  warn(`Flesch Reading Ease is ${readability.fleschReadingEase} (target: 60-70)`);
+}
+
+if (readability.avgSentenceLength > 22) {
+  warn(`Average sentence length is ${readability.avgSentenceLength} words (target: 15-20)`);
+}
+
+if (readability.passiveVoicePercent > 10) {
+  warn(`${readability.passiveVoicePercent}% passive voice (target: <10%)`);
+}
+
+if (readability.sentencesOver25Words / readability.totalSentences > 0.2) {
+  warn(`${Math.round(readability.sentencesOver25Words / readability.totalSentences * 100)}% of sentences exceed 25 words (target: <20%)`);
+}
+```
+
+**Recommended npm package:**
+```bash
+npm install text-readability --save-dev
+```
+
+#### Readability Checklist
+
+Before publishing:
+
+- [ ] Hemingway Editor shows Grade 6-8 (or ≤10 for technical)
+- [ ] Flesch Reading Ease score 60-70
+- [ ] Average sentence length 15-20 words
+- [ ] <20% of sentences exceed 25 words
+- [ ] <10% passive voice usage
+- [ ] Complex sentences broken up with subheadings
+- [ ] Technical jargon defined on first use
+- [ ] Lists used for 3+ sequential/related items
+
+**If readability fails, revise for clarity before proceeding.**
+
+---
+
 ### Content Quality
 
 | Check | Pass Criteria |

@@ -170,6 +170,93 @@ Don't bury data in paragraphs. Isolate key stats:
 
 ---
 
+## Featured Snippet Optimization (Position 0)
+
+Featured snippets appear above organic results, driving 8-12% CTR. Optimize for them systematically.
+
+### Paragraph Snippets (40-60 Words)
+
+Google favors concise, direct answers immediately after H2s.
+
+**Format:**
+```markdown
+## How much does [topic] cost in the UK?
+
+[Main entity] costs £X-£Y in the UK. This price includes [key inclusions]. Factors like [variable 1] and [variable 2] can adjust the final cost by ±Z%.
+
+[Additional context in next paragraph...]
+```
+
+**Character count:** 280-320 characters (including spaces)
+**Sentence structure:** Answer → Evidence → Context
+
+### List Snippets (Parallel Structure)
+
+Google extracts numbered/bulleted lists verbatim. Use parallel phrasing.
+
+**Format:**
+```markdown
+## How to choose a [main entity]
+
+Follow these steps to select the right [entity]:
+
+1. **Verify credentials** — Check for industry certifications and insurance
+2. **Compare quotes** — Get at least 3 detailed written estimates
+3. **Check reviews** — Read recent customer feedback on independent sites
+4. **Ask questions** — Clarify warranty terms and project timeline
+5. **Review contract** — Ensure all details match the quote before signing
+```
+
+**Rules:**
+- **5-8 items** optimal (Google truncates at 8)
+- **Parallel structure:** Each item starts same way (verb, noun, etc.)
+- **Bolded labels** + concise description (10-15 words)
+
+### Table Snippets (Comparison Data)
+
+Google extracts tables for "X vs Y" queries. Keep tables simple.
+
+**Format:**
+```markdown
+## [Option A] vs [Option B]: Which is better?
+
+| Factor | Option A | Option B |
+|--------|----------|----------|
+| Cost | £X-£Y | £A-£B |
+| Time | N days | M days |
+| Difficulty | Low | High |
+| **Best for** | Homeowners | Landlords |
+```
+
+**Rules:**
+- **3-4 columns max** (mobile rendering)
+- **5-7 rows max** (snippet height limit)
+- **Bold final row** for "Best for" or "Recommendation"
+- **Specific data:** No vague terms ("some", "varies", "depends")
+
+### Snippet-Friendly H2 Patterns
+
+**Question format** (highest snippet rate):
+- "How much does [topic] cost?"
+- "How long does [process] take?"
+- "What is the best [entity] for [use case]?"
+- "When should you [action]?"
+
+**Avoid vague H2s:**
+- ❌ "Understanding the costs" (too broad)
+- ✅ "How much does installation cost in 2026?" (specific, question-based)
+
+### Snippet Testing Checklist
+
+- [ ] H2 is a direct question (or can be rephrased as one)
+- [ ] Answer appears in first 40-60 words after H2
+- [ ] Answer is self-contained (no pronouns requiring context)
+- [ ] Lists use parallel structure with 5-8 items
+- [ ] Tables have 3-4 columns, specific data (no "varies")
+- [ ] No fluff before the answer ("Many people wonder..." ❌)
+
+---
+
 ## Source Citation
 
 ### Every Statistic Needs a Source

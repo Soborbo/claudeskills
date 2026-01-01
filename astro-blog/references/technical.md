@@ -1205,6 +1205,587 @@ Writing is only **35% of content creation**. Research and planning dominate.
 
 ---
 
+## Content Decay Monitoring (Ranking Protection)
+
+Content decay occurs when previously high-ranking articles lose positions due to algorithm updates, competitor improvements, or outdated information. Implement systematic monitoring to catch and fix decay early.
+
+### What is Content Decay?
+
+**Definition:** A measurable drop in rankings, traffic, or conversions for previously successful content.
+
+**Common causes:**
+- Outdated information (statistics, regulations, pricing from 2+ years ago)
+- Competitors publishing more comprehensive content
+- Algorithm updates favoring different signals
+- Broken external links or outdated sources
+- Technical issues (site speed degradation, mobile issues)
+- Cannibalization (newer content competing for same keywords)
+
+### Automated Monitoring Setup
+
+**Tools required:**
+- Google Search Console (free)
+- Google Analytics 4 (free)
+- Rank tracker (Ahrefs, SEMrush, or AccuRanker)
+- Spreadsheet for tracking
+
+**Monitoring frequency:**
+- **Weekly:** Top 10 money pages (high conversion value)
+- **Bi-weekly:** Top 20-50 traffic drivers
+- **Monthly:** All content library
+
+### Key Metrics to Monitor
+
+#### 1. Ranking Drops (Priority 1)
+
+**Alert triggers:**
+- **Critical:** Drop >5 positions for primary keyword
+- **Warning:** Drop 3-5 positions for primary keyword
+- **Monitor:** Drop 1-2 positions (natural fluctuation)
+
+**Tracking setup:**
+
+```bash
+# Weekly rank check for critical keywords
+Primary keyword rankings (track in spreadsheet):
+- "solar panel costs uk": Position 2 → Position 5 (🔴 CRITICAL)
+- "how much solar panels": Position 4 → Position 6 (🟡 WARNING)
+- "solar installation guide": Position 3 → Position 4 (🟢 MONITOR)
+```
+
+**Action thresholds:**
+- **>5 position drop:** Immediate investigation and update within 7 days
+- **3-5 position drop:** Schedule update within 2 weeks
+- **1-2 position drop:** Monitor for another week (may recover naturally)
+
+#### 2. Traffic Declines (Priority 2)
+
+**Alert triggers:**
+- **Critical:** >30% traffic drop month-over-month
+- **Warning:** 15-30% traffic drop month-over-month
+- **Monitor:** 5-15% traffic drop (seasonal variation possible)
+
+**Google Analytics 4 setup:**
+
+```
+Custom Report: Content Decay Alert
+- Dimension: Page path
+- Metrics: Sessions (current month vs previous month, % change)
+- Filter: Organic traffic only
+- Alert: Email if >30% decline for any page with >100 sessions/month
+```
+
+**Action thresholds:**
+- **>30% drop:** Emergency content audit, update within 3 days
+- **15-30% drop:** Scheduled update within 1 week
+- **5-15% drop:** Investigate cause (algorithm update? seasonality?)
+
+#### 3. Click-Through Rate Drops (Priority 3)
+
+**Alert triggers:**
+- **Critical:** CTR drops >20% while maintaining same position
+- **Warning:** CTR drops 10-20%
+
+**Google Search Console setup:**
+
+```
+Performance Report:
+- Date range: Last 28 days vs previous 28 days
+- Group by: Page
+- Filter: Impressions >1000
+- Sort by: CTR % change (descending)
+- Alert: Investigate any page with CTR drop >20%
+```
+
+**Common causes:**
+- **Competitor improved meta descriptions** (more compelling than yours)
+- **SERP features changed** (featured snippet now shows, reducing organic CTR)
+- **Title no longer matches search intent** (outdated year, obsolete phrasing)
+
+#### 4. Conversion Rate Drops (Priority 4)
+
+**Alert triggers:**
+- **Critical:** Conversion rate drops >25% while traffic stable
+- **Warning:** Conversion rate drops 10-25%
+
+**Tracking:**
+```
+GA4 Conversions (by page):
+- Goal: Quote form submissions, calculator uses, downloads
+- Monitor: Conversion rate per page (not total conversions)
+- Alert: >25% drop = investigate page changes, CTA placement, form issues
+```
+
+### Content Decay Audit Process
+
+When decay detected, follow this systematic audit:
+
+#### Step 1: Identify Decay Type (10 minutes)
+
+**Questions to answer:**
+- Is this keyword-specific (ranking drop) or site-wide (algorithm update)?
+- Did traffic drop match ranking drop, or is CTR the issue?
+- Did a competitor launch new content on this topic recently?
+- Has Google updated its SERP features for this query?
+
+**Tools:**
+- Google Search Console (Performance → Queries → filter by page)
+- Ahrefs (Site Explorer → Organic Keywords → filter by ranking drop)
+- Manual SERP check (search the keyword, see what changed)
+
+#### Step 2: SERP Analysis (15 minutes)
+
+**Current SERP audit:**
+
+```markdown
+Target keyword: "solar panel costs uk"
+
+Current SERP (as of [Date]):
+1. competitor1.com - Updated Jan 2026, 3,200 words, calculator, video
+2. competitor2.com - Published Dec 2025, 2,800 words, comparison table
+3. **YOUR SITE** - Last updated Mar 2024, 1,800 words (🚨 OUTDATED)
+
+SERP features present:
+- Featured snippet: competitor1.com (paragraph snippet)
+- PAA boxes: 8 questions (we answer 2/8)
+- Video carousel: Present (we have no video)
+- Image pack: Present (our images not showing)
+
+Competitive gap:
+- Our content is 2 years outdated
+- Competitors have interactive calculators (we don't)
+- Competitors targeting PAA questions we missed
+- Our title doesn't include "2026" (competitors do)
+```
+
+#### Step 3: Content Freshness Check (10 minutes)
+
+**Audit your article for outdated signals:**
+
+- [ ] Title includes old year or no year ("2024 Guide" or no date)
+- [ ] Statistics older than 12 months
+- [ ] External links to outdated sources or 404s
+- [ ] Screenshots showing old UI or pricing
+- [ ] Regulatory information changed (building codes, certifications)
+- [ ] Examples/case studies older than 18 months
+- [ ] No "Last updated" date shown
+- [ ] `updatedDate` in frontmatter not recent
+
+#### Step 4: Decide: Update, Consolidate, or Delete (5 minutes)
+
+| Scenario | Action | Timeframe |
+|----------|--------|-----------|
+| **High traffic + ranking drop** | Update comprehensively | Within 7 days |
+| **Medium traffic + content outdated** | Major refresh | Within 14 days |
+| **Low traffic + keyword still valuable** | Minor update | Within 30 days |
+| **Low traffic + keyword no longer searched** | Consolidate or delete | Within 60 days |
+| **Cannibalization (internal competition)** | Consolidate into one article | Within 14 days |
+
+### Update Strategies by Decay Cause
+
+#### Decay Cause: Outdated Information
+
+**Update checklist:**
+- [ ] Change year in title (e.g., "2024" → "2026")
+- [ ] Update all statistics with latest data
+- [ ] Refresh examples/case studies (use recent projects)
+- [ ] Check external links (fix 404s, replace outdated sources)
+- [ ] Update screenshots if UI changed
+- [ ] Add "Last updated: [Month Year]" banner at top
+- [ ] Update `updatedDate` in frontmatter
+- [ ] Update schema `dateModified` field
+
+**Estimated effort:** 2-4 hours
+**Expected recovery:** Rankings stabilize within 2-4 weeks
+
+#### Decay Cause: Competitor Improved Content
+
+**Update checklist:**
+- [ ] Audit top 3 competitors (what do they have that you don't?)
+- [ ] Add missing sections/topics competitors cover
+- [ ] Match or exceed competitor word count (if yours is thinner)
+- [ ] Add interactive elements they have (calculators, tools)
+- [ ] Improve visuals (custom graphics vs their stock photos)
+- [ ] Target PAA questions they answer (but you don't)
+- [ ] Add video if competitors have video embeds
+
+**Estimated effort:** 6-12 hours (major content expansion)
+**Expected recovery:** Rankings improve within 4-8 weeks
+
+#### Decay Cause: Algorithm Update
+
+**Update checklist:**
+- [ ] Review algorithm update focus (E-E-A-T? Helpful Content?)
+- [ ] Add/strengthen E-E-A-T signals (author bio, credentials, sources)
+- [ ] Improve experience signals (add first-person insights, case studies)
+- [ ] Reduce AI-like patterns (vary paragraph structure, add human voice)
+- [ ] Add original data/research (surveys, testing, client data)
+- [ ] Strengthen expertise signals (detailed how-to, insider tips)
+
+**Estimated effort:** 4-8 hours (E-E-A-T improvements)
+**Expected recovery:** Rankings stabilize within 6-12 weeks (algorithm recovery slower)
+
+#### Decay Cause: SERP Features Changed
+
+**Update checklist:**
+- [ ] If competitor captured featured snippet: Optimize for Position 0
+- [ ] If PAA boxes appeared: Add FAQ section answering those questions
+- [ ] If video carousel appeared: Create/embed video content
+- [ ] If local pack appeared: Optimize for local SEO (add city names)
+- [ ] If image pack appeared: Improve image SEO (file names, alt text)
+
+**Estimated effort:** 2-6 hours (depends on feature type)
+**Expected recovery:** SERP feature capture within 2-4 weeks
+
+### Automated Decay Alerts
+
+**Set up these automated alerts:**
+
+#### Google Search Console (free)
+
+```
+Email alerts:
+1. Performance → Custom report → Filter: Top 20 pages
+2. Set alert: Email weekly if any page drops >5 positions
+3. Set alert: Email monthly for CTR drops >20%
+```
+
+#### Google Analytics 4 (free)
+
+```
+Custom alerts:
+1. Traffic drops: >30% decline vs previous period (any page with >100 sessions/month)
+2. Conversion drops: >25% decline vs previous period (goal completions)
+3. Frequency: Weekly emails
+```
+
+#### Spreadsheet Tracking (manual but effective)
+
+```markdown
+| URL | Primary Keyword | Position (Week 1) | Position (Week 2) | Change | Alert |
+|-----|----------------|------------------|------------------|--------|-------|
+| /solar-costs | solar panel costs uk | 3 | 7 | -4 | 🔴 UPDATE |
+| /installation-guide | solar installation uk | 5 | 6 | -1 | 🟢 MONITOR |
+| /best-panels | best solar panels uk | 2 | 2 | 0 | ✅ STABLE |
+```
+
+**Update weekly:** Copy-paste from rank tracker → auto-calculate change → conditional formatting highlights declines.
+
+### Content Decay Prevention
+
+**Proactive strategies to minimize decay:**
+
+1. **Scheduled quarterly reviews** (prevent decay before it happens)
+   - Commercial content: Review every 6 months
+   - Informational content: Review every 12 months
+   - YMYL content: Review every 3 months
+   - Seasonal content: Review annually before peak season
+
+2. **"Last reviewed" dates visible**
+   ```markdown
+   > **Last reviewed:** January 2026 - All pricing and statistics verified current.
+   ```
+
+3. **Evergreen content strategy**
+   - Write timeless core principles (less likely to decay)
+   - Separate time-sensitive sections (easier to update)
+   - Use relative dates where possible ("in recent years" not "in 2024")
+
+4. **Competitor monitoring**
+   - Track when competitors publish on your topics
+   - Set Google Alerts for your primary keywords
+   - Monthly SERP checks for money keywords
+
+5. **Update calendar**
+   ```markdown
+   | Article | Last Updated | Next Review Due | Priority |
+   |---------|-------------|----------------|----------|
+   | Solar Costs Guide | Jan 2026 | Jul 2026 | High |
+   | Installation Process | Dec 2025 | Dec 2026 | Medium |
+   ```
+
+### Measuring Decay Recovery
+
+**After updating decayed content, track recovery:**
+
+**Week 1-2 after update:**
+- Re-crawl requested in Google Search Console (speeds up indexing)
+- Monitor rankings daily (expect some volatility)
+- Check if featured snippet captured
+
+**Week 3-4:**
+- Rankings should stabilize or improve
+- Traffic recovery begins (lags rankings by 1-2 weeks)
+- Monitor CTR improvements
+
+**Week 5-8:**
+- Full traffic recovery expected (if update was comprehensive)
+- Conversion rates normalize
+- New backlinks may appear (if content significantly improved)
+
+**Success metrics:**
+- **Rankings:** Return to within 2 positions of pre-decay ranking
+- **Traffic:** Recover to 90%+ of pre-decay traffic
+- **CTR:** Match or exceed pre-decay CTR
+- **Conversions:** Return to baseline conversion rate
+
+**If recovery doesn't happen within 8 weeks:** Content may have deeper issues (thin content, intent mismatch, technical problems) or competitor advantage is too strong (consider Skyscraper Technique).
+
+---
+
+## Content Pruning Strategy (Quality Over Quantity)
+
+**Content pruning** = systematically removing, consolidating, or improving low-performing content to boost overall site authority.
+
+### Why Prune Content?
+
+**Google's Helpful Content Update** (2022-2024) penalizes sites with high ratios of low-quality to high-quality content. **Better to have 50 excellent pages than 200 mediocre pages.**
+
+**Benefits of pruning:**
+- **Crawl budget optimization** — Google spends more time on quality pages
+- **Site authority signal** — Higher average page quality improves overall rankings
+- **User experience** — Less clutter, easier to find best content
+- **Link equity** — Internal links distributed among fewer, better pages
+- **Maintenance efficiency** — Less content to update and monitor
+
+**Data:**
+- Studies show 10-20% traffic increase after aggressive pruning (removing bottom 30-40% of content)
+- Sites with <100 pages often outperform sites with 1000+ thin pages
+
+### Content Audit Process (Quarterly)
+
+#### Step 1: Export All Content Performance (30 minutes)
+
+**Google Analytics 4:**
+```
+Exploration → Free Form
+Dimensions: Page path
+Metrics: Sessions, Engaged sessions, Conversions, Avg. engagement time
+Date range: Last 12 months
+Export: CSV
+```
+
+**Google Search Console:**
+```
+Performance → Pages
+Date range: Last 12 months
+Export: Sessions, Impressions, Clicks, CTR, Position
+```
+
+**Combine data in spreadsheet:**
+```markdown
+| URL | Sessions (12mo) | Clicks (GSC) | Position | Conversions | Backlinks | Status |
+|-----|----------------|-------------|----------|-------------|-----------|--------|
+```
+
+#### Step 2: Categorize Every Page (60 minutes)
+
+**Category definitions:**
+
+| Category | Criteria | Action |
+|----------|---------|--------|
+| **⭐ Winners** | >500 sessions/year OR >10 conversions OR Position 1-5 | Keep, maintain quarterly |
+| **📈 Potential** | 100-500 sessions, Position 6-15 | Update/improve, could become winners |
+| **🔄 Consolidate** | <100 sessions, overlapping topic with winner | Merge into related winner |
+| **🗑️ Delete** | <50 sessions, no backlinks, outdated topic | Delete + 410 Gone |
+| **⏳ Seasonal** | Low traffic 9 months, high 3 months | Keep, update before season |
+
+**Example categorization:**
+
+```markdown
+⭐ WINNERS (keep, maintain):
+- /solar-panel-costs-uk: 2,400 sessions, Position 2, 45 conversions
+- /installation-guide: 1,800 sessions, Position 3, 32 conversions
+
+📈 POTENTIAL (improve):
+- /solar-panel-types: 320 sessions, Position 8 (could reach top 5 with update)
+- /maintenance-guide: 180 sessions, Position 12 (add calculator, improve)
+
+🔄 CONSOLIDATE:
+- /monocrystalline-panels: 45 sessions (merge into /solar-panel-types)
+- /polycrystalline-panels: 38 sessions (merge into /solar-panel-types)
+- /solar-costs-2023: 12 sessions (redirect to /solar-panel-costs-uk)
+
+🗑️ DELETE:
+- /solar-news-2022: 5 sessions, no backlinks, outdated news
+- /solar-conference-recap: 3 sessions, one-time event, no evergreen value
+
+⏳ SEASONAL:
+- /solar-winter-performance: 800 sessions Nov-Jan, 50 sessions rest of year (keep)
+```
+
+#### Step 3: Consolidation Strategy (High-Impact Pruning)
+
+**When to consolidate:**
+- Multiple thin articles on same topic (each <800 words, low traffic)
+- Keyword cannibalization (articles competing for same search terms)
+- Outdated versions of updated content
+
+**How to consolidate:**
+
+1. **Identify consolidation target**
+   - Choose the highest-traffic or best-positioned article as the "winner"
+   - Merge 3-5 related thin articles into this winner
+
+2. **Combine unique content**
+   ```markdown
+   Winner article: /solar-panel-types (1,200 words, Position 8)
+
+   Merge these into it:
+   - /monocrystalline-panels (400 words, Position 35)
+   - /polycrystalline-panels (380 words, Position 42)
+   - /thin-film-panels (350 words, Position 48)
+
+   Result: /solar-panel-types expands to 2,300 words (comprehensive), consolidates 3 weak pages into 1 strong page
+   ```
+
+3. **Preserve backlinks and URL equity**
+   ```typescript
+   // In astro.config.mjs or middleware
+   export const redirects = {
+     '/monocrystalline-panels': '/solar-panel-types#monocrystalline',
+     '/polycrystalline-panels': '/solar-panel-types#polycrystalline',
+     '/thin-film-panels': '/solar-panel-types#thin-film',
+   };
+   // Use 301 permanent redirects
+   ```
+
+4. **Update internal links**
+   - Find all internal links pointing to deleted URLs
+   - Update to point to new consolidated URL (or remove if redundant)
+
+**Expected impact:** Consolidated pages often jump 5-10 positions within 4-8 weeks (due to increased depth and consolidated authority).
+
+#### Step 4: Deletion Strategy (Removing Dead Weight)
+
+**When to delete (not consolidate):**
+- Outdated news/events with no evergreen value
+- Duplicate content (exact copies, test pages)
+- Thin content (<300 words) with no unique value
+- Off-topic content (doesn't fit site purpose)
+- Zero traffic for 12+ months AND zero backlinks
+
+**How to delete properly:**
+
+1. **Check for backlinks first**
+   ```bash
+   # Use Ahrefs/SEMrush
+   Backlink check for URL: /solar-news-2022
+   - Referring domains: 0
+   - Safe to delete
+
+   Backlink check for URL: /old-guide-2020
+   - Referring domains: 5 (including 1 DA 60 site)
+   - DON'T delete → Consolidate instead (preserve backlinks)
+   ```
+
+2. **Use 410 Gone (not 404)**
+   ```typescript
+   // For permanently removed content, return 410 status
+   if (deletedPages.includes(req.url)) {
+     return new Response(null, { status: 410 });
+   }
+   ```
+   **Why 410 vs 404:**
+   - 410 = "Gone permanently" (search engines remove from index faster)
+   - 404 = "Not found" (search engines may keep checking)
+
+3. **Remove from sitemap.xml**
+   - Deleted URLs should not appear in sitemap
+   - Helps search engines discover removal faster
+
+4. **Monitor for 30 days**
+   - Check Google Search Console for errors
+   - Verify no unexpected traffic loss
+   - Ensure deleted pages de-indexed
+
+**Expected impact:** 5-15% site-wide traffic increase after removing bottom 20-30% of content (improves average page quality signal).
+
+### Pruning Decision Framework
+
+**Use this flowchart for each low-performing page:**
+
+```
+Page has <100 sessions/year
+    ↓
+Does it have backlinks (>3 referring domains)?
+    YES → Improve or consolidate (preserve link equity)
+    NO → Continue
+        ↓
+    Is topic still relevant/searched?
+        YES → Improve or consolidate
+        NO → Continue
+            ↓
+        Is it seasonal (traffic 3+ months/year)?
+            YES → Keep, update before season
+            NO → DELETE (410 Gone)
+```
+
+### Improvement vs Deletion Criteria
+
+**Improve the page if:**
+- Ranking positions 6-20 (close to page 1)
+- Has 3+ quality backlinks
+- Topic still gets 100+ searches/month
+- No better-performing page on same topic
+- Can be expanded to 1500+ words with unique value
+
+**Delete/consolidate if:**
+- Ranking >50 for all keywords
+- Zero backlinks
+- Topic gets <50 searches/month
+- Duplicate/overlapping with higher-traffic page
+- Can't add 500+ words of unique value
+
+### Post-Pruning Actions
+
+**After consolidating or deleting content:**
+
+1. **Submit updated sitemap** to Google Search Console
+2. **Request removal** of deleted URLs (Google Search Console → Removals)
+3. **Update internal link structure** (remove links to deleted pages)
+4. **Monitor for 404 errors** (fix any broken internal links)
+5. **Track traffic changes** (expect dip for 1-2 weeks, then recovery with improvement)
+
+### Pruning Schedule
+
+**Recommended frequency:**
+- **Quarterly audit:** Review bottom 20% of content, prune/improve as needed
+- **Annual deep clean:** Full content library audit, aggressive pruning
+- **After algorithm update:** Identify and remove low-quality pages that may be hurting site
+
+**Time investment:**
+- Quarterly light prune: 4-6 hours
+- Annual deep clean: 12-20 hours
+- Expected traffic ROI: 10-20% increase after aggressive pruning
+
+### Measuring Pruning Success
+
+**Track these metrics post-pruning:**
+
+**Week 1-2:**
+- Deleted pages de-indexed in Google
+- 301 redirects working correctly
+- No increase in 404 errors
+
+**Week 3-4:**
+- Consolidated pages see ranking improvements (check positions)
+- Overall site impressions stable or increasing (GSC)
+
+**Week 5-8:**
+- Traffic to consolidated pages increases
+- Site-wide traffic recovers and exceeds pre-pruning levels
+- Average engagement time increases (fewer low-quality pages diluting metrics)
+
+**Success criteria:**
+- 10%+ increase in site-wide organic traffic within 8 weeks
+- Improved average position for remaining content
+- Higher conversion rate (traffic more focused on quality pages)
+
+**If traffic doesn't recover within 8 weeks:** May have pruned too aggressively (deleted pages with hidden value) or consolidated pages need improvement.
+
+---
+
 ## Technical Checklist
 
 Before Phase 5:

@@ -510,6 +510,672 @@ electrical work, and MCS certification.
 
 ---
 
+## Skyscraper Technique (Backlink Acquisition Strategy)
+
+The Skyscraper Technique (Brian Dean/Backlinko method) creates content SO comprehensive that sites linking to competitor articles willingly switch their links to yours.
+
+### The 3-Step Process
+
+#### Step 1: Find Link-Worthy Content in Your Niche
+
+**Goal:** Identify existing content that has attracted many backlinks but is outdated or incomplete.
+
+**Tools to use:**
+- Ahrefs (Content Explorer → filter by referring domains >50)
+- SEMrush (Backlink Analytics → find competitors' best pages)
+- Google Search (`allintitle:"your topic"` → check backlinks of top results)
+
+**What to look for:**
+
+| Criteria | Target | Why |
+|----------|--------|-----|
+| Referring domains | 50+ | Enough backlinks to justify effort |
+| Publication date | 2+ years old | Content likely outdated |
+| Content depth | 1000-2000 words | Room for 10x improvement |
+| Topic relevance | Exact niche match | Your audience = their audience |
+| Author activity | Abandoned/inactive | Less likely to update |
+
+**Example audit:**
+
+```bash
+Target article: "Complete Guide to Solar Panel Costs" (2020)
+- Referring domains: 127
+- Word count: 1,500 words
+- Last updated: 2020
+- Missing: 2026 pricing, new regulations, recent tech advances
+- Opportunity: Create definitive 2026 version
+```
+
+#### Step 2: Create Something 10x Better
+
+**"10x better" means:**
+
+- **More comprehensive:** Cover everything they covered + gaps they missed
+- **More current:** Latest data, regulations, pricing (2026 vs outdated 2020)
+- **Better formatted:** Superior layout, visuals, readability
+- **Original data:** Add case studies, surveys, expert quotes they lack
+- **Better visuals:** Custom graphics, charts, screenshots vs generic stock photos
+
+**Skyscraper content checklist:**
+
+✅ **Depth improvements:**
+- [ ] 2-3x longer (if 1500 words, create 3000-5000 words)
+- [ ] Cover all subtopics they mention + 3-5 they missed
+- [ ] Add sections addressing recent developments
+- [ ] Include step-by-step processes (not just theory)
+
+✅ **Currency improvements:**
+- [ ] All statistics from last 12 months
+- [ ] Current year in title ("2026 Guide")
+- [ ] Recent examples and case studies
+- [ ] Updated regulations/laws mentioned
+- [ ] "Last updated: [Month Year]" banner
+
+✅ **Original data:**
+- [ ] Your own research/survey results
+- [ ] Client case studies with real numbers
+- [ ] Expert interviews (named sources)
+- [ ] Testing results ("We tested 5 panels...")
+- [ ] Original framework or methodology
+
+✅ **Visual improvements:**
+- [ ] Custom infographics (not stock images)
+- [ ] Data visualizations (charts/graphs)
+- [ ] Comparison tables
+- [ ] Process diagrams/flowcharts
+- [ ] Video content embedded
+
+✅ **User experience:**
+- [ ] Table of contents with jump links
+- [ ] Mobile-optimized layout
+- [ ] Faster page load (<2s LCP)
+- [ ] Interactive elements (calculators, tools)
+- [ ] Downloadable resources (PDFs, templates)
+
+**Example transformation:**
+
+| Aspect | Original Article | Your Skyscraper |
+|--------|-----------------|----------------|
+| Title | "Solar Panel Costs Guide" | "Solar Panel Installation Costs UK: Complete 2026 Guide (500+ Real Projects)" |
+| Word count | 1,500 words | 4,200 words |
+| Data source | Generic industry stats | Custom survey of 500 UK installations |
+| Visuals | 3 stock photos | 12 custom graphics + 2 videos + calculator |
+| Depth | Surface-level | Step-by-step process with regional pricing breakdown |
+| Currency | 2020 data | January 2026 data + quarterly update schedule |
+
+#### Step 3: Strategic Outreach to Link Prospects
+
+**Goal:** Get sites linking to the old article to link to (or switch to) your superior version.
+
+**Identifying link prospects:**
+
+```bash
+# Using Ahrefs/SEMrush
+1. Find all sites linking to competitor article
+2. Filter by:
+   - Domain Authority > 30 (quality sites)
+   - DoFollow links only (SEO value)
+   - Active sites (published in last year)
+   - Relevant context (link from relevant content)
+3. Export list (~100-200 prospects)
+```
+
+**Outreach email templates:**
+
+**Template 1: New Resource (for existing linkers)**
+
+```
+Subject: [Article Topic] resource updated for 2026
+
+Hi [Name],
+
+I noticed you linked to [Competitor Article Title] in your article "[Their Article]".
+
+Great resource, but it's from 2020 and several things have changed:
+- UK regulations updated April 2026
+- Average costs increased 12%
+- New grant schemes available
+
+I've just published a comprehensive 2026 update that covers these changes:
+[Your Article URL]
+
+Includes:
+- Data from 500+ recent UK installations
+- Interactive cost calculator
+- Regional pricing breakdown
+- Updated regulatory requirements
+
+If you're updating your article, you might find it useful for your readers.
+
+Either way, keep up the great work on [Their Site]!
+
+Best,
+[Your Name]
+```
+
+**Template 2: Resource Gap (for sites that should link but don't)**
+
+```
+Subject: Resource for "[Their Article Title]"
+
+Hi [Name],
+
+Your article "[Their Article]" is really comprehensive. I especially liked [specific detail you genuinely liked].
+
+I noticed you covered [Topic A] and [Topic B], but didn't link to any resources on [Specific Gap].
+
+I've just published a detailed guide on exactly that:
+[Your Article URL]
+
+Includes:
+- [Unique Data Point]
+- [Original Research/Case Study]
+- [Practical Tool/Resource]
+
+Thought your readers might find it helpful as a companion resource.
+
+Best,
+[Your Name]
+```
+
+**Outreach best practices:**
+
+✅ **Do:**
+- Personalize every email (mention specific detail from their article)
+- Explain WHY your content is better (newer data, more comprehensive)
+- Make it easy (provide exact URL, suggest specific paragraph for link)
+- Follow up once after 7 days (polite reminder)
+- Track responses in spreadsheet
+
+❌ **Don't:**
+- Send generic templates (gets ignored/spam)
+- Demand or expect links (relationship first)
+- Oversell ("the best guide ever!")
+- Spam multiple contacts at same site
+- Follow up more than twice
+
+**Outreach tracking:**
+
+```markdown
+| Site | Contact | Email Sent | Response | Link Added | DA |
+|------|---------|-----------|----------|-----------|-----|
+| example.com | John | 2026-01-15 | Positive | Yes | 65 |
+| another.com | Sarah | 2026-01-15 | No reply | - | 52 |
+| blog.com | Mike | 2026-01-16 | Declined | No | 48 |
+```
+
+**Expected conversion rates:**
+- **Response rate:** 20-30% (of outreach emails)
+- **Link acquisition:** 5-15% (of total outreach)
+- **High-authority links:** 2-5% (DA 60+)
+
+### Skyscraper Technique Timeline
+
+| Phase | Duration | Tasks |
+|-------|----------|-------|
+| Research | 1-2 weeks | Find link-worthy content, analyze backlink profiles |
+| Creation | 2-4 weeks | Write 10x content, create visuals, test tools |
+| Outreach | 4-8 weeks | Contact prospects, follow-ups, relationship building |
+| Results | 2-6 months | Links gradually appear, rankings improve |
+
+**Total time investment:** 2-3 months from start to measurable results
+
+### When to Use Skyscraper Technique
+
+✅ **Best for:**
+- Competitive niches where rankings are difficult
+- Topics with existing high-authority content (backlink potential)
+- Pillar content pieces (justify the time investment)
+- Evergreen topics that won't quickly become outdated
+- When you have unique data/insights to add
+
+❌ **Skip for:**
+- Brand new topics with no existing content
+- News/time-sensitive content (outdates too quickly)
+- Niche topics with <10 existing articles
+- When you lack resources for 10x content
+- Local service pages (different link building strategy)
+
+### Skyscraper vs. Standard Content
+
+| Aspect | Standard Content | Skyscraper Content |
+|--------|-----------------|-------------------|
+| **Goal** | Rank for keywords | Acquire high-quality backlinks + rank |
+| **Depth** | 1000-1500 words | 3000-5000+ words |
+| **Research time** | 2-4 hours | 10-20 hours |
+| **Writing time** | 4-6 hours | 15-30 hours |
+| **Visuals** | 3-5 images | 10+ custom graphics/videos |
+| **Outreach** | None | 100-200 personalized emails |
+| **Timeline** | Publish and done | 2-3 month campaign |
+| **Link velocity** | 0-3 links/year | 10-30+ links in 6 months |
+| **Best use** | Regular blog posts | Pillar content, definitive guides |
+
+### Measuring Skyscraper Success
+
+**Track these metrics:**
+
+1. **Backlinks acquired**
+   - Target: 10-30 new referring domains within 6 months
+   - Tools: Ahrefs, SEMrush, Google Search Console
+
+2. **Rankings improvement**
+   - Target: Position 1-3 for primary keyword within 3-6 months
+   - Track weekly with rank tracker
+
+3. **Organic traffic**
+   - Target: 2-5x increase vs. previous best-performing article
+   - Monitor in Google Analytics
+
+4. **Outreach conversion rate**
+   - Target: 5-15% link acquisition rate
+   - Track in outreach spreadsheet
+
+5. **Social shares**
+   - Target: 100-500+ shares (depends on audience size)
+   - Check BuzzSumo, social platform analytics
+
+**Example success metrics:**
+
+```
+Skyscraper article: "Solar Panel Costs UK 2026"
+
+Before (old content):
+- Backlinks: 8 referring domains
+- Ranking: Position 7 for "solar panel costs uk"
+- Traffic: 400 visits/month
+
+After 6 months:
+- Backlinks: 47 referring domains (+39, 487% increase)
+- Ranking: Position 2 for "solar panel costs uk"
+- Traffic: 2,800 visits/month (+2,400, 600% increase)
+- Conversions: 45 quote requests from article
+
+ROI: 60 hours invested → 45 leads = ~1.3 hours per lead (justified)
+```
+
+### Skyscraper Content Maintenance
+
+**Quarterly updates required to maintain "10x better" status:**
+
+- [ ] Update all statistics (check data sources)
+- [ ] Refresh examples/case studies (replace old with recent)
+- [ ] Check external links (fix broken, replace outdated)
+- [ ] Add new developments/regulations
+- [ ] Update "Last reviewed: [Date]" banner
+- [ ] Re-promote to new link prospects
+
+**Annual refresh:**
+- Rewrite sections that became outdated
+- Add new sections for emerging topics
+- Update title year (2026 → 2027)
+- Repeat outreach to new sites that linked to competitors
+
+**Content decay warning:** Without updates, Skyscraper content loses its "10x" advantage within 12-18 months.
+
+### Quick-Win Skyscraper Opportunities
+
+**High-impact, lower-effort variations:**
+
+1. **Update old winner** - Find YOUR old content with backlinks, make it 10x better
+   - Effort: 20-30 hours
+   - Impact: Retain existing + gain new links
+
+2. **Visual Skyscraper** - Create superior infographic/chart for data-heavy topic
+   - Effort: 10-15 hours (design time)
+   - Impact: High shareability, easy link requests
+
+3. **Tool/Calculator Skyscraper** - Add interactive tool to existing guide
+   - Effort: 30-40 hours (dev time)
+   - Impact: Unique value, strong linkability
+
+4. **Data Study Skyscraper** - Conduct original research, publish findings
+   - Effort: 40-60 hours (survey + analysis)
+   - Impact: Media coverage potential, high authority links
+
+**Expected ROI:** 10-30 high-quality backlinks per Skyscraper piece = £2,000-£5,000 value (vs. buying links).
+
+---
+
+## SERP Feature Targeting (Position 0 Strategy)
+
+Beyond ranking #1, target **SERP features** (Position 0, Knowledge Panels, People Also Ask, Video Carousels, Image Packs) to dominate search visibility.
+
+### Types of SERP Features & Optimization
+
+#### 1. Featured Snippets (Position 0)
+
+**What they are:** Boxed answer appearing above organic results (drives 8-12% CTR)
+
+**How to optimize:**
+
+- **Paragraph snippets:** 40-60 word direct answer immediately after H2
+  ```markdown
+  ## How much does solar installation cost?
+
+  Solar installation costs £6,200-£8,500 for a typical UK home. This includes panels, inverter, labor, and MCS certification. System size (3-4kW average) and roof complexity affect the final price.
+  ```
+
+- **List snippets:** 5-8 items with parallel structure
+  ```markdown
+  ## How to choose a solar installer
+
+  1. **Verify MCS certification** — Required for warranties and incentives
+  2. **Compare 3+ quotes** — Prices vary 20-30% between installers
+  3. **Check recent reviews** — Focus on projects from last 6 months
+  4. **Ask about warranties** — Minimum 25 years panels, 10 years inverter
+  5. **Request site survey** — Avoid quotes without roof assessment
+  ```
+
+- **Table snippets:** Simple comparison (3-4 columns, 5-7 rows)
+  ```markdown
+  | Panel Type | Efficiency | Cost per watt | Best for |
+  |-----------|-----------|---------------|----------|
+  | Monocrystalline | 18-22% | £1.30-£1.50 | Small roofs |
+  | Polycrystalline | 15-17% | £0.90-£1.20 | Large roofs |
+  | Thin-film | 10-12% | £0.70-£0.90 | Commercial |
+  ```
+
+**Snippet extraction signals:**
+- H2 is a question or can be rephrased as one
+- Answer in first 40-60 words (280-320 characters)
+- Self-contained (no pronouns requiring context)
+- Uses simple language (Grade 8-10 reading level)
+
+#### 2. People Also Ask (PAA) Boxes
+
+**What they are:** Expandable questions related to the query
+
+**How to optimize:**
+
+- **Identify PAA questions:** Search your target keyword, note all PAA questions
+- **Answer each PAA explicitly:** Dedicate H2 or H3 to each question
+- **Use FAQPage schema:** Structured data helps Google extract answers
+
+**Implementation:**
+```markdown
+## FAQ: Common Solar Installation Questions
+
+### How long does solar installation take?
+
+Most solar installations complete in 1-2 days for residential properties. The actual panel mounting and electrical work takes 6-8 hours, but you'll need scaffolding set up the day before. Planning and permitting beforehand takes 4-6 weeks.
+
+### Do I need planning permission for solar panels?
+
+Solar panels are permitted development in most UK homes, meaning no planning permission needed. Exceptions include listed buildings, conservation areas, and panels extending more than 200mm from the roof slope.
+
+[Continue with more PAA questions...]
+```
+
+**FAQPage schema:**
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How long does solar installation take?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most solar installations complete in 1-2 days for residential properties..."
+      }
+    }
+  ]
+}
+```
+
+**PAA optimization rules:**
+- Target 5-8 PAA questions per article (3-5 standard, 5-8 pillar)
+- Answer concisely (60-100 words per question)
+- Use natural question phrasing (how people actually search)
+- Update regularly (PAA questions change over time)
+
+#### 3. Video Carousels
+
+**What they are:** Row of video thumbnails for "how to" queries
+
+**How to optimize:**
+
+- **Create video content** for process-oriented keywords
+- **Upload to YouTube** with keyword-optimized titles
+- **Use VideoObject schema** with chapter timestamps
+- **Embed video in article** with facade loading
+
+**VideoObject schema with chapters:**
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "Solar Panel Installation Process: Start to Finish",
+  "description": "Complete guide to solar installation...",
+  "thumbnailUrl": "https://example.com/video-thumb.jpg",
+  "uploadDate": "2026-01-15",
+  "duration": "PT8M30S",
+  "contentUrl": "https://youtube.com/watch?v=...",
+  "hasPart": [
+    {
+      "@type": "Clip",
+      "name": "Site Survey",
+      "startOffset": 0,
+      "endOffset": 120
+    },
+    {
+      "@type": "Clip",
+      "name": "Roof Preparation",
+      "startOffset": 120,
+      "endOffset": 240
+    },
+    {
+      "@type": "Clip",
+      "name": "Panel Mounting",
+      "startOffset": 240,
+      "endOffset": 420
+    }
+  ]
+}
+```
+
+**Video SEO requirements:**
+- Title: Match target keyword + "video" or "how to"
+- Description: First 157 characters appear in SERP (include keywords)
+- Chapters: Minimum 3 timestamps (helps Google extract key moments)
+- Transcript: Upload to YouTube for accessibility and SEO
+
+#### 4. Image Packs
+
+**What they are:** Grid of images for visual queries
+
+**How to optimize:**
+
+- **Descriptive file names:** `monocrystalline-solar-panels-uk-home.jpg` not `IMG_1234.jpg`
+- **Alt text:** Descriptive, keyword-rich (10-15 words)
+- **Image schema:** ImageObject with context
+- **High resolution:** Minimum 1200px wide for featured images
+- **Fast loading:** Optimize file size (<100KB), use WebP format
+
+**ImageObject schema:**
+```json
+{
+  "@type": "ImageObject",
+  "url": "https://example.com/solar-panel-installation.jpg",
+  "caption": "Monocrystalline solar panels installed on 3-bed UK semi-detached home",
+  "width": 1200,
+  "height": 800
+}
+```
+
+**Image pack triggers:**
+- Queries with visual intent ("solar panel installation", "kitchen renovation ideas")
+- Before/after comparisons
+- Product/service appearance ("types of solar panels")
+- Design/style queries ("modern kitchen designs")
+
+#### 5. Local Pack (Map Results)
+
+**What they are:** Map + 3 local businesses for "near me" queries
+
+**How to optimize:**
+
+- **Google Business Profile:** Complete, verified, active
+- **NAP consistency:** Name, Address, Phone identical across web
+- **Local keywords:** Include city/region in title, H2s, content
+- **Reviews:** Minimum 10+ recent reviews (respond to all)
+- **LocalBusiness schema:** Structured data with service areas
+
+**Content optimization for local pack:**
+```markdown
+## Solar Panel Installation in Manchester: Complete Guide
+
+Finding a reliable solar installer in Manchester requires... [Include city name naturally 5-8 times]
+
+**Service areas:** We serve Greater Manchester including Salford, Stockport, Bolton, and Wigan.
+```
+
+**LocalBusiness schema:**
+```json
+{
+  "@type": "LocalBusiness",
+  "@id": "https://example.com/#business",
+  "name": "ABC Solar Installers",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "123 High Street",
+    "addressLocality": "Manchester",
+    "postalCode": "M1 1AA",
+    "addressCountry": "GB"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 53.4808,
+    "longitude": -2.2426
+  },
+  "areaServed": ["Manchester", "Salford", "Stockport", "Bolton", "Wigan"],
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "reviewCount": "127"
+  }
+}
+```
+
+#### 6. Knowledge Panels
+
+**What they are:** Information box on right side (brand/entity searches)
+
+**How to optimize:**
+
+- **Wikipedia page:** If notable enough, create/improve Wikipedia entry
+- **Wikidata:** Claim/update Wikidata entity
+- **Social profiles:** Link all profiles with `sameAs` schema
+- **Consistent branding:** Same logo, name, description across platforms
+
+**Organization schema (for knowledge panel):**
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ABC Solar Installers",
+  "url": "https://example.com",
+  "logo": "https://example.com/logo.png",
+  "sameAs": [
+    "https://linkedin.com/company/abc-solar",
+    "https://twitter.com/abcsolar",
+    "https://facebook.com/abcsolar",
+    "https://instagram.com/abcsolar"
+  ],
+  "foundingDate": "2014",
+  "description": "MCS-certified solar panel installation across the UK since 2014. 500+ residential installations completed."
+}
+```
+
+### SERP Feature Priority Matrix
+
+| Feature | CTR Impact | Difficulty | Priority | Best for Query Type |
+|---------|-----------|-----------|---------|-------------------|
+| Featured Snippet | ★★★★★ (8-12%) | Medium | 🔴 High | Questions, how-tos |
+| PAA Boxes | ★★★★☆ (4-6%) | Low | 🔴 High | Informational |
+| Video Carousel | ★★★☆☆ (3-5%) | High | 🟡 Medium | Process guides |
+| Image Pack | ★★★☆☆ (2-4%) | Low | 🟡 Medium | Visual queries |
+| Local Pack | ★★★★★ (10-15%) | Medium | 🔴 High | Local services |
+| Knowledge Panel | ★★☆☆☆ (brand) | Very High | 🟢 Low | Brand queries |
+
+### SERP Feature Audit Process
+
+Before writing content, analyze target keyword's SERP:
+
+**Step 1: Search in incognito**
+```
+Query: "solar panel installation cost"
+```
+
+**Step 2: Document existing features**
+- [ ] Featured snippet present? (What format: paragraph/list/table?)
+- [ ] PAA boxes? (List all questions)
+- [ ] Video carousel? (Note video topics)
+- [ ] Image pack? (What images appear?)
+- [ ] Local pack? (For local queries only)
+- [ ] Shopping results? (Product listings)
+
+**Step 3: Identify gaps**
+- Which SERP features are NOT triggered?
+- Can your content target an untapped feature?
+- Is existing featured snippet weak/incomplete?
+
+**Step 4: Optimize for specific features**
+- Structure content to target highest-priority feature
+- Include schema markup for feature type
+- Format content for easy extraction (lists, tables, concise answers)
+
+### SERP Feature Tracking
+
+**Monitor performance monthly:**
+
+```bash
+# Keywords ranking in featured snippets
+- Keyword 1: Position 0 (paragraph snippet)
+- Keyword 2: Position 3 (not in snippet yet)
+- Keyword 3: Position 0 (list snippet)
+
+# PAA appearances
+- Keyword 1: Appears in 3/8 PAA boxes
+- Keyword 2: Appears in 1/6 PAA boxes
+
+# Goal: Increase feature appearances by 20% quarterly
+```
+
+**Tools for tracking:**
+- Google Search Console (Performance report filters)
+- SEMrush (Featured Snippets report)
+- Ahrefs (SERP Features filter)
+
+### Quick Wins for SERP Features
+
+**Low-effort, high-impact optimizations:**
+
+1. **Add FAQ schema** to existing content (targets PAA boxes)
+   - Effort: 30 minutes
+   - Impact: Appear in 2-4 PAA boxes within 2 weeks
+
+2. **Rewrite first paragraph** with 40-60 word direct answer (targets featured snippet)
+   - Effort: 15 minutes per article
+   - Impact: 10-20% chance of capturing snippet
+
+3. **Add comparison table** to "X vs Y" articles (targets table snippet)
+   - Effort: 20 minutes
+   - Impact: 30-40% chance of table snippet
+
+4. **Rename image files** descriptively (targets image pack)
+   - Effort: 5 minutes per image
+   - Impact: Cumulative over time
+
+5. **Create video chapters** for existing YouTube videos (targets video carousel)
+   - Effort: 10 minutes per video
+   - Impact: Video carousel appearance within days
+
+**Expected combined impact:** 15-25% increase in organic CTR from SERP feature captures.
+
+---
+
 ## Phase 1 Output Template
 
 Before proceeding to Phase 2, document:
