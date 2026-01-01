@@ -1,142 +1,83 @@
 ---
 name: astro-blog
-description: Self-contained checklist workflow for perfect blog articles. 95% token reduction, zero quality compromise.
+description: Orchestrator for 5-phase blog article creation workflow
 ---
 
-# Astro Blog Skill
+# Astro Blog - Workflow Orchestrator
 
-## How This Works
-
-**Primary:** Use `references/CHECKLIST.md` as your complete, self-contained workflow
-**Secondary:** Detailed reference files available but rarely needed
-
-**CHECKLIST.md is self-contained** - All essential guidance is inline. Work through it systematically without jumping to other files.
-
-This approach:
-- ✅ Uses ~400 lines (self-contained) instead of ~8,000 lines across multiple files
-- ✅ Ensures nothing gets missed (systematic checkboxes)
-- ✅ Shows priorities clearly (⭐ ALWAYS, 🎯 HIGH-VALUE, 📅 PERIODIC, 💡 OPTIONAL)
-- ✅ Includes examples, formulas, and specific guidance inline
-- ✅ Reference files only for edge cases
+This skill orchestrates a 5-phase workflow for creating SEO-optimized blog articles.
 
 ---
 
-## Workflow
+## 5-Phase Workflow
 
-**→ Read `references/CHECKLIST.md` NOW**
+Use these skills in sequence:
 
-Follow the 5-phase checklist systematically:
+### Phase 1: Research
+**Skill:** `astro-blog-research`
+**What:** SEO & intent research, keyword targeting, SERP analysis
+**Output:** Intent type, primary keyword, unique angle, CTA type, pillar/cluster designation
 
-1. **PHASE 1:** SEO & Intent Research
-2. **PHASE 2:** Content Structure
-3. **PHASE 3:** Writing
-4. **PHASE 4:** Technical Implementation
-5. **PHASE 5:** Validation
+### Phase 2: Structure
+**Skill:** `astro-blog-structure`
+**What:** Content outline, component placement, linking strategy
+**Output:** Full outline with H2s, components, links, images, CTAs
 
-**99% of articles:** CHECKLIST.md alone is sufficient. Work through it systematically.
+### Phase 3: Write
+**Skill:** `astro-blog-write`
+**What:** Write article with human voice, featured snippet optimization
+**Output:** Full article draft with citations and intentional imperfections
 
-**Read detailed references ONLY when:**
-- Stuck on complex implementation (unusual schema, component edge cases)
-- Need deeper understanding of WHY a rule exists
-- Working on first article (read `human-voice.md` in Phase 3)
+### Phase 4: Technical
+**Skill:** `astro-blog-technical`
+**What:** Frontmatter, schema markup, performance optimization
+**Output:** Complete frontmatter, schema, performance settings
 
----
-
-## Quick Reference (Keep This Handy)
-
-### Priority System
-- ⭐ **ALWAYS** - Every article, non-negotiable
-- 🎯 **HIGH-VALUE** - Competitive keywords, commercial/pillar content
-- 📅 **PERIODIC** - Quarterly maintenance, not per-article
-- 💡 **OPTIONAL** - Enhancement when relevant
-
-### Intent → CTA Mapping
-| Intent | CTA Type |
-|--------|----------|
-| informational | Newsletter, Guide |
-| commercial | Calculator, Quote |
-| comparison | Consultation |
-| transactional | Contact, Book |
-
-### Required Frontmatter
-```yaml
-title: ""           # max 60 chars
-description: ""     # max 160 chars
-pubDate: 2026-XX-XX
-intent: commercial  # informational|commercial|comparison|transactional
-topic: ""           # pillar/cluster linking
-primaryCTA: ""      # GTM tracking
-category: ""
-author: team        # or named for YMYL
-entities: []        # 5-10 items
-pillar: false       # true = 2500+ words, 8-12 internal links
-experienceVerified: false  # true only after human checks ExperienceBlock data
-```
-
-### Top 10 Non-Negotiable Rules (⭐ ALWAYS)
-
-1. **HUMAN VOICE FIRST** - Read `human-voice.md` before writing Phase 3
-2. **Intentional imperfection** - 2-4 typing errors per article (thier, recieve, definately)
-3. **Above-the-fold optimization** - H1 + Hero + QueryAnswer visible without scroll
-4. **Readability targets** - Hemingway Grade 6-8 (max 10), Flesch Ease 60-70
-5. **Featured snippet optimization** - 40-60 word direct answer after H2
-6. **Component density limits** - Max 5-7 (standard) or 8-12 (pillar)
-7. **Internal links** - 2-4 (standard) or 8-12 (pillar), first within 100 words
-8. **External links minimum** - 4+ (citation + authority + reputation + contextual)
-9. **Author bio required** - End of every article, 50-80 words with credentials
-10. **NO `client:load`** - Use `client:visible` or `client:idle` only
+### Phase 5: Validate
+**Skill:** `astro-blog-validate`
+**What:** Quality checks, readability scores, performance audit
+**Output:** All checks passed, ready to publish
 
 ---
 
-## Detailed Reference Files (Rarely Needed)
+## How to Use
 
-**CHECKLIST.md contains everything you need.** Reference files below are for edge cases only.
+**Option 1 - Full workflow:**
+1. Start with `astro-blog-research`
+2. Then `astro-blog-structure`
+3. Then `astro-blog-write`
+4. Then `astro-blog-technical`
+5. Finally `astro-blog-validate`
 
-- `references/CHECKLIST.md` - ⭐ **START HERE** (self-contained, complete workflow)
-- `references/human-voice.md` - AI pattern avoidance (recommended read for first article)
-- `references/seo-intent.md` - Deep dive: Skyscraper technique, SERP feature strategies
-- `references/content-structure.md` - Deep dive: Component examples, pillar-cluster details
-- `references/writing-rules.md` - Deep dive: Advanced snippet formatting
-- `references/technical.md` - Deep dive: Complex schema, monitoring tools
-- `references/validation.md` - Deep dive: Detailed validation criteria
-- `references/visual-design.md` - Deep dive: Component styling edge cases
-
----
-
-## Expected Results (Using CHECKLIST.md Consistently)
-
-**Traffic & Engagement:**
-- 25-50% organic traffic increase (pillar-cluster + SERP features)
-- 15-25% CTR increase (featured snippets)
-- 10-20% traffic boost from quarterly pruning
-
-**Conversions:**
-- 20-40% conversion rate uplift (above-fold + social proof)
-- 22% of leads from interactive calculators (commercial content)
-- 100%+ traffic increase from review integration
-
-**Time Investment:**
-- Standard article (1000-1500w): 4-6 hours
-- Pillar article (3000-5000w): 12-20 hours
-- Quarterly maintenance: 12-20 hours
+**Option 2 - Jump to specific phase:**
+- Already have research? Start with `astro-blog-structure`
+- Already have outline? Start with `astro-blog-write`
+- Article written? Start with `astro-blog-technical`
+- Need validation only? Use `astro-blog-validate`
 
 ---
 
-## File Structure
-```
-src/content/blog/[slug].md
-src/content/authors/[author].md
-public/llms.txt
-```
+## When to Use Each Skill
+
+| Situation | Use This Skill |
+|-----------|----------------|
+| Starting new article from scratch | `astro-blog-research` |
+| Have keyword, need outline | `astro-blog-structure` |
+| Have outline, need to write | `astro-blog-write` |
+| Article written, need technical setup | `astro-blog-technical` |
+| Article complete, need validation | `astro-blog-validate` |
 
 ---
 
-## Forbidden (Never Do These)
+## Reference Files
 
-- Vague H2s (Overview, Introduction, Details)
-- "Many people...", "It's important..." openings
-- Stats without sources
-- "Click here" anchor text
-- Heavy JS components (`client:load`)
-- YMYL without named author
-- **Reading all reference files upfront** (use CHECKLIST.md first!)
+All skills are self-contained. Read detailed references only for edge cases:
+
+- `references/CHECKLIST.md` - Complete checklist (all phases)
+- `references/human-voice.md` - AI pattern avoidance
+- `references/seo-intent.md` - Skyscraper, SERP strategies
+- `references/content-structure.md` - Component examples
+- `references/writing-rules.md` - Advanced formatting
+- `references/technical.md` - Complex schema, monitoring
+- `references/validation.md` - Detailed criteria
+- `references/visual-design.md` - Component styling
