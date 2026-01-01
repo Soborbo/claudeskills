@@ -80,7 +80,17 @@
     "sizes-matches-layout": { "severity": "error" },
     "aspect-ratio-preserved": { "severity": "error" },
     "alt-intent": { "severity": "warning" },
-    "default-pattern": { "severity": "info", "fallback": "HALF" }
+    "default-pattern": { "severity": "info", "fallback": "HALF" },
+    "undersized-source-fallback": {
+      "severity": "warning",
+      "behavior": "cap-widths",
+      "message": "Source smaller than pattern requires. Widths capped at source size. Flag for replacement."
+    },
+    "undersized-lcp": {
+      "pattern": "FULL",
+      "severity": "error",
+      "message": "LCP/FULL image source is smaller than required. Must provide larger asset."
+    }
   },
 
   "validation": [
