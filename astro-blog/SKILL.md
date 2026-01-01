@@ -1,59 +1,83 @@
 ---
 name: astro-blog
-description: Self-contained checklist workflow for blog articles. Read CHECKLIST.md and follow it.
+description: Orchestrator for 5-phase blog article creation workflow
 ---
 
-# Astro Blog Skill
+# Astro Blog - Workflow Orchestrator
 
-## Workflow
-
-**→ Read `references/CHECKLIST.md` and follow it sequentially**
-
-CHECKLIST.md contains:
-- All 135 checkboxes covering 54 critical rules
-- Inline guidance, examples, and formulas
-- 5 phases: Research → Structure → Write → Technical → Validate
-- Priority markers (⭐ ALWAYS, 🎯 HIGH-VALUE, 📅 PERIODIC, 💡 OPTIONAL)
-
-**That's it.** Work through the checklist. Everything you need is inline.
+This skill orchestrates a 5-phase workflow for creating SEO-optimized blog articles.
 
 ---
 
-## When to Read Other Reference Files
+## 5-Phase Workflow
 
-**Default:** Don't. CHECKLIST.md is complete.
+Use these skills in sequence:
 
-**Exception - Read reference files only if:**
-- A checklist item is unclear (read the specific referenced section)
-- First time writing article (read `human-voice.md` in Phase 3 to understand AI pattern avoidance)
-- Complex edge case not covered in checklist (rare)
+### Phase 1: Research
+**Skill:** `astro-blog-research`
+**What:** SEO & intent research, keyword targeting, SERP analysis
+**Output:** Intent type, primary keyword, unique angle, CTA type, pillar/cluster designation
 
-**Available references:**
-- `human-voice.md` - AI pattern avoidance strategies
-- `seo-intent.md` - Skyscraper technique deep dive
-- `content-structure.md` - Component examples, pillar-cluster details
-- `writing-rules.md` - Advanced snippet formatting
-- `technical.md` - Complex schema, monitoring tools
-- `validation.md` - Detailed validation criteria
-- `visual-design.md` - Component styling edge cases
+### Phase 2: Structure
+**Skill:** `astro-blog-structure`
+**What:** Content outline, component placement, linking strategy
+**Output:** Full outline with H2s, components, links, images, CTAs
+
+### Phase 3: Write
+**Skill:** `astro-blog-write`
+**What:** Write article with human voice, featured snippet optimization
+**Output:** Full article draft with citations and intentional imperfections
+
+### Phase 4: Technical
+**Skill:** `astro-blog-technical`
+**What:** Frontmatter, schema markup, performance optimization
+**Output:** Complete frontmatter, schema, performance settings
+
+### Phase 5: Validate
+**Skill:** `astro-blog-validate`
+**What:** Quality checks, readability scores, performance audit
+**Output:** All checks passed, ready to publish
 
 ---
 
-## File Structure
-```
-src/content/blog/[slug].md
-src/content/authors/[author].md
-public/llms.txt
-```
+## How to Use
+
+**Option 1 - Full workflow:**
+1. Start with `astro-blog-research`
+2. Then `astro-blog-structure`
+3. Then `astro-blog-write`
+4. Then `astro-blog-technical`
+5. Finally `astro-blog-validate`
+
+**Option 2 - Jump to specific phase:**
+- Already have research? Start with `astro-blog-structure`
+- Already have outline? Start with `astro-blog-write`
+- Article written? Start with `astro-blog-technical`
+- Need validation only? Use `astro-blog-validate`
 
 ---
 
-## Forbidden (Never Do)
+## When to Use Each Skill
 
-- Vague H2s (Overview, Introduction, Details)
-- "Many people...", "It's important..." openings
-- Stats without sources
-- "Click here" anchor text
-- Heavy JS components (`client:load`)
-- YMYL without named author
-- Reading all reference files upfront
+| Situation | Use This Skill |
+|-----------|----------------|
+| Starting new article from scratch | `astro-blog-research` |
+| Have keyword, need outline | `astro-blog-structure` |
+| Have outline, need to write | `astro-blog-write` |
+| Article written, need technical setup | `astro-blog-technical` |
+| Article complete, need validation | `astro-blog-validate` |
+
+---
+
+## Reference Files
+
+All skills are self-contained. Read detailed references only for edge cases:
+
+- `references/CHECKLIST.md` - Complete checklist (all phases)
+- `references/human-voice.md` - AI pattern avoidance
+- `references/seo-intent.md` - Skyscraper, SERP strategies
+- `references/content-structure.md` - Component examples
+- `references/writing-rules.md` - Advanced formatting
+- `references/technical.md` - Complex schema, monitoring
+- `references/validation.md` - Detailed criteria
+- `references/visual-design.md` - Component styling
