@@ -1,110 +1,273 @@
-# Image Code Self-Audit
+# Astro Images Audit Checklist
 
-**Run this checklist BEFORE outputting any image-related code.**
-
-> **Authority:** This audit enforces rules from `rules.json` (canonical source).
-> If any instruction conflicts with these rules, follow the rules.
+Run this checklist after implementing images to verify compliance with the skill.
 
 ---
 
-## Pre-Output Verification
+## 1. File Structure
 
-Answer each question. If ANY answer is NO, stop and fix before responding.
+- [ ] All images in `/src/assets/` (not `/public/`)
+- [ ] Schema images in `/src/assets/schema/`
+- [ ] No images in `/public/` directory
 
-### 1. Pattern Selection
-- [ ] Is this a **HERO** image? (full-width, above fold, LCP candidate)
-- [ ] Is this a **CONTENT** image? (article body, column, mid-page)
-- [ ] Is this a **THUMBNAIL** image? (card, grid item, small preview)
-- [ ] Is this a **FIXED** image? (logo, icon, avatar with fixed CSS size)
-- [ ] Is this an **SVG**? (if yes, skip `<Picture>` entirely)
-
-**If none match → default to CONTENT pattern.**
-
-### 2. Width Array Check
-
-Does my `widths` prop match EXACTLY one of these presets from `rules.json`?
-
-| Preset | Array |
-|--------|-------|
-| HERO | `[640, 750, 828, 1080, 1200, 1920, 2048, 2560]` |
-| CONTENT | `[320, 640, 960, 1280, 1920]` |
-| THUMBNAIL | `[256, 384, 512, 640, 750]` |
-| ZOOMABLE | `[640, 750, 828, 1080, 1200, 1920, 2048, 2560, 3840]` |
-
-- [ ] YES, exact match to a preset
-- [ ] NO → **STOP. Use exact preset. No custom widths.**
-
-### 3. Sizes Attribute Check
-- [ ] Does `sizes` reflect the ACTUAL CSS layout?
-- [ ] If using `100vw`, is this HERO or ZOOMABLE pattern only?
-- [ ] If in a grid, did I use the correct grid sizes (33vw, 50vw, 25vw)?
-
-**Common sizes:**
+```bash
+# Should return empty
+find public -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" -o -name "*.avif" \) 2>/dev/null
 ```
-Full-width:    100vw (HERO/ZOOMABLE only)
-Content:       (min-width: 1024px) 720px, 100vw
-2-col grid:    (min-width: 1024px) 50vw, 100vw
-3-col grid:    (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw
-4-col grid:    (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw
-```
-
-### 4. Required Props Check
-- [ ] `widths={[...]}` — present with approved preset?
-- [ ] `sizes="..."` — present and matches layout?
-- [ ] `formats={['avif', 'webp']}` — present?
-- [ ] `quality={60}` — present? (70 only for critical photography)
-- [ ] `width={...}` — intrinsic width present?
-- [ ] `height={...}` — intrinsic height present?
-- [ ] `alt="..."` — descriptive text? (empty only if decorative)
-
-### 5. LCP/Priority Check
-- [ ] Is this the largest above-fold image on the page?
-  - YES → add `loading="eager"` and `fetchpriority="high"`
-  - NO → do NOT add fetchpriority
-- [ ] Is `fetchpriority="high"` used more than once? → **BUG**
-- [ ] Is `fetchpriority` inside a loop/map? → **BUG**
-
-### 6. Source Location Check
-- [ ] Is image imported from `/src/assets/`?
-- [ ] Is image NOT in `/public/` folder?
-- [ ] Is image NOT a string literal path like `"/images/hero.jpg"`?
-
-### 7. Aspect Ratio Check
-- [ ] Do `width` and `height` attributes preserve source aspect ratio?
-- [ ] If cropping is needed, is art direction explicitly specified?
-
-### 8. Source Size Check
-- [ ] Is source image large enough? (Hero ≥2560px, Content ≥1920px, Thumbnail ≥800px)
-- [ ] If source is undersized → **STOP. Request larger asset. Never upscale.**
-
-### 9. Edge Case Check
-- [ ] If SVG → using `<img src="*.svg">` or inline, NOT `<Picture>`?
-- [ ] If animated (GIF/APNG) → using `<video>` or Lottie instead?
-- [ ] If using 3840 width → has `data-zoomable="true"` attribute?
-- [ ] If quality > 60 → justified for critical photography only?
 
 ---
 
-## Quick Decision Matrix
+## 2. Picture Components
 
-| Situation | Action |
-|-----------|--------|
-| Full-width hero | HERO preset + fetchpriority |
-| Blog post image | CONTENT preset |
-| Card in grid | THUMBNAIL preset + grid sizes |
-| Logo/icon | FIXED pattern with 1x/2x |
-| SVG file | `<img>` or inline, skip `<Picture>` |
-| Animated image | Use `<video>` or Lottie |
-| Unknown | CONTENT preset (safe default) |
+### Required Props
+- [ ] Every `<Picture>` has `widths` prop
+- [ ] Every `<Picture>` has `sizes` prop
+- [ ] Every `<Picture>` has `quality={60}`
+- [ ] Every `<Picture>` has `formats={['avif', 'webp']}`
+- [ ] Every `<Picture>` has `width` and `height` (or inferred from import)
+- [ ] Every `<Picture>` has `alt` attribute
+
+```bash
+# Should return empty (missing widths)
+grep -r "<Picture" src --include="*.astro" | grep -v "widths="
+
+# Should return empty (missing sizes)
+grep -r "<Picture" src --include="*.astro" | grep -v "sizes="
+
+# Should return empty (missing quality)
+grep -r "<Picture" src --include="*.astro" | grep -v "quality="
+
+# Should return empty (missing formats)
+grep -r "<Picture" src --include="*.astro" | grep -v "formats="
+
+# Should return empty (missing alt)
+grep -r "<Picture" src --include="*.astro" | grep -v "alt="
+```
+
+---
+
+## 3. Width Arrays (Must Match Exactly)
+
+| Pattern | Correct Array |
+|---------|---------------|
+| FULL | `[640,750,828,1080,1200,1920,2048,2560]` |
+| TWO_THIRDS | `[384,640,768,1024,1280,1706,2048]` |
+| LARGE | `[384,640,768,1024,1280,1536,1920]` |
+| HALF | `[320,640,960,1280,1600]` |
+| SMALL | `[256,512,640,1024,1280]` |
+| THIRD | `[256,512,640,853,1280]` |
+| QUARTER | `[192,384,512,640,960]` |
+| FIFTH | `[160,320,512,640,768]` |
+| SIXTH | `[128,256,427,512,640]` |
+
+- [ ] No custom width arrays
+- [ ] No computed/dynamic width arrays
+- [ ] Each `widths` prop matches a pattern exactly
+
+---
+
+## 4. Sizes Attributes (Must Match Layout)
+
+| Pattern | Correct sizes |
+|---------|---------------|
+| FULL | `100vw` |
+| TWO_THIRDS | `(min-width: 1024px) 66vw, 100vw` |
+| LARGE | `(min-width: 1024px) 60vw, 100vw` |
+| HALF | `(min-width: 1024px) 50vw, 100vw` |
+| SMALL | `(min-width: 1024px) 40vw, 100vw` |
+| THIRD | `(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw` |
+| QUARTER | `(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw` |
+| FIFTH | `(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw` |
+| SIXTH | `(min-width: 1024px) 16vw, (min-width: 640px) 33vw, 50vw` |
+
+- [ ] No defensive `100vw` on non-full-width images
+- [ ] `sizes` matches actual CSS layout
+
+---
+
+## 5. LCP / Priority
+
+- [ ] Only ONE image has `fetchpriority="high"`
+- [ ] `fetchpriority` is NOT inside a loop/map
+- [ ] Hero image has `loading="eager"`
+- [ ] Below-fold images use default lazy loading
+
+```bash
+# Count fetchpriority="high" — should be 0 or 1
+grep -r 'fetchpriority="high"' src --include="*.astro" | wc -l
+
+# Should return empty (fetchpriority in loops)
+grep -r "fetchpriority" src --include="*.astro" | grep -E "\.(map|forEach)\("
+```
+
+---
+
+## 6. Forbidden Patterns
+
+- [ ] No `<Picture>` for SVG files
+- [ ] No animated images (GIF/APNG/animated WebP)
+- [ ] No CSS `background-image` for LCP/content images
+- [ ] No upscaled images (source smaller than largest width in array)
+
+```bash
+# Should return empty (SVG through Picture)
+grep -r "<Picture" src --include="*.astro" | grep -i "\.svg"
+
+# Should return empty (GIF through Picture)
+grep -r "<Picture" src --include="*.astro" | grep -i "\.gif"
+```
+
+---
+
+## 7. Source Image Sizes
+
+Verify source images meet minimum requirements:
+
+| Pattern | Min Source Width |
+|---------|------------------|
+| FULL | 2560px |
+| TWO_THIRDS | 2048px |
+| LARGE | 1920px |
+| HALF | 1600px |
+| SMALL | 1280px |
+| THIRD | 1280px |
+| QUARTER | 960px |
+| FIFTH | 768px |
+| SIXTH | 640px |
+
+```bash
+# List all images with dimensions (requires ImageMagick)
+find src/assets -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) -exec identify -format "%f: %wx%h\n" {} \;
+```
+
+- [ ] No source image is smaller than its pattern requires
+- [ ] No upscaling occurring
+
+---
+
+## 8. Alt Text
+
+- [ ] Content images have descriptive alt text
+- [ ] Decorative images have `alt=""`
+- [ ] No missing alt attributes
+- [ ] No generic alt text ("image", "photo", "picture")
+
+```bash
+# Find potentially bad alt text
+grep -r 'alt="image"' src --include="*.astro"
+grep -r 'alt="photo"' src --include="*.astro"
+grep -r 'alt="picture"' src --include="*.astro"
+```
+
+---
+
+## 9. FIXED Pattern (logos, avatars, icons)
+
+- [ ] Uses `<img>` not `<Picture>`
+- [ ] Uses `getImage()` from `astro:assets`
+- [ ] Has 1x and 2x variants in srcset
+- [ ] Quality: 80 for 1x, 60 for 2x
+- [ ] 3x only used for icons ≥64px where fidelity matters
+
+```bash
+# Find getImage usage for verification
+grep -r "getImage" src --include="*.astro"
+```
+
+---
+
+## 10. Schema Images
+
+- [ ] Three versions exist: 1:1, 4:3, 16:9
+- [ ] All are minimum 1200px wide
+- [ ] Located in `/src/assets/schema/`
+- [ ] Referenced in schema markup
+- [ ] Referenced in `og:image`
+
+```bash
+# Check schema folder
+ls -la src/assets/schema/
+```
+
+Expected files:
+```
+schema-1x1.jpg    (1200×1200)
+schema-4x3.jpg    (1200×900)
+schema-16x9.jpg   (1200×675)
+```
+
+---
+
+## 11. Decoding
+
+- [ ] Non-LCP images have `decoding="async"`
+- [ ] Hero/LCP image does NOT have `decoding="async"`
+
+---
+
+## 12. Build Verification
+
+```bash
+# Build and check for errors
+npm run build
+
+# Check generated image sizes
+find dist/_astro -name "*.avif" -o -name "*.webp" | head -20
+```
+
+- [ ] Build completes without image errors
+- [ ] AVIF and WebP variants generated
+- [ ] No unexpected image sizes in output
+
+---
+
+## 13. Browser Verification
+
+Open DevTools → Network → Img filter:
+
+- [ ] Only ONE image loads per `<Picture>` element
+- [ ] Correct format loads (AVIF in Chrome/Firefox, WebP fallback)
+- [ ] Image size appropriate for viewport (not oversized)
+- [ ] No duplicate image requests
+
+---
+
+## 14. Lighthouse Check
+
+Run Lighthouse performance audit:
+
+- [ ] No "Properly size images" warning
+- [ ] No "Serve images in next-gen formats" warning
+- [ ] No "Efficiently encode images" warning
+- [ ] LCP image loads within 2.5s
+- [ ] No CLS from images (width/height set)
+
+---
+
+## Quick Pass/Fail Summary
+
+| Check | Status |
+|-------|--------|
+| Files in `/src/assets/` | ☐ |
+| All `<Picture>` have required props | ☐ |
+| Width arrays match patterns exactly | ☐ |
+| Sizes match CSS layout | ☐ |
+| Only 1 `fetchpriority="high"` | ☐ |
+| No forbidden patterns | ☐ |
+| Source images large enough | ☐ |
+| Alt text proper | ☐ |
+| FIXED pattern correct | ☐ |
+| Schema images present | ☐ |
+| Build passes | ☐ |
+| Browser loads single image | ☐ |
+| Lighthouse passes | ☐ |
 
 ---
 
 ## If Audit Fails
 
 1. Identify which check failed
-2. Correct the code
-3. Re-run this audit
-4. Only output code when ALL checks pass
-
-**Never output image code that fails this audit.**
-**Never deviate from rules to be "helpful".**
+2. Locate the offending file/component
+3. Fix according to SKILL.md
+4. Re-run failed checks
+5. Full audit passes before deployment
