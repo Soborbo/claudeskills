@@ -415,6 +415,16 @@ if (hasTechnicalTermsWithoutDefinition) warn("Technical terms not defined on fir
 if ((intent === 'commercial' || intent === 'comparison') && !hasFAQSchema) fail("FAQ schema required for commercial/comparison content");
 if (titleStartsWith('How to') && !hasHowToSchema) warn("HowTo schema recommended for process guides");
 
+// Neil Patel optimizations (2025-2026 best practices)
+if (!titleHasNumberOrPowerWord) warn("Title should include odd number (7, 11, 13) or power word (proven, secret, complete)");
+if (titleLength < 50 || titleLength > 60) warn("Title should be 50-60 characters");
+if (!titleHasYear && isDateSensitive) warn("Include year (2026) in title for dated content");
+if (bucketBrigadeCount < 2 && wordCount > 1000) warn("Add 2-4 bucket brigades for standard articles");
+if (bucketBrigadeCount < 5 && isPillar) warn("Add 5-8 bucket brigades for pillar articles");
+if ((intent === 'commercial' || intent === 'transactional') && !hasContentUpgrade) fail("Content upgrade (PDF/checklist) required for commercial/transactional");
+if (!hasReviewsDisplayed && intent === 'commercial') warn("Display customer reviews (increases traffic 100%+)");
+if (hasReviewSchema && reviewCount < 10) warn("Need minimum 10 reviews before showing aggregate rating");
+
 // Quality warnings (review recommended)
 if (!hasInformationGainSignals) warn("No Information Gain signals");
 if (!hasSourcedStats) warn("Statistics without sources");
@@ -423,6 +433,7 @@ if (externalLinks < 4) warn("Consider adding more authority links (min 4)");
 if (!hasAuthorityDomains) warn("Missing high-authority external links (gov.uk, .ac.uk, Which?, etc.)");
 if (!hasSemanticKeywords) warn("Limited semantic keyword coverage - consider related terms");
 if (hasKeywordStuffing) fail("Keyword stuffing detected - use semantic variations");
+if (researchTime < 20 && totalTime) warn("Research should be ~25% of total content creation time (Neil Patel method)");
 ```
 
 ---

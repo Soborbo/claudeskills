@@ -422,6 +422,102 @@ Required for articles over 1000 words. Placed after QueryAnswer.
 
 ---
 
+### Bucket Brigades (Engagement Transitions)
+
+Bucket brigades are transitional phrases that create mini cliffhangers, keeping readers engaged and scrolling. They create curiosity gaps that compel readers to continue.
+
+**Purpose:** Reduce bounce rate, increase dwell time, maintain reading momentum
+
+**Common bucket brigade phrases:**
+
+```markdown
+Here's the thing:
+But wait, there's more.
+Now here's the kicker:
+You might be wondering:
+Here's what that means for you:
+The bottom line?
+Here's the deal:
+Want to know the best part?
+But here's what's interesting:
+Sound familiar?
+Here's why this matters:
+Let me explain:
+Check this out:
+```
+
+**Usage guidelines:**
+
+✅ **Good placement:**
+- Before revealing key information
+- Transitioning between major points
+- Before case studies or examples
+- Introducing surprising statistics
+
+❌ **Avoid:**
+- Using same phrase repeatedly (vary your transitions)
+- Every single paragraph (loses impact)
+- In QueryAnswer or H2 headings (be direct there)
+
+**Example in context:**
+
+```markdown
+Most homeowners budget £5,000-£8,000 for solar installation. They account for panels, inverters, and labor costs.
+
+But here's what most people miss:
+
+Hidden costs like roof repairs and electrical upgrades add £800-£2,000 to the final bill. In our 200+ installations last year, 15% of clients needed unexpected structural work before panels could be mounted.
+```
+
+**Frequency:** 2-4 bucket brigades per standard article, 5-8 per pillar article
+
+---
+
+### Content Upgrades (Lead Generation)
+
+**Content upgrades** are article-specific lead magnets that convert readers into subscribers by offering enhanced value related to the specific article they're reading.
+
+**Why they work:** Neil Patel's data shows content upgrades are "the quickest way to build your email list" because they're highly relevant to what the reader is currently interested in.
+
+**Types of content upgrades:**
+
+1. **PDF Download** - Convert article to downloadable PDF report
+2. **Checklist** - Actionable checklist based on article content
+3. **Template** - Editable template (spreadsheet, document, calculator)
+4. **Cheat Sheet** - Quick reference guide for article topic
+5. **Resource List** - Curated list of tools/links mentioned
+6. **Extended Guide** - Deeper dive with additional examples
+7. **Video/Webinar** - Video version explaining content
+
+**Implementation:**
+
+```markdown
+<ContentUpgrade
+  type="checklist"
+  title="Free Download: Complete Solar Installation Checklist"
+  description="Get our step-by-step checklist covering quotes, certifications, and timeline—used by 500+ homeowners."
+  ctaText="Download Free Checklist"
+  leadMagnetId="solar-installation-checklist"
+/>
+```
+
+**Placement:**
+- **Mid-article** (40-60% scroll depth) - highest conversion
+- **End of article** (before related posts) - secondary CTA
+- **Sidebar** (desktop only) - persistent visibility
+
+**Quick creation strategy (Neil Patel method):**
+Convert your blog post to PDF with added checklist/summary section. Takes 10-15 minutes vs hours creating separate resource.
+
+**Requirements:**
+- **Commercial/transactional intent**: MUST have content upgrade
+- **Informational intent**: RECOMMENDED for pillar content
+- **Comparison intent**: RECOMMENDED (comparison matrix PDF)
+
+**Tracking:** Link to email automation system, track conversion rate by article
+
+---
+
 ### EngagementHook
 Use **sparingly** to break up long sections. **Not every 300-400 words.**
 

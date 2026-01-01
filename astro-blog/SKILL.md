@@ -121,21 +121,31 @@ experienceVerified: false  # true only after human checks ExperienceBlock data
 23. **FAQ schema** - Required for commercial/comparison (3-5 questions standard, 5-8 pillar)
 24. **HowTo schema** - Required for process/guide articles (3-10 steps)
 25. **Meta description** - 150-160 chars: [Answer] + [Benefit] + [Proof] + [CTA]
+26. **Review schema** - Integrate reviews with structured data (min 10 before showing aggregate)
 
-**SEO & Writing:**
-26. **Technical term definitions** - Bold first mention + 15-25 word definition
-27. **Semantic keyword coverage** - Use related terms naturally, avoid keyword stuffing
-28. **List preference** - Use lists for 3+ related items (not prose)
-29. CTA matches intent
-30. Experience required for commercial/comparison (can be woven in prose)
+**SEO & Writing (Neil Patel Optimized):**
+27. **Headline formulas** - Use odd numbers (7, 11, 13) or power words (proven, secret, complete)
+28. **Title optimization** - 50-60 chars, keyword-first, include year/location
+29. **Bucket brigades** - 2-4 per standard, 5-8 per pillar (curiosity transitions: "Here's the thing:", "But wait...")
+30. **Technical term definitions** - Bold first mention + 15-25 word definition
+31. **Semantic keyword coverage** - Use related terms naturally, avoid keyword stuffing
+32. **List preference** - Use lists for 3+ related items (not prose)
+33. **Research allocation** - 25% research, 15% planning, 35% writing, 15% editing, 10% technical
+34. CTA matches intent
+35. Experience required for commercial/comparison (can be woven in prose)
+
+**Lead Generation & Conversion:**
+36. **Content upgrades** - REQUIRED for commercial/transactional (PDF, checklist, template)
+37. **Interactive tools** - Calculators generate 22% of leads (prioritize in commercial content)
+38. **Review integration** - Display reviews near QueryAnswer and before CTAs (increases traffic 100%+)
 
 **Technical:**
-31. Author credentials verifiable (LinkedIn + industry profile)
-32. ExperienceBlock data must be real or marked as placeholder
-33. ARIA labels on complex components
-34. **Transactional pages MUST have interactive tool/calculator**
-35. **Performance: <100KB JS, <50KB CSS, ≥90 mobile Lighthouse**
-36. **No `client:load` - use `client:visible` or `client:idle`**
+39. Author credentials verifiable (LinkedIn + industry profile)
+40. ExperienceBlock data must be real or marked as placeholder
+41. ARIA labels on complex components
+42. **Transactional pages MUST have interactive tool/calculator**
+43. **Performance: <100KB JS, <50KB CSS, ≥90 mobile Lighthouse**
+44. **No `client:load` - use `client:visible` or `client:idle`**
 
 ### File Structure
 ```

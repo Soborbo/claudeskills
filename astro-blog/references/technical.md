@@ -988,6 +988,223 @@ translationOf: hungarian-post-slug  # if this is a translation
 
 ---
 
+## Multi-Platform Content Strategy (Neil Patel 2025)
+
+In 2025, SEO is evolving to "**Search Everywhere Optimization**" - optimizing across multiple platforms, not just Google.
+
+### Why Multi-Platform Matters
+
+Neil Patel's research shows:
+- **Blog articles** generate 29% of organic traffic
+- **Tools/calculators** generate 17% of traffic
+- AI pulls from multiple sources (ChatGPT uses Bing, Perplexity aggregates)
+- Brand mentions across platforms boost overall rankings
+
+### Platform-Specific Strategy
+
+**YouTube (Highest Priority for Long-Form)**
+- Quality long-form content thrives on YouTube
+- Create video versions of pillar articles
+- Include video chapters (min 3) for seekability
+- Embed in blog with facade loading (already covered)
+- Target: 1 video per 2-3 pillar articles
+
+**LinkedIn (B2B/Professional)**
+- Main platform for B2B and enterprise deals
+- Repurpose article insights as LinkedIn posts
+- Link back to full article for traffic
+- Share case studies and data from ExperienceBlocks
+
+**Reddit (Community Engagement)**
+- Answer questions in relevant subreddits
+- Link to your comprehensive articles when genuinely helpful
+- Build reputation, not just links (avoid spam)
+- Monitor r/[your_topic] for content ideas
+
+**Platform Content Matrix:**
+
+| Platform | Content Type | Frequency | Purpose |
+|----------|--------------|-----------|---------|
+| Blog | Full articles | 2-4/month | Main SEO + authority |
+| YouTube | Video guides | 1-2/month | Video SEO + engagement |
+| LinkedIn | Insights/stats | 3-5/week | Professional reach |
+| Reddit | Answers/links | As relevant | Community building |
+
+### Cross-Platform SEO Tactics
+
+**Brand mentions:**
+- Encourage customers to mention brand on social platforms
+- Monitor brand mentions (Google Alerts, Mention.com)
+- Respond to mentions to build visibility
+
+**Bing optimization:**
+- Since ChatGPT pulls from Bing, ensure Bing Webmaster Tools setup
+- Submit sitemap to Bing
+- Optimize for Bing's ranking factors (more keyword-focused than Google)
+
+**Tool/calculator prominence:**
+- Interactive tools generate 22% of leads (Neil Patel data)
+- Promote calculators across all platforms
+- Embed calculators in YouTube video descriptions
+
+---
+
+## Review Integration & Social Proof (Critical for 2025)
+
+Neil Patel's data: **Positive reviews increase organic traffic by 100%+** compared to negative reviews.
+
+### Review Collection Strategy
+
+**Platforms to prioritize:**
+1. **Google Business Profile** - Most important for local SEO
+2. **Trustpilot/Reviews.io** - Third-party verification
+3. **Industry-specific** - Trade body reviews, Which? Trusted Trader
+4. **Yelp/Nextdoor** - Local community platforms
+
+**Collection tactics:**
+- Email follow-up 7-14 days after service completion
+- Make it easy: direct link to review page
+- Ask happy customers specifically (NPS 9-10 scores)
+- Never incentivize (against most platforms' ToS)
+
+### Integrating Reviews into Content
+
+**Review Schema:**
+
+```json
+{
+  "@type": "Review",
+  "author": {
+    "@type": "Person",
+    "name": "Sarah Johnson"
+  },
+  "reviewRating": {
+    "@type": "Rating",
+    "ratingValue": 5,
+    "bestRating": 5
+  },
+  "reviewBody": "Excellent solar installation service. Team completed our 4kW system in one day, exactly as quoted. System has been generating perfectly for 6 months.",
+  "datePublished": "2025-12-15",
+  "itemReviewed": {
+    "@type": "Service",
+    "name": "Solar Panel Installation"
+  }
+}
+```
+
+**Visual review display:**
+
+```markdown
+<ReviewHighlight
+  rating={4.8}
+  reviewCount={347}
+  source="Google"
+  quote="Professional team, completed on time and on budget"
+  author="Michael R., London"
+  date="January 2026"
+  verified={true}
+/>
+```
+
+**Placement:**
+- After QueryAnswer (builds immediate trust)
+- Mid-article before CTA (reinforces credibility)
+- Sidebar component (persistent visibility)
+
+### Aggregate Rating Display
+
+**Requirements:**
+- Minimum 10 reviews before showing aggregate
+- Update monthly (fresh data)
+- Show review source (Google, Trustpilot, etc.)
+- Link to full review pages
+
+**AggregateRating schema:**
+
+```json
+{
+  "@type": "LocalBusiness",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": 4.8,
+    "reviewCount": 347,
+    "bestRating": 5,
+    "worstRating": 1
+  },
+  "review": [
+    {
+      "@type": "Review",
+      "author": {"@type": "Person", "name": "Customer Name"},
+      "reviewRating": {"@type": "Rating", "ratingValue": 5}
+    }
+  ]
+}
+```
+
+### Review Response Strategy
+
+**Respond to ALL reviews:**
+- **Positive reviews:** Thank customer, highlight specific detail they mentioned
+- **Neutral reviews:** Address concerns, offer to resolve offline
+- **Negative reviews:** Professional response, offer resolution, never defensive
+
+**Response timeframe:**
+- Negative reviews: Within 24 hours
+- Positive reviews: Within 3-5 days
+
+---
+
+## Content Creation Time Allocation (Neil Patel Method)
+
+Writing is only **35% of content creation**. Research and planning dominate.
+
+### Time Breakdown (Standard 1500-word article)
+
+**Total time:** ~6-8 hours
+
+| Phase | % of Time | Hours | Activity |
+|-------|-----------|-------|----------|
+| **Research** | 25% | 1.5-2h | SERP analysis, gap identification, data collection |
+| **Planning** | 15% | 1-1.2h | Outline, H2 structure, keyword mapping |
+| **Writing** | 35% | 2-2.8h | Actual content creation |
+| **Editing** | 15% | 1-1.2h | Readability, fact-checking, flow |
+| **Technical** | 10% | 0.6-0.8h | Schema, meta, images, internal links |
+
+### Research Phase (Critical - Don't Skip)
+
+**What to research (25% of time):**
+1. **SERP analysis** - Top 3 results, identify consensus
+2. **Gap identification** - What's missing? Your unique angle
+3. **Data collection** - Statistics, case studies, expert quotes
+4. **Keyword research** - Primary + semantic keywords
+5. **Competitor analysis** - What works, what doesn't
+6. **Authority sources** - Find 4+ citable external sources
+
+**Tools for research:**
+- Google Search Console (existing rankings)
+- AnswerThePublic (questions people ask)
+- Google Trends (topic trending data)
+- BuzzSumo (most-shared content)
+
+### Writing Efficiency Tips
+
+**Use research to write faster:**
+- Detailed outline = faster writing (less thinking mid-draft)
+- Collect quotes/stats during research (don't hunt mid-write)
+- Draft H2s first, fill in prose after
+- Don't edit while writing (separate phases)
+
+**Target pace:**
+- **500 words/hour** when properly researched
+- **300 words/hour** without research (slower, more stopping)
+
+**Batch similar tasks:**
+- Write all articles' outlines in one session
+- Collect all images in one session
+- Add all schema/technical in one session
+
+---
+
 ## Technical Checklist
 
 Before Phase 5:

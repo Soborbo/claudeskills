@@ -58,6 +58,126 @@ Every H2's first sentence: main entity in subject position.
 
 ---
 
+## Headline Formulas (Neil Patel Strategy)
+
+Headlines determine click-through rate from search results and social shares. Neil Patel's research shows headlines with numbers and specific formulas generate significantly more engagement.
+
+### Number-Based Formulas (Highest Performing)
+
+**Odd numbers** perform better than even numbers (brain perceives them as more believable).
+
+✅ **Winning formulas:**
+- "7 Ways to [Achieve Outcome] in [Timeframe]"
+- "11 [Topic] Tips That Actually Work in 2026"
+- "5 [Topic] Mistakes Costing You £X Every Year"
+- "13 [Topic] Secrets [Authority Figure] Won't Tell You"
+- "9 Proven [Topic] Strategies for [Specific Result]"
+
+**Examples:**
+```
+✅ 7 Solar Panel Cost Factors You're Probably Ignoring
+✅ 11 Hidden Moving Costs That Destroy Your Budget
+✅ 5 Roofing Mistakes Costing UK Homeowners £2,000+ Annually
+```
+
+### How-To Formulas
+
+How-to guides consistently perform well because they promise practical value.
+
+✅ **Effective patterns:**
+- "How to [Achieve Goal] Without [Common Problem]"
+- "How to [Achieve Goal] Even If [Limiting Belief]"
+- "How to [Achieve Goal] in [Timeframe]"
+- "How [Authority] [Achieved Result]" (case study angle)
+
+**Examples:**
+```
+✅ How to Get Accurate Moving Quotes Without Booking 10 Surveys
+✅ How to Choose Solar Panels Even If You Know Nothing About Electricity
+✅ How to Renovate Your Kitchen in 3 Weeks
+✅ How This London Family Saved £1,200 on Installation Costs
+```
+
+### Power Words (Emotional Triggers)
+
+Incorporate power words that trigger curiosity, urgency, or authority:
+
+**Curiosity:** Secret, Hidden, Untold, Surprising, Shocking, Little-Known
+**Urgency:** Now, Today, Fast, Quick, Immediate, Instant
+**Authority:** Proven, Expert, Professional, Complete, Ultimate, Definitive
+**Value:** Free, Save, Avoid, Prevent, Protect, Guarantee
+**Specificity:** Exact, Step-by-Step, Complete, Comprehensive
+
+**Good combinations:**
+```
+✅ The Complete Guide to [Topic]: Everything You Need to Know in 2026
+✅ 7 Proven Ways to Save £X on [Service] (Expert Analysis)
+✅ The Hidden Costs of [Topic] Nobody Tells You About
+✅ Instant [Result]: How to [Achieve Goal] in [Short Timeframe]
+```
+
+### Question-Based Headlines
+
+Questions create engagement by triggering the reader's need for answers.
+
+✅ **Effective patterns:**
+- "Is [Topic] Worth It in 2026?" (cost-benefit analysis)
+- "What's the Real Cost of [Topic]?" (pricing transparency)
+- "Which [Option A] vs [Option B] Is Right for You?" (comparison)
+- "How Much Does [Service] Actually Cost?" (informational)
+
+**Examples:**
+```
+✅ Is Solar Worth It in 2026? (Real ROI Data from 500+ Installs)
+✅ What's the Real Cost of Moving House in London?
+✅ Which Solar Panels Last Longest? Monocrystalline vs Polycrystalline Tested
+```
+
+### Title Tag Optimization
+
+**Character limits:**
+- **50-60 characters** optimal (Google's display limit)
+- Front-load primary keyword (first 3-5 words)
+- Include year for dated content (2026)
+- Include location for local services (London, UK, etc.)
+
+**Power formula:**
+```
+[Number] [Power Word] [Topic] [Benefit] ([Qualifier] [Year])
+```
+
+**Examples:**
+```
+✅ 7 Hidden Solar Costs Destroying Your Budget (UK 2026) — 54 chars
+✅ Moving House Cost Guide: Save £X (London 2026) — 46 chars
+✅ 11 Roof Repair Mistakes Costing You £2K+ (2026) — 48 chars
+```
+
+### A/B Testing Headlines
+
+Use headline analyzer tools to score your titles:
+- **CoSchedule Headline Analyzer** - scores word balance, length, sentiment
+- **Sharethrough Headline Analyzer** - engagement and quality scores
+- **Advanced Marketing Institute (AMI)** - emotional marketing value
+
+**Target scores:**
+- Overall headline score: >70/100
+- Emotional Marketing Value (EMV): >30%
+- Word balance: Mix of common, uncommon, emotional, power words
+
+### Title Checklist
+
+- [ ] Contains odd number (3, 5, 7, 9, 11, 13) OR clear how-to/question
+- [ ] 50-60 characters (not cut off in SERPs)
+- [ ] Primary keyword in first 5 words
+- [ ] At least one power word (proven, secret, complete, hidden, etc.)
+- [ ] Year included for dated content (2026)
+- [ ] Location included for local services (London, UK, etc.)
+- [ ] Specific benefit/outcome clear
+- [ ] No clickbait (title accurately reflects content)
+
+---
+
 ## Search Intent Types
 
 Every article declares ONE dominant intent. CTA must match.
