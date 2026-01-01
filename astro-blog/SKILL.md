@@ -88,7 +88,7 @@ experienceVerified: false  # true only after human checks ExperienceBlock data
 ### Critical Rules (Always Apply)
 1. **HUMAN VOICE FIRST** - Read human-voice.md before writing
 2. **Component density limits** - 5-7 max standard, 8-12 max pillar (total)
-3. **Intentional imperfection** - 1-3 subtle typos per article (your/you're, definately, then/than)
+3. **Intentional imperfection** - 2-4 typing errors per article (thier, recieve, definately, enviroment) NOT grammar errors
 4. Answer in first 120 words (QueryAnswer)
 5. H2s = prefer specific questions, allow contextual when natural
 6. Internal links: 2-4 standard, **8-12 for pillar** content

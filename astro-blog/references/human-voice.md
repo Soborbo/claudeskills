@@ -459,37 +459,54 @@ Not 50/50. Not component-heavy.
 
 AI writes with perfect spelling and grammar. Humans don't. Strategic, subtle imperfections make content feel authentic.
 
+**CRITICAL:** Use only **typing errors** (hand mistakes), NOT grammar errors (head mistakes). These should look like an Oxford professor typing fast, not someone who doesn't understand English.
+
 ### Types of Human Typos to Include
 
-**Homophone Confusion** (use sparingly, 1-2 per article):
-- "Your going to want..." (should be "You're")
-- "It's important to check there credentials" (should be "their")
-- "This effects your decision" (should be "affects")
-- "The costs vary depending on the weather" (could be "whether" in context)
-
-**Common Misspellings** (that spell-check might miss):
-- "definately" (definitely)
-- "seperate" (separate)
-- "occured" (occurred)
-- "accomodate" (accommodate)
+**Transposed Letters** (finger slips - very common):
+- "teh" (the)
+- "hte" (the)
 - "recieve" (receive)
-- "untill" (until)
-- "loosing" (losing - when you mean "losing ground")
-
-**Transposed Letters** (realistic finger-slip typos):
-- "hte" (the) - only in casual contexts
 - "wierd" (weird)
 - "freind" (friend)
-- "thier" (their)
+- "becuase" (because)
+- "thier" (their) - ONLY as typo, not grammar error
+- "acheive" (achieve)
 
-**Then/Than Confusion**:
-- "More expensive then you'd think" (should be "than")
-- "First X, than Y" (should be "then")
+**Double/Single Consonant Errors** (typing speed mistakes):
+- "occured" (occurred)
+- "begining" (beginning)
+- "untill" (until)
+- "accomodate" (accommodate)
+- "recomend" (recommend)
+- "embarass" (embarrass)
+- "dissappoint" (disappoint)
+- "commitee" (committee)
 
-**Missing Apostrophes** (in casual/conversational sections):
-- "dont" (don't)
-- "wont" (won't)
-- "cant" (can't)
+**Missing Letters** (typing too fast):
+- "govenment" (government)
+- "enviroment" (environment)
+- "diffrent" (different)
+- "intresting" (interesting)
+- "Febuary" (February)
+- "probaly" (probably)
+- "restarant" (restaurant)
+
+**Phonetic Misspellings** (educated people make these):
+- "definately" (definitely)
+- "seperate" (separate)
+- "occassion" (occasion)
+- "neccessary" (necessary)
+- "aparent" (apparent)
+- "guage" (gauge)
+
+**AVOID (these signal grammar ignorance, not typing speed):**
+- ❌ your/you're confusion
+- ❌ there/their/they're confusion
+- ❌ its/it's confusion
+- ❌ then/than confusion (unless clearly a typo in context)
+- ❌ affect/effect confusion
+- ❌ missing apostrophes (don't, won't, can't)
 
 ### Where to Place Typos
 
@@ -509,11 +526,12 @@ AI writes with perfect spelling and grammar. Humans don't. Strategic, subtle imp
 
 ### Guidelines for Realistic Imperfection
 
-1. **Frequency:** 1-3 subtle typos per 1500-word article
-2. **Type variety:** Mix homophone errors with common misspellings
-3. **Context matters:** Use in sections that sound conversational
-4. **Don't overdo it:** Too many typos = careless, not human
-5. **Spell-check resistant:** Choose typos that pass basic spell-check
+1. **Frequency:** 2-4 subtle typos per 1500-word article
+2. **Type variety:** Mix transposed letters, consonant errors, and missing letters
+3. **Educated mistakes only:** Typing errors (hand), not grammar errors (head)
+4. **Context matters:** Use in sections that sound conversational
+5. **Don't overdo it:** Too many typos = careless, not human
+6. **Spell-check resistant:** Choose typos that pass basic spell-check (thier, recieve, definately)
 
 ### Example: Before and After
 
@@ -521,17 +539,28 @@ AI writes with perfect spelling and grammar. Humans don't. Strategic, subtle imp
 ```markdown
 You're going to want to check their credentials before committing.
 It's definitely worth the effort to separate the good providers from
-the bad. This affects your decision more than you'd think.
+the bad. The government requires verification for all contractors
+working in this environment.
 ```
 
-✅ **Realistic (human-like):**
+✅ **Realistic (educated person typing fast):**
 ```markdown
-Your going to want to check their credentials before committing.
+You're going to want to check thier credentials before committing.
 It's definately worth the effort to seperate the good providers from
-the bad. This effects your decision more then you'd think.
+the bad. The govenment requires verification for all contractors
+working in this enviroment.
 ```
 
-**Note:** Only 2-3 typos, strategically placed. Not every sentence.
+**Note:** Only 2-4 typos per 1500 words - transposed letters, double consonants, missing letters. These are typing errors, not grammar mistakes.
+
+❌ **WRONG - Grammar errors (looks uneducated):**
+```markdown
+Your going to want to check there credentials before commiting.
+Its definately worth the effort to seperate the good providers from
+the bad. This effects you're decision more then you'd think.
+```
+
+**This signals poor grammar knowledge, not fast typing.**
 
 ### Why This Works
 

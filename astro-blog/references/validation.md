@@ -59,14 +59,17 @@ Read the article aloud and ask:
 
 ### Intentional Imperfection Check
 
-**Human typos present (1-3 per article):**
+**Human typos present (2-4 per 1500-word article):**
 
-- [ ] Contains 1-3 realistic typos (homophone errors, common misspellings)
+- [ ] Contains 2-4 realistic typing errors (transposed letters, consonant errors, missing letters)
 - [ ] Typos placed in conversational sections (NOT in headings/CTAs/stats)
-- [ ] Mix of typo types (your/you're, definately, then/than, etc.)
+- [ ] Mix of typo types: thier, recieve, definately, enviroment, occured, seperate
+- [ ] NO grammar errors: your/you're, there/their, its/it's, then/than
 - [ ] NO typos in QueryAnswer, H2s, CTAs, or schema markup
 
-**If content is perfectly spelled, add 1-3 strategic typos in conversational sections.**
+**These should look like an educated expert typing fast (hand errors), not grammar ignorance (head errors).**
+
+**If content is perfectly spelled, add 2-4 educated typing errors in conversational sections.**
 
 See `references/human-voice.md` section "Intentional Imperfection" for guidance.
 
