@@ -96,14 +96,8 @@ Raw `<img>` allowed only for: FIXED pattern, SVGs, external URLs.
 
 ## Pre-Output Checklist
 
-Before outputting image code, verify:
-- [ ] Pattern matches rendered width?
-- [ ] Width array exact match from table?
-- [ ] `sizes` matches actual CSS layout?
-- [ ] `width`/`height` present?
-- [ ] `quality={60}` present?
-- [ ] `fetchpriority="high"` max once, not in loop?
-- [ ] Image from `/src/assets/`?
+- [ ] Pattern matches width? | Width array exact? | `sizes` matches CSS? | `width`/`height` present?
+- [ ] `quality={60}`? | `fetchpriority="high"` max once, not in loop? | Image from `/src/assets/`?
 
 **If any NO → fix before outputting.**
 
@@ -111,6 +105,12 @@ Before outputting image code, verify:
 
 - `<Picture>` for SVGs (use `<img>`) | Animated GIF/APNG (use `<video>`) | CSS backgrounds for LCP
 - Images in `/public/` | Upscaling sources | Dynamic/computed width arrays
+
+## Undersized Source Fallback
+
+If source < pattern minimum: cap widths array at source width, keep sizes unchanged, flag for replacement.
+Example: 1200px source for HALF → `widths={[320,640,960,1200]}` (removed 1280,1600)
+**Exception:** FULL/LCP images — undersized is ERROR, must provide larger asset.
 
 ## Source Minimums
 
