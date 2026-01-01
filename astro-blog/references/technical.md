@@ -194,6 +194,101 @@ const { videoId, title, thumbnail } = Astro.props;
 
 ---
 
+## Video Chapters (YouTube SEO + Accessibility)
+
+If embedding video, include chapter timestamps in the content surrounding the video.
+
+### Implementation
+
+**In the article content (before or after video embed):**
+
+```markdown
+<YouTubeFacade
+  videoId="abc123"
+  title="Complete Solar Panel Installation Guide"
+  thumbnail="/images/video-thumb.webp"
+/>
+
+**Video chapters:**
+- 0:00 - Introduction to solar installation costs
+- 0:45 - Standard home installation breakdown
+- 2:10 - Additional costs to consider (roof repairs, electrical upgrades)
+- 3:30 - How to save money on installation
+- 5:15 - Getting accurate quotes from installers
+- 6:40 - Timeline and what to expect
+```
+
+### VideoObject Schema with Chapters
+
+```json
+{
+  "@type": "VideoObject",
+  "name": "Complete Solar Panel Installation Guide",
+  "description": "Comprehensive guide covering solar installation costs, timelines, and money-saving tips for UK homeowners",
+  "thumbnailUrl": "https://example.com/images/video-thumb.webp",
+  "uploadDate": "2025-01-15",
+  "duration": "PT7M20S",
+  "contentUrl": "https://youtube.com/watch?v=abc123",
+  "embedUrl": "https://youtube.com/embed/abc123",
+  "hasPart": [
+    {
+      "@type": "Clip",
+      "name": "Standard home installation breakdown",
+      "startOffset": 45,
+      "endOffset": 130,
+      "url": "https://youtube.com/watch?v=abc123&t=45s"
+    },
+    {
+      "@type": "Clip",
+      "name": "Additional costs to consider",
+      "startOffset": 130,
+      "endOffset": 210,
+      "url": "https://youtube.com/watch?v=abc123&t=130s"
+    },
+    {
+      "@type": "Clip",
+      "name": "How to save money on installation",
+      "startOffset": 210,
+      "endOffset": 315,
+      "url": "https://youtube.com/watch?v=abc123&t=210s"
+    }
+  ]
+}
+```
+
+### Benefits
+
+- **Appears in YouTube search** as video chapters (seekable timeline)
+- **Improves accessibility** - users jump to relevant section
+- **Increases engagement** - lower bounce rate, higher watch time
+- **LLM extraction** - AI can reference specific sections
+- **Featured snippets** - Google may show chapter links
+
+### Guidelines
+
+**Number of chapters:**
+- Minimum: 3 chapters
+- Ideal: 5-8 chapters
+- Maximum: 12 chapters (beyond this becomes cluttered)
+
+**Chapter titles:**
+- Descriptive, specific (not "Part 1", "Section 2")
+- Include keywords naturally
+- 3-8 words ideal
+- Match actual video content
+
+**Timestamp format:**
+- `M:SS` for videos under 10 minutes (0:45, 2:10, 5:15)
+- `H:MM:SS` for longer videos (1:05:30)
+- Start with 0:00 for introduction
+
+**Video integration:**
+- Place video at 40-60% scroll depth (mid-article)
+- Surround with contextual text explaining what video covers
+- Include transcript link or text summary below video
+
+---
+
 ## E-E-A-T Trust Signals (Critical for 2025)
 
 ### Proof-of-Experience Blocks
@@ -506,7 +601,310 @@ Single JSON-LD block connecting Organization → Person → Article.
 
 ---
 
+## FAQ Schema (Critical for PAA & LLM Extraction)
+
+**Required for commercial/comparison content.**
+
+FAQ schema targets Google's "People Also Ask" boxes and provides clear Q&A for LLMs.
+
+### Implementation
+
+Place FAQ section near end of article (before conclusion):
+
+```markdown
+## Frequently Asked Questions
+
+<FAQSchema>
+  <FAQ>
+    <Question>How long do solar panels last?</Question>
+    <Answer>Most solar panels last 25-30 years with minimal degradation. Premium panels come with 25-year performance warranties guaranteeing 80-85% output after 25 years. Inverters typically need replacement after 10-15 years.</Answer>
+  </FAQ>
+
+  <FAQ>
+    <Question>Do I need planning permission for solar panels?</Question>
+    <Answer>Most UK homes don't need planning permission for rooftop solar panels under permitted development rights. Exceptions include listed buildings, conservation areas, and installations exceeding 1 meter beyond the roof slope.</Answer>
+  </FAQ>
+
+  <FAQ>
+    <Question>What happens during a power cut?</Question>
+    <Answer>Standard grid-tied solar systems shut down during power cuts for safety. To maintain power during outages, you need a battery storage system with islanding capability, adding £4,000-£8,000 to installation costs.</Answer>
+  </FAQ>
+</FAQSchema>
+```
+
+### FAQ Schema JSON-LD
+
+```json
+{
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How long do solar panels last?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most solar panels last 25-30 years with minimal degradation. Premium panels come with 25-year performance warranties guaranteeing 80-85% output after 25 years. Inverters typically need replacement after 10-15 years."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need planning permission for solar panels?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most UK homes don't need planning permission for rooftop solar panels under permitted development rights. Exceptions include listed buildings, conservation areas, and installations exceeding 1 meter beyond the roof slope."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens during a power cut?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Standard grid-tied solar systems shut down during power cuts for safety. To maintain power during outages, you need a battery storage system with islanding capability, adding £4,000-£8,000 to installation costs."
+      }
+    }
+  ]
+}
+```
+
+### FAQ Guidelines
+
+**Number of questions:**
+- Standard article: 3-5 FAQs
+- Pillar article: 5-8 FAQs
+
+**Answer length:**
+- 40-80 words per answer
+- Direct, specific, cite sources if using statistics
+
+**Question types:**
+- Address real user questions (check "People Also Ask" in Google)
+- Include commercial intent questions ("how much", "is it worth")
+- Answer objections ("what if", "do I need")
+
+**Benefits:**
+- Featured in "People Also Ask" boxes
+- LLMs extract for RAG responses
+- Improves dwell time (users find quick answers)
+- Adds structured data for knowledge graphs
+
+---
+
+## HowTo Schema (For Process/Guide Articles)
+
+Use for articles explaining processes: "How to choose", "How to calculate", "How to compare"
+
+### HowTo Schema JSON-LD
+
+```json
+{
+  "@type": "HowTo",
+  "name": "How to Choose Solar Panel Installers",
+  "description": "Step-by-step guide to selecting qualified solar panel installers in the UK",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Verify Certifications",
+      "text": "Check installer has MCS certification and NICEIC accreditation. MCS certification is mandatory for government incentives and manufacturer warranties.",
+      "url": "https://example.com/blog/choosing-installers#certifications"
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Compare Quotes",
+      "text": "Get 3-5 quotes, ensuring they include identical specifications. Compare kWp capacity, panel brands, inverter types, and warranty terms.",
+      "url": "https://example.com/blog/choosing-installers#quotes"
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Check References",
+      "text": "Ask for 2-3 recent customer references. Contact them to verify installation quality, timeline adherence, and post-installation support.",
+      "url": "https://example.com/blog/choosing-installers#references"
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Verify Insurance",
+      "text": "Confirm installer has public liability insurance (minimum £5 million) and workmanship warranty (minimum 2 years).",
+      "url": "https://example.com/blog/choosing-installers#insurance"
+    }
+  ],
+  "totalTime": "PT2H"
+}
+```
+
+### When to Use HowTo Schema
+
+✅ **Use for:**
+- "How to choose" guides
+- Step-by-step instructions
+- Process explanations
+- Comparison methodologies
+
+❌ **Don't use for:**
+- Cost breakdowns (use Article schema)
+- Informational content without steps
+- FAQs (use FAQPage schema)
+
+### HowTo Guidelines
+
+**Number of steps:**
+- Minimum: 3 steps
+- Maximum: 10 steps (if more, break into multiple guides)
+
+**Step descriptions:**
+- 20-60 words per step
+- Specific, actionable
+- Include "why" not just "what"
+
+**totalTime field:**
+- Use ISO 8601 duration format (PT2H = 2 hours)
+- Estimate realistic time to complete all steps
+
+---
+
+## Meta Description (LLM Summarization + CTR Optimization)
+
+Meta descriptions serve dual purpose:
+1. Human click-through from search results
+2. LLM summary source for AI overviews
+
+### Formula
+
+```
+[Direct Answer] + [Key Benefit] + [Social Proof/Number] + [CTA]
+```
+
+**Examples:**
+
+✅ **Commercial intent:**
+```
+UK solar panel installation costs £5,000-£8,000 for standard homes. Get accurate pricing, compare quotes from 200+ verified installers, and calculate your savings in 2 minutes.
+```
+(159 chars)
+
+✅ **Informational intent:**
+```
+Solar panels last 25-30 years with minimal maintenance. Learn performance expectations, warranty details, and long-term cost savings from industry experts.
+```
+(157 chars)
+
+✅ **Comparison intent:**
+```
+Monocrystalline vs polycrystalline solar panels compared: efficiency, cost, lifespan. Based on 200+ installations, find which suits your roof and budget.
+```
+(156 chars)
+
+✅ **Transactional intent:**
+```
+Get instant solar panel quotes from MCS-certified UK installers. Compare prices, check availability, and book surveys online. Free, no-obligation quotes in 24 hours.
+```
+(159 chars)
+
+### Requirements
+
+- **Length:** 150-160 characters (Google's display limit)
+- **Include:** Primary keyword, number/statistic, year (for dated content)
+- **Tone:** Direct, benefit-focused, no fluff
+- **Avoid:** "Click here", "Learn more", generic phrases
+- **First sentence:** Must be a direct answer to title question
+
+### LLM Optimization
+
+LLMs prioritize meta descriptions when summarizing. Ensure:
+- First sentence = direct answer to title question
+- Includes key entity/topic clearly
+- Mentions any unique data points ("based on 200+ installations")
+- No marketing fluff that dilutes information density
+
+**Testing:**
+Ask yourself: "If an LLM could only read the meta description, would it accurately answer the user's query?"
+
+---
+
 ## Image Handling
+
+### Image SEO (Critical for Visual Search & Accessibility)
+
+#### File Naming Convention
+
+❌ **Bad:** `IMG_1234.jpg`, `screenshot.png`, `image-1.webp`
+
+✅ **Good:** `solar-panel-installation-london-2025.webp`
+
+**Rules:**
+- Descriptive file names with primary keyword
+- Lowercase, hyphens (not underscores)
+- Include year for dated content
+- Include location for local services
+- Avoid generic names: `photo.jpg`, `pic1.jpg`, `final.jpg`
+
+**Examples:**
+```
+solar-panel-roof-installation-process.webp
+cost-breakdown-chart-uk-2025.webp
+mcs-certified-installer-badge.svg
+before-after-energy-bills-comparison.png
+```
+
+#### Image Captions
+
+**Required for:**
+- Screenshots of tools/systems (E-E-A-T proof)
+- Before/after comparisons
+- Case study images
+- Data visualizations/charts
+- Process photos
+
+**Format:**
+```markdown
+![Solar panel installation on Victorian terrace roof](/images/solar-victorian-terrace-install.webp)
+*Professional installation on a Victorian terrace in Islington, completed in 1.5 days (March 2025)*
+```
+
+**Caption guidelines:**
+- Provide context beyond alt text
+- Include date/location for credibility
+- Cite source for third-party images
+- Keep under 20 words
+- Start with active description
+
+#### Surrounding Text Optimization
+
+Google uses text surrounding images for context. Ensure:
+- Primary keyword mentioned within 20 words before/after image
+- Image placement logically relates to adjacent paragraph
+- Don't orphan images (always surrounded by relevant text)
+- Previous paragraph should introduce what image shows
+
+**Example:**
+```markdown
+The installation process typically takes 1-2 days for standard homes.
+Professional teams arrive with all equipment and complete the mounting,
+wiring, and commissioning in a single visit.
+
+![Professional team installing solar panels on residential roof](/images/team-install.webp)
+*Two-person installation team mounting panels on a south-facing roof (typical 1-day job)*
+
+After mounting the panels, the electrician connects the inverter to your
+consumer unit and configures the system for grid connection.
+```
+
+#### Image Structured Data
+
+For key images (hero, case studies, results):
+
+```json
+{
+  "@type": "ImageObject",
+  "contentUrl": "https://example.com/images/solar-install.webp",
+  "caption": "Solar panel installation on Victorian terrace, Islington 2025",
+  "creditText": "Company Name Photography",
+  "creator": {
+    "@type": "Person",
+    "name": "Photographer Name"
+  },
+  "copyrightNotice": "© 2025 Company Name",
+  "license": "https://creativecommons.org/licenses/by/4.0/"
+}
+```
 
 ### Hero Image
 ```astro

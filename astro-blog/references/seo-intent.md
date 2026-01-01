@@ -262,6 +262,134 @@ externalLinks:
 
 ---
 
+## Semantic Keywords (LSI) Without Stuffing
+
+Modern SEO requires **topic coverage**, not keyword repetition. Google understands synonyms and related concepts.
+
+### What Are Semantic Keywords?
+
+Semantic keywords (Latent Semantic Indexing) are terms and phrases naturally related to your primary keyword. They signal comprehensive topic coverage without keyword stuffing.
+
+### How to Find Semantic Keywords
+
+**Google "People Also Ask":**
+- Questions reveal related concepts users search for
+- Each PAA expansion shows semantic relationships
+
+**Google autocomplete:**
+- Type primary keyword + "how", "what", "why"
+- Suggestions show common semantic variations
+
+**Top-ranking competitors:**
+- What terminology do they use?
+- What subtopics do they cover?
+
+**Industry terminology:**
+- Technical terms experts use
+- Process steps and stages
+- Equipment/tool names
+- Regulatory/certification terms
+
+### Integration Strategy
+
+**DON'T:** Force exact-match keywords unnaturally
+
+❌ **Bad (keyword stuffing):**
+```markdown
+Solar panel installation is important. When choosing solar panel installation,
+consider solar panel installation costs. Our solar panel installation service
+offers solar panel installation quotes.
+```
+
+**DO:** Use semantic keywords naturally in context
+
+✅ **Good (semantic coverage):**
+```markdown
+Installing photovoltaic systems requires careful planning. When choosing renewable
+energy solutions, consider equipment costs, labor rates, and grid-tied inverter
+specifications. Our service offers detailed quotes covering mounting hardware,
+electrical work, and MCS certification.
+```
+(Uses: photovoltaic systems, renewable energy, grid-tied, mounting hardware, MCS certification - all semantically related without repeating "solar panel installation")
+
+### Example: "Solar Panel Installation"
+
+**Related terms to include naturally:**
+
+**Process terms:**
+- Mounting, wiring, commissioning
+- Inverter installation, grid connection
+- Scaffolding setup, roof survey
+- System sizing, load calculation
+
+**Product/equipment:**
+- Photovoltaic panels, monocrystalline modules
+- String inverters, micro-inverters, optimizers
+- Mounting rails, flashings, conduit
+- Consumer unit, generation meter
+
+**Specifications:**
+- kWp capacity, efficiency rating
+- Panel degradation, performance warranty
+- System voltage, array configuration
+
+**Commercial terms:**
+- Installation quotes, project costs
+- ROI calculations, payback period
+- Smart Export Guarantee, feed-in tariff
+- Energy bill savings, generation income
+
+**Regulatory:**
+- MCS certification, building regulations
+- Permitted development, planning permission
+- DNO notification, G99 application
+- Electrical safety compliance
+
+### By Intent Type
+
+**Informational intent** ("how to choose solar panels"):
+- Selection criteria, comparison factors
+- Technology types, efficiency metrics
+- Performance testing, warranty terms
+- Expert recommendations, buyer's guide
+
+**Commercial intent** ("solar panel cost"):
+- Pricing breakdown, quote components
+- Budget considerations, financing options
+- Cost factors, price drivers
+- Value comparison, ROI analysis
+
+**Comparison intent** ("monocrystalline vs polycrystalline"):
+- Performance differences, efficiency gap
+- Cost trade-offs, warranty comparison
+- Suitability factors, application scenarios
+- Long-term value, degradation rates
+
+**Transactional intent** ("book solar installation"):
+- Service availability, appointment booking
+- Installation timeline, project scheduling
+- Quote process, survey requirements
+- Deposit terms, payment options
+
+### Coverage Rules
+
+- **Variety:** Don't repeat same phrase - use semantic alternatives
+- **Natural:** Trust Google understands synonyms and related concepts
+- **Depth:** Cover subtopics thoroughly rather than keyword density
+- **Context:** Related terms should fit naturally in sentences
+
+### Testing Semantic Coverage
+
+**Ask yourself:**
+1. Have I covered all major subtopics of this keyword?
+2. Am I using industry-standard terminology where appropriate?
+3. Would an expert recognize comprehensive coverage?
+4. Have I explained processes/concepts fully without repetition?
+
+**Good semantic coverage = comprehensive topic authority without keyword stuffing.**
+
+---
+
 ## Phase 1 Output Template
 
 Before proceeding to Phase 2, document:

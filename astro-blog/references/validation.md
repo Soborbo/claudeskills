@@ -215,8 +215,15 @@ du -sh dist/_astro/*.css | awk '{if ($1 > "50K") print "❌ CSS too large: " $0;
 | First link position | Within first 100 words |
 | Anchor text | Descriptive, no "click here" |
 | **Images** | **3-5 standard, 6-10 pillar (every 250-350 words)** |
+| **Image file naming** | **Descriptive with keywords (not IMG_1234.jpg)** |
+| **Image captions** | **Present for screenshots, case studies, charts** |
 | **Videos** | **0-1 standard, 1-2 pillar (facade loading required)** |
+| **Video chapters** | **If video present, min 3 chapter timestamps included** |
 | **Visual spacing** | **No text blocks >350 words without visual break** |
+| **Paragraph length** | **Max 100 words, prefer 50-80 words** |
+| **H3 subheadings** | **Used for H2 sections >400 words (max 3-4 per H2)** |
+| **Lists vs prose** | **3+ related items use lists, not prose** |
+| **Technical definitions** | **First mention of technical terms = bold + 15-25 word definition** |
 
 ### External Links (Elite Strategy)
 
@@ -297,7 +304,12 @@ grep -r '<nav' src/components | grep -v 'aria-label' | wc -l
 | Check | Pass Criteria |
 |-------|---------------|
 | Required frontmatter | title, description, pubDate, intent, topic, primaryCTA, category |
+| **Meta description** | **150-160 chars: [Answer] + [Benefit] + [Proof] + [CTA]** |
+| **Meta description first sentence** | **Direct answer to title question** |
 | Schema present | @graph JSON-LD block |
+| **FAQ schema** | **Required for commercial/comparison (3-5 questions standard, 5-8 pillar)** |
+| **HowTo schema** | **Required for process/guide articles (3-10 steps)** |
+| **Semantic keyword coverage** | **Related terms used naturally, no keyword stuffing** |
 | Images optimized | Hero: eager, others: lazy |
 | **TypeScript strict** | **No `any` types, explicit return types** |
 | **Components typed** | **All components have Props interface** |
@@ -376,6 +388,8 @@ If implementing automated checks:
 // Critical failures (block publish)
 if (!frontmatter.intent) fail("Missing intent");
 if (!frontmatter.primaryCTA) fail("Missing primaryCTA");
+if (!frontmatter.description) fail("Missing meta description");
+if (frontmatter.description.length < 150 || frontmatter.description.length > 160) fail("Meta description must be 150-160 chars");
 if (wordCount < 500) fail("Under 500 words");
 if (wordCount > 1000 && !hasTLDR) fail("Missing TL;DR");
 if (wordCount > 800 && !hasTOC) fail("Missing Table of Contents");
@@ -386,9 +400,20 @@ if (h2Count < 2) fail("Need minimum 2 H2 sections");
 if (h2Count < 3 && wordCount > 1000) warn("Prefer 3-4 H2 sections for standard articles");
 if (imageCount < 3 && wordCount > 1000) fail("Need 3-5 images for standard article");
 if (imageCount < 6 && isPillar) fail("Need 6-10 images for pillar article");
+if (hasGenericImageNames) warn("Image files have generic names (IMG_1234.jpg). Use descriptive names.");
+if (hasImagesWithoutCaptions && hasScreenshots) warn("Screenshots/charts missing captions");
 if (hasLongTextBlocks > 350) warn("Text block exceeds 350 words without visual break");
+if (hasLongParagraphs > 100) warn("Paragraph exceeds 100 words");
 if (hasVagueH2s) fail("Vague H2 detected");
 if (hasBadAnchors) fail("Bad anchor text");
+if (hasVideo && !hasVideoChapters) warn("Video present but no chapter timestamps");
+if (hasH2Over400Words && !hasH3s) warn("H2 section exceeds 400 words without H3 subheadings");
+if (has3PlusItemsInProse) warn("3+ related items in prose should be list");
+if (hasTechnicalTermsWithoutDefinition) warn("Technical terms not defined on first mention");
+
+// Structured data checks
+if ((intent === 'commercial' || intent === 'comparison') && !hasFAQSchema) fail("FAQ schema required for commercial/comparison content");
+if (titleStartsWith('How to') && !hasHowToSchema) warn("HowTo schema recommended for process guides");
 
 // Quality warnings (review recommended)
 if (!hasInformationGainSignals) warn("No Information Gain signals");
@@ -396,7 +421,148 @@ if (!hasSourcedStats) warn("Statistics without sources");
 if (hasWeakOpenings) warn("Weak paragraph openings");
 if (externalLinks < 4) warn("Consider adding more authority links (min 4)");
 if (!hasAuthorityDomains) warn("Missing high-authority external links (gov.uk, .ac.uk, Which?, etc.)");
+if (!hasSemanticKeywords) warn("Limited semantic keyword coverage - consider related terms");
+if (hasKeywordStuffing) fail("Keyword stuffing detected - use semantic variations");
 ```
+
+---
+
+## Content Freshness Strategy (Post-Publish)
+
+Search engines and LLMs prioritize fresh, updated content. Implement a systematic refresh strategy.
+
+### Update Triggers
+
+**Immediate updates required:**
+- **Regulatory changes** - New laws, building regulations, certification requirements
+- **Major price shifts** - Industry-wide cost increases >15%
+- **Safety recalls or warnings** - Product/service safety issues
+- **Factual errors reported** - Incorrect data or outdated information
+
+**Scheduled reviews:**
+- **Commercial content** - 6-month review cycle (pricing, quotes, availability)
+- **Informational content** - 12-month review cycle (general advice, how-tos)
+- **Comparison content** - 6-month review cycle (product/service changes)
+- **YMYL content** - 3-month review cycle (health, finance, legal)
+- **Seasonal content** - Annual review before peak season
+
+**Data-driven triggers:**
+- Rankings drop >5 positions for primary keyword
+- Click-through rate decreases >20% month-over-month
+- Competitor publishes more recent content on same topic
+- "People Also Ask" questions change significantly
+
+### Update Protocol
+
+**Minor updates (no full rewrite):**
+1. Update `updatedDate` in frontmatter
+2. Change year in title if applicable ("2025" → "2026")
+3. Update statistics with latest data
+4. Add "Last updated: [Month Year]" banner at top
+5. Review external links (check for 404s, replace outdated sources)
+6. Update screenshots if UI/pricing changed
+
+**Major updates (significant content changes):**
+1. Add update note banner:
+```markdown
+> **Update [Month Year]:** This guide has been updated with [what changed].
+> [Brief 1-2 sentence summary of changes].
+```
+
+2. Update frontmatter:
+```yaml
+pubDate: 2025-01-15    # original publish date (don't change)
+updatedDate: 2026-01-20  # most recent update
+```
+
+3. Update schema `dateModified` field
+
+4. Re-submit to Google Search Console for indexing
+
+**When to create new article instead:**
+- Topic has fundamentally changed (old advice no longer applicable)
+- Regulatory environment completely different
+- URL/slug needs to change for better keyword targeting
+- Original article was low quality and needs complete rewrite
+
+### Freshness Signals to Include
+
+**Explicit date mentions:**
+```markdown
+✅ "As of January 2026, UK solar installation costs average £6,200..."
+✅ "The 2026 Smart Export Guarantee rates range from 4-7p per kWh..."
+✅ "Updated building regulations (effective April 2026) now require..."
+```
+
+**Current statistics:**
+- Include publication year in citation: "(ONS 2025)"
+- Use "latest available data" when most recent
+- State data collection period: "January-December 2025 data shows..."
+
+**Visual freshness:**
+- Update screenshots showing current UI/pricing
+- Replace dated imagery (clothing styles, car models, technology)
+- Update charts/graphs with current year data
+
+**Updated examples:**
+- Case studies from last 12 months
+- Current product versions/models
+- Recent client projects (with dates)
+
+### Freshness Checklist
+
+Before marking update complete:
+
+- [ ] `updatedDate` field updated in frontmatter
+- [ ] Year in title updated (if year-specific content)
+- [ ] All statistics reviewed and updated/re-verified
+- [ ] External links checked (no 404s, sources still credible)
+- [ ] Screenshots updated if UI/pricing changed
+- [ ] "Last updated" banner added at top (if major update)
+- [ ] Schema `dateModified` field updated
+- [ ] Update note added explaining what changed (if significant)
+- [ ] Re-submitted to Google Search Console
+- [ ] Internal links to this page still relevant
+
+### Update Note Examples
+
+**Minor update:**
+```markdown
+> **Last updated: January 2026** - Pricing data and statistics refreshed with latest industry figures.
+```
+
+**Major update:**
+```markdown
+> **Update January 2026:** This guide has been updated to reflect the new MCS certification requirements (effective April 2026) and updated Smart Export Guarantee rates. Average installation costs have increased 8% year-over-year.
+```
+
+**Regulatory change:**
+```markdown
+> **Important Update (March 2026):** Building regulations changed on 1 April 2026. All new installations now require additional electrical safety certification. This guide reflects the updated requirements.
+```
+
+### Tracking Updates
+
+**Maintain update log** (in frontmatter or separate file):
+
+```yaml
+updateHistory:
+  - date: 2026-01-20
+    type: minor
+    changes: "Updated pricing data, refreshed statistics"
+  - date: 2025-07-15
+    type: major
+    changes: "Added new MCS requirements, updated installation process"
+  - date: 2025-01-15
+    type: publish
+    changes: "Initial publication"
+```
+
+**Analytics to monitor:**
+- Organic traffic trend after update
+- Rankings for primary keyword (should stabilize/improve within 2-4 weeks)
+- Click-through rate from search results
+- Time on page (should increase if update improved content)
 
 ---
 

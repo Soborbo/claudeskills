@@ -226,6 +226,163 @@ End: Related Posts component (auto-generated)
 
 ---
 
+## H3 Subheadings (Optional but Recommended)
+
+H3s break up long H2 sections into scannable chunks for better readability.
+
+### When to Use H3s
+
+✅ **Use when:**
+- H2 section exceeds 400 words
+- Multiple sub-topics within one H2
+- Step-by-step instructions need clear stages
+- Before/after comparisons
+- Breaking down complex concepts
+
+❌ **Don't use when:**
+- H2 section is under 300 words (unnecessary fragmentation)
+- Only one sub-point to make (keep as prose)
+- Already using lists or tables for structure
+
+### H3 Rules
+
+- **Length:** 2-4 words maximum (shorter than H2s)
+- **Descriptive:** Must indicate what the subsection covers
+- **Not generic:** Avoid "Details", "More", "Additional Info"
+- **Visual breaks:** Use for scanability, not SEO keyword stuffing
+- **Frequency:** Maximum 3-4 H3s per H2 section
+
+### Example Structure
+
+```markdown
+## How Much Does Solar Installation Cost? (H2 - 800 words total)
+
+### Standard Home (H3)
+[150-200 words about typical 3-bed semi costs]
+
+### Large Property (H3)
+[150-200 words about detached/4-bed+ costs]
+
+### Cost Breakdown (H3)
+[200-250 words itemizing panels, inverter, labor, scaffolding]
+
+### Hidden Costs (H3)
+[150-200 words about roof repairs, electrical upgrades, planning fees]
+```
+
+### H3 Best Practices
+
+✅ **Good H3s (specific):**
+- "Standard Home" (clear scope)
+- "Premium Materials" (defines category)
+- "Off-Peak Discounts" (actionable topic)
+- "Warranty Coverage" (clear benefit)
+
+❌ **Bad H3s (vague):**
+- "More Details" (what details?)
+- "Important Info" (too generic)
+- "Things to Consider" (not specific)
+- "Additional Notes" (filler)
+
+### Mobile Consideration
+
+H3s are especially valuable on mobile where:
+- Users scan headings to jump to relevant sections
+- Long paragraphs feel overwhelming
+- Quick answers are preferred
+
+**Avoid:** Too many H3s create choppy experience. If you have 6+ H3s in one H2, consider splitting into multiple H2 sections instead.
+
+---
+
+## White Space & Visual Breathing Room (Mobile Readability)
+
+Dense text blocks reduce engagement, especially on mobile where screens are smaller.
+
+### Maximum Text Block Rule
+
+**Never exceed 3 paragraphs without a visual break.**
+
+Visual breaks include:
+- Images
+- Lists (bulleted or numbered)
+- Tables
+- Components (EngagementHook, ExpertInsight, InternalLinks)
+- Blockquotes
+- H3 subheadings
+
+### List Preference
+
+When presenting **3+ related items**, prefer lists over paragraph form:
+
+❌ **Dense paragraph:**
+```markdown
+The installation includes solar panels and mounting hardware, an inverter and optimizers for maximum efficiency, all electrical wiring and connection to your consumer unit, scaffolding and safety equipment for the installation team, MCS certification paperwork for your records, and building control notification.
+```
+(94 words, hard to scan)
+
+✅ **Scannable list:**
+```markdown
+**What's Included:**
+- Solar panels and mounting hardware
+- Inverter and optimizers
+- Electrical wiring and consumer unit connection
+- Scaffolding and safety equipment
+- MCS certification paperwork
+- Building control notification
+```
+(36 words, immediately scannable)
+
+### Blockquote Usage
+
+Use blockquotes for important callouts or emphasis (1-2 per article maximum):
+
+```markdown
+> **Important:** All UK solar installations require MCS certification to qualify for the Smart Export Guarantee and manufacturer warranties.
+```
+
+**When to use:**
+- Critical warnings or requirements
+- Key takeaway summaries
+- Memorable expert quotes
+
+**Don't overuse:** More than 2 blockquotes per article = loses impact.
+
+### Horizontal Rules
+
+Use sparingly (`---`) for major section breaks:
+
+✅ **Good use:** Between major topic shifts (intro → main content → FAQ)
+❌ **Overuse:** After every H2 or between paragraphs (creates fragmented feel)
+
+### Mobile-Specific Formatting
+
+**Paragraph breaks display larger on mobile:**
+- Standard desktop paragraph spacing: 1.5em
+- Mobile paragraph spacing: 2em (feels more open)
+- Keep paragraphs to 2-3 sentences on mobile
+
+**Images should be full-width on mobile:**
+- Desktop: Images can be 60-80% width with text wrap
+- Mobile (<768px): Images should be 100% width for clarity
+
+**No side-by-side content:**
+- Tables must be responsive (scroll horizontally or stack on mobile)
+- Two-column layouts must stack to single column
+- Comparison sections should use vertical layout on mobile
+
+### White Space Checklist
+
+- [ ] No more than 3 consecutive paragraphs without visual break
+- [ ] Lists used for 3+ related items (instead of prose)
+- [ ] Images placed every 250-350 words
+- [ ] H3s used to break sections over 400 words
+- [ ] Blockquotes limited to 1-2 per article
+- [ ] Tables are mobile-responsive
+- [ ] No horizontal rules between every section
+
+---
+
 ## Components
 
 ### QueryAnswer
