@@ -1,20 +1,23 @@
 ---
 name: astro-blog
-description: Systematic blog creation with checklist-driven workflow. Minimal token usage, maximum quality.
+description: Self-contained checklist workflow for perfect blog articles. 95% token reduction, zero quality compromise.
 ---
 
 # Astro Blog Skill
 
 ## How This Works
 
-**Primary:** Use `references/CHECKLIST.md` as your systematic workflow
-**Secondary:** Reference detailed guides only when you need implementation details
+**Primary:** Use `references/CHECKLIST.md` as your complete, self-contained workflow
+**Secondary:** Detailed reference files available but rarely needed
+
+**CHECKLIST.md is self-contained** - All essential guidance is inline. Work through it systematically without jumping to other files.
 
 This approach:
-- ✅ Uses ~300 lines instead of ~8,000 lines per article
+- ✅ Uses ~400 lines (self-contained) instead of ~8,000 lines across multiple files
 - ✅ Ensures nothing gets missed (systematic checkboxes)
 - ✅ Shows priorities clearly (⭐ ALWAYS, 🎯 HIGH-VALUE, 📅 PERIODIC, 💡 OPTIONAL)
-- ✅ Links to details when needed
+- ✅ Includes examples, formulas, and specific guidance inline
+- ✅ Reference files only for edge cases
 
 ---
 
@@ -30,10 +33,12 @@ Follow the 5-phase checklist systematically:
 4. **PHASE 4:** Technical Implementation
 5. **PHASE 5:** Validation
 
-**When to read detailed references:**
-- Need implementation details? Click the links in CHECKLIST.md
-- Unclear on a rule? Read the referenced section
-- Otherwise: Stay in CHECKLIST.md and work through the checkboxes
+**99% of articles:** CHECKLIST.md alone is sufficient. Work through it systematically.
+
+**Read detailed references ONLY when:**
+- Stuck on complex implementation (unusual schema, component edge cases)
+- Need deeper understanding of WHY a rule exists
+- Working on first article (read `human-voice.md` in Phase 3)
 
 ---
 
@@ -83,18 +88,18 @@ experienceVerified: false  # true only after human checks ExperienceBlock data
 
 ---
 
-## Detailed Reference Files (On-Demand)
+## Detailed Reference Files (Rarely Needed)
 
-**Read these ONLY when you need implementation details:**
+**CHECKLIST.md contains everything you need.** Reference files below are for edge cases only.
 
-- `references/CHECKLIST.md` - ⭐ **START HERE** (systematic workflow)
-- `references/human-voice.md` - Avoiding AI patterns (read in Phase 3)
-- `references/seo-intent.md` - SEO research, SERP features, Skyscraper
-- `references/content-structure.md` - Components, pillar-cluster, social proof
-- `references/writing-rules.md` - Featured snippets, readability, definitions
-- `references/technical.md` - Schema, performance, content decay
-- `references/validation.md` - All validation checks
-- `references/visual-design.md` - Component styling
+- `references/CHECKLIST.md` - ⭐ **START HERE** (self-contained, complete workflow)
+- `references/human-voice.md` - AI pattern avoidance (recommended read for first article)
+- `references/seo-intent.md` - Deep dive: Skyscraper technique, SERP feature strategies
+- `references/content-structure.md` - Deep dive: Component examples, pillar-cluster details
+- `references/writing-rules.md` - Deep dive: Advanced snippet formatting
+- `references/technical.md` - Deep dive: Complex schema, monitoring tools
+- `references/validation.md` - Deep dive: Detailed validation criteria
+- `references/visual-design.md` - Deep dive: Component styling edge cases
 
 ---
 
