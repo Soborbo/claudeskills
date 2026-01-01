@@ -36,10 +36,11 @@ Output: Full outline with QueryAnswer, TL;DR, hooks, CTAs
 ---
 
 ## PHASE 3: WRITE
+**→ Read `references/human-voice.md` NOW (CRITICAL - avoid AI patterns)**
 **→ Read `references/writing-rules.md` NOW**
 
-Do: Write answer-first paragraphs, entity as subject, cite sources
-Constraints: No vague H2s, no "Many people...", all stats sourced
+Do: Write with human voice, vary paragraph styles, cite sources, weave in experience
+Constraints: No AI-like patterns, no component overload, all stats sourced
 
 ---
 
@@ -85,21 +86,24 @@ experienceVerified: false  # true only after human checks ExperienceBlock data
 ```
 
 ### Critical Rules (Always Apply)
-1. Answer in first 120 words (QueryAnswer)
-2. H2s = specific questions, never "Overview"
-3. Internal links: 2-4 standard, **8-12 for pillar** content
-4. **External links: min 3 (citation + authority + reputation)** with context
-5. Entity in subject position
-6. All stats have sources
-7. TL;DR required if >1000 words
-8. CTA matches intent
-9. ExperienceBlock required for commercial/comparison content
-10. **ExpertInsight at end of each H2** (practical insider tips only)
-11. Author credentials verifiable (LinkedIn + industry profile)
-12. ExperienceBlock data must be real or marked as placeholder
-13. ARIA labels on complex components
-14. **Transactional pages MUST have interactive tool/calculator**
-15. **External rel attrs: `noopener noreferrer`, `nofollow sponsored` for affiliate**
+1. **HUMAN VOICE FIRST** - Read human-voice.md before writing
+2. **Component density limits** - 5-7 max standard, 8-12 max pillar (total)
+3. Answer in first 120 words (QueryAnswer)
+4. H2s = prefer specific questions, allow contextual when natural
+5. Internal links: 2-4 standard, **8-12 for pillar** content
+6. **External links: min 3 (citation + authority + reputation)** with context
+7. All stats have sources
+8. TL;DR required if >1000 words
+9. CTA matches intent
+10. Experience required for commercial/comparison (can be woven in prose)
+11. **ExpertInsight sparingly** - 1-2 standard, 2-3 pillar (NOT one per H2!)
+12. Author credentials verifiable (LinkedIn + industry profile)
+13. ExperienceBlock data must be real or marked as placeholder
+14. ARIA labels on complex components
+15. **Transactional pages MUST have interactive tool/calculator**
+16. **External rel attrs: `noopener noreferrer`, `nofollow sponsored` for affiliate**
+17. **Performance: <100KB JS, <50KB CSS, ≥90 mobile Lighthouse**
+18. **No `client:load` - use `client:visible` or `client:idle`**
 
 ### File Structure
 ```

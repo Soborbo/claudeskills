@@ -1,8 +1,24 @@
 # Phase 3: Writing Rules
 
-## Answer-First Paragraphs
+**⚠️ CRITICAL: Read `references/human-voice.md` FIRST to avoid AI-like writing patterns.**
 
-Every paragraph's **first sentence** contains the key information. LLMs extract first sentences for RAG.
+## Answer-First Paragraphs (Use Strategically)
+
+Answer-first paragraphs work well for direct questions and QueryAnswer sections. **Don't use them universally** or writing becomes robotic.
+
+### When to Use Answer-First
+
+✅ **Use for:**
+- QueryAnswer section (required)
+- Direct "how much" or "how long" questions
+- Cost breakdowns and pricing sections
+- First paragraph after H2s
+
+✅ **Don't use for:**
+- Personal stories and case studies
+- Problem → solution narratives
+- Engaging section openings
+- Building suspense or interest
 
 ### The Pattern
 ```
@@ -13,19 +29,28 @@ Every paragraph's **first sentence** contains the key information. LLMs extract 
 
 ### Examples
 
-❌ **Bad (context-first):**
+❌ **Bad (context-first for a direct question):**
 "Many people wonder about service costs. This is a common question. The truth is, it depends on many factors. Generally speaking, you can expect to pay £500-£1,500."
 
-✅ **Good (answer-first):**
+✅ **Good (answer-first for direct question):**
 "A typical service costs £800-£1,200 in the UK. This price includes standard deliverables and support. Factors like complexity and location can adjust this by ±30%."
 
-### Forbidden Openings
-- "Many people..."
-- "It's important to note..."
-- "In this section..."
-- "When it comes to..."
-- "Let's explore..."
-- "As you may know..."
+✅ **Also good (narrative approach for engagement):**
+"Last month, a client called us with three quotes ranging from £500 to £1,800 for identical work. The confusion is understandable—without knowing what's included, prices look random. Here's what actually determines the final cost."
+
+### Transitional Phrases - Use Sparingly
+
+**ALLOWED in moderation:**
+- "Many homeowners ask about..." (transitioning to FAQ)
+- "It's worth noting that..." (important caveats)
+- "When choosing a provider..." (natural advice)
+- "Here's what matters..." (emphasis)
+
+**FORBIDDEN:**
+- Starting 3+ paragraphs with the same phrase
+- "Let's explore..." or "Let's dive into..." (too blog-coach)
+- "In today's world..." or "In this day and age..." (cliché)
+- Using them as filler when you don't know what to say
 
 ---
 
@@ -106,21 +131,28 @@ Or inline:
 
 ## Entity Salience in Writing
 
-### Subject Position Rule
-Main entity = grammatical subject.
+### Balanced Entity Approach
 
-❌ "Many homeowners choose professional services"
-✅ "Professional services handle 80% of UK projects"
+Mention the main entity frequently and prominently. **Don't sacrifice natural phrasing for rigid subject-position rules.**
 
-### First Sentence Check
-After writing each H2 section, verify:
-- Is the section's main entity the subject of the first sentence?
+**REQUIRED:**
+- First paragraph: main entity prominent (as subject OR mentioned clearly)
+- First sentence after H2: entity present and clear
+- Entity mentioned regularly throughout (density matters)
+
+**ALLOWED natural phrasing:**
+✅ "Many homeowners choose professional services" (natural, conversational)
+✅ "Our clients typically see ROI in 5-7 years" (human voice)
+✅ "When you're comparing quotes..." (addresses reader)
+✅ "Professional services handle 80% of UK projects" (entity as subject also fine)
+
+**Key insight:** Entity density (mentioning it regularly) matters more than forcing it into subject position every sentence.
 
 ---
 
 ## Engagement Hooks
 
-Insert every 300-400 words to maintain reader engagement.
+Use **sparingly** to break up long sections. **Maximum 0-2 per standard article, 2-4 per pillar.** Overuse creates template-like feel.
 
 ### Types & Usage
 
@@ -152,6 +184,8 @@ Insert every 300-400 words to maintain reader engagement.
 </EngagementHook>
 ```
 
+**⚠️ Don't overuse:** Every 300-400 words = 4-5 hooks per article = AI-like pattern. Use only where genuinely valuable.
+
 ---
 
 ## Word Count Guidelines
@@ -168,13 +202,21 @@ Insert every 300-400 words to maintain reader engagement.
 
 Before moving to Phase 4:
 
-- [ ] Every paragraph starts with key information
-- [ ] No forbidden openings used
-- [ ] Entity in subject position in section openers
+**Human Voice (CRITICAL):**
+- [ ] Read `references/human-voice.md` and apply guidelines
+- [ ] Passed "The Human Test" (would someone know AI wrote this?)
+- [ ] Paragraph variety (not answer-first for every paragraph)
+- [ ] Component density reasonable (5-7 max for standard article)
+- [ ] Natural transitions and phrasing
+
+**Content Quality:**
+- [ ] Answer-first used strategically (not universally)
+- [ ] No forbidden phrases as filler
+- [ ] Entity mentioned regularly and naturally
 - [ ] All statistics have sources
-- [ ] Tables used for comparisons
-- [ ] EngagementHooks every 300-400 words
-- [ ] ExpertInsight at end of each H2 section
+- [ ] Tables used for complex comparisons (not every comparison)
+- [ ] EngagementHooks used sparingly (0-2 per standard article)
+- [ ] ExpertInsight used sparingly (1-2 per standard article)
 - [ ] 2-4 internal links placed (first within 100 words)
 - [ ] 3+ external links with proper context sentences
 - [ ] No "vacuum" anchors (here, source, click here)

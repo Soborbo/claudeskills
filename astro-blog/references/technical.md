@@ -1,5 +1,199 @@
 # Phase 4: Technical Implementation
 
+**⚠️ CRITICAL: All code must comply with HARD-RULES.md (TypeScript strict mode, performance budgets, security)**
+
+---
+
+## TypeScript Requirements (HARD-RULES Compliance)
+
+All blog components and utilities must follow strict TypeScript standards.
+
+### Component Typing
+
+```typescript
+// ❌ BAD - No types
+export const ExpertInsight = ({ avatar, tip }) => {
+  return <aside>...</aside>
+}
+
+// ✅ GOOD - Explicit Props interface
+interface Props {
+  avatar: string;
+  tip: string;
+}
+
+export const ExpertInsight = ({ avatar, tip }: Props) => {
+  return <aside>...</aside>
+}
+```
+
+### Strict Mode Requirements
+
+- ✅ `strict: true` in `tsconfig.json`
+- ❌ NO `any` types (use `unknown` and type guards if needed)
+- ❌ NO `@ts-ignore` without GitHub issue link
+- ✅ Explicit return types on all functions
+- ❌ NO generic variable names: `data`, `result`, `item`, `temp`, `info`, `response`
+
+```typescript
+// ❌ BAD
+function getPost(slug: any) {
+  const data = await fetch(...);
+  return data;
+}
+
+// ✅ GOOD
+interface BlogPost {
+  title: string;
+  content: string;
+  frontmatter: Frontmatter;
+}
+
+async function getPost(slug: string): Promise<BlogPost> {
+  const post = await fetch(...);
+  return post;
+}
+```
+
+---
+
+## Component Hydration Strategy (HARD-RULES Compliance)
+
+Interactive blog components must use correct hydration directives.
+
+### Forbidden: client:load
+
+❌ **NEVER use `client:load`** (HARD-RULES forbidden - blocks render)
+
+```astro
+<!-- ❌ BAD - Blocks rendering -->
+<Calculator client:load />
+```
+
+### Required: client:visible or client:idle
+
+✅ **Use appropriate directive:**
+
+```astro
+<!-- ✅ GOOD - Lazy loads when visible -->
+<Calculator client:visible />
+
+<!-- ✅ GOOD - Loads after page interactive -->
+<NewsletterForm client:idle />
+
+<!-- ✅ GOOD - Loads when user interacts -->
+<CommentSection client:media="(max-width: 768px)" />
+```
+
+### Directive Guidelines
+
+| Component Type | Directive | Reason |
+|----------------|-----------|--------|
+| Above-fold calculator | `client:idle` | Loads after critical content |
+| Below-fold interactive | `client:visible` | Loads when scrolled into view |
+| Heavy components | `client:visible` | Defers until needed |
+| Third-party embeds (video) | `client:visible` | Prevents performance hit |
+
+---
+
+## Security: CSP Headers for Embedded Content
+
+**Content Security Policy headers required for embedded calculators, videos, and third-party content.**
+
+### CSP Configuration
+
+```typescript
+// astro.config.mjs
+export default defineConfig({
+  server: {
+    headers: {
+      'Content-Security-Policy': [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.googletagmanager.com",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: https:",
+        "font-src 'self'",
+        "connect-src 'self' https://www.google-analytics.com",
+        "frame-src 'self' https://www.youtube.com https://calculator.example.com",
+        "object-src 'none'"
+      ].join('; ')
+    }
+  }
+});
+```
+
+### Embedding Calculators
+
+```astro
+<!-- With CSP-compliant iframe -->
+<iframe
+  src="/calculators/quote-calculator"
+  title="Quote Calculator"
+  sandbox="allow-scripts allow-same-origin allow-forms"
+  loading="lazy"
+  width="100%"
+  height="600"
+  style="border: 0;"
+></iframe>
+```
+
+**Security checklist for embeds:**
+- [ ] `sandbox` attribute limits iframe capabilities
+- [ ] `loading="lazy"` for below-fold embeds
+- [ ] CSP headers allow the iframe source
+- [ ] No sensitive data passed to third-party embeds
+
+### YouTube Video Embeds (Facade Pattern)
+
+```astro
+---
+// Use facade component to avoid loading YouTube until user clicks
+import YouTubeFacade from '@components/YouTubeFacade.astro';
+---
+
+<YouTubeFacade
+  videoId="dQw4w9WgXcQ"
+  title="Video Title for Accessibility"
+  thumbnail="/images/video-thumb.webp"
+/>
+```
+
+**Facade component:**
+```astro
+---
+interface Props {
+  videoId: string;
+  title: string;
+  thumbnail: string;
+}
+
+const { videoId, title, thumbnail } = Astro.props;
+---
+
+<div class="youtube-facade" data-video-id={videoId}>
+  <img src={thumbnail} alt={title} loading="lazy" />
+  <button type="button" aria-label={`Play video: ${title}`}>
+    <svg><!-- Play icon --></svg>
+  </button>
+</div>
+
+<script>
+  document.querySelectorAll('.youtube-facade button').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const facade = e.target.closest('.youtube-facade');
+      const videoId = facade.dataset.videoId;
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope';
+      iframe.allowFullscreen = true;
+      facade.replaceWith(iframe);
+    });
+  });
+</script>
+```
+
+---
+
 ## E-E-A-T Trust Signals (Critical for 2025)
 
 ### Proof-of-Experience Blocks
@@ -400,13 +594,30 @@ translationOf: hungarian-post-slug  # if this is a translation
 
 Before Phase 5:
 
+**Code Quality:**
+- [ ] TypeScript strict mode enabled
+- [ ] All components have Props interface
+- [ ] No `any` types used
+- [ ] Explicit return types on functions
+- [ ] NO `client:load` directives (use `client:visible` or `client:idle`)
+
+**Security:**
+- [ ] CSP headers configured for embeds
+- [ ] Iframe embeds have `sandbox` attribute
+- [ ] Video embeds use facade pattern (no auto-load)
+
+**Content:**
 - [ ] All frontmatter fields present
 - [ ] Intent matches CTA type
 - [ ] Entities array populated (5-10)
+- [ ] llms.txt entry drafted
+
+**Schema:**
 - [ ] @graph schema complete
 - [ ] @id references correct
 - [ ] Speakable targets QueryAnswer/TL;DR
+
+**Images:**
 - [ ] Hero image: eager + high priority
 - [ ] Other images: lazy
 - [ ] All images have descriptive alt text
-- [ ] llms.txt entry drafted

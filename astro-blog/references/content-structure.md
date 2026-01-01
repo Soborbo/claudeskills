@@ -1,5 +1,7 @@
 # Phase 2: Content Structure
 
+**⚠️ CRITICAL: Read `references/human-voice.md` to avoid AI-like component overload.**
+
 ## Article Architecture
 
 ```
@@ -28,29 +30,31 @@
 
 ---
 
-## H2 Rules (Critical)
+## H2 Rules (Flexible Guidelines)
 
-H2s must be **specific questions or statements**, not vague labels.
-
-### Forbidden H2s
-- "Overview"
-- "Introduction"
-- "Details"
-- "Things to Know"
-- "More Information"
-- "Summary" (at start)
-
-### Good H2s
+**PREFER specific questions** (they rank better):
 - "How much does [service] cost in 2025?"
 - "What's included in a typical quote?"
 - "When is the best time to book?"
 - "Do I need insurance for this?"
 
+**ALLOW contextual headings** when natural:
+- "Understanding Your Options" (if followed by clear breakdown)
+- "Why This Matters for Your Home"
+- "Our Approach to Pricing Transparency"
+- "The Hidden Costs Nobody Mentions"
+
+**STILL FORBIDDEN** (too generic):
+- "Overview" / "Introduction" / "Details"
+- "Things to Know" / "More Information"
+- "Summary" (at start)
+
 ### Requirements
 - Minimum 4 words
-- Contains verb or question word
 - Understandable out of context
 - Self-contained answer follows
+
+**Test:** Can someone scan just H2s and understand article structure? If yes, it works.
 
 ---
 
@@ -94,7 +98,11 @@ Required for articles over 1000 words. Placed after QueryAnswer.
 ---
 
 ### EngagementHook
-Break up content every 300-400 words.
+Use **sparingly** to break up long sections. **Not every 300-400 words.**
+
+**Maximum per article:**
+- Standard (1000-1500w): 0-2 hooks
+- Pillar (2500+w): 2-4 hooks
 
 ```markdown
 <EngagementHook type="stat">
@@ -111,6 +119,8 @@ Break up content every 300-400 words.
 ```
 
 **Types:** `stat`, `question`, `tip`, `quote`
+
+**⚠️ Overuse warning:** Hooks every 300-400 words creates AI-like template feel. Use only where genuinely valuable.
 
 ---
 
@@ -145,9 +155,21 @@ Intent-matched CTA. Placements:
 
 Proof of first-hand experience. **Required for commercial/comparison content.**
 
+**PREFER:** Weave experience into prose naturally (sounds more human)
+
+Example of woven-in experience:
+```markdown
+In the 200+ installations we completed last year, the biggest cost
+surprise came from roof repairs. About 15% of our clients needed
+additional work before panels could be mounted, adding £800-£1,500
+to the final bill. Always get a roof survey first.
+```
+
+**RESERVE component for:** Detailed case studies with data tables, screenshots, or structured proof
+
 ```markdown
 <ExperienceBlock type="case-study">
-**Real Example:** When we worked with [Client] on their [project type], 
+**Real Example:** When we worked with [Client] on their [project type],
 the total cost was £X. The biggest factor was [specific detail] (+£Y).
 </ExperienceBlock>
 ```
@@ -164,6 +186,8 @@ the total cost was £X. The biggest factor was [specific detail] (+£Y).
 **Types:** `case-study`, `data`, `screenshot`, `before-after`, `process`
 
 **Placement:** Within first 500 words for maximum E-E-A-T signal.
+
+**⚠️ Don't box every mention:** "We've found..." or "Our clients..." can be woven into prose without component boxes.
 
 ---
 
@@ -287,10 +311,13 @@ const { avatar, tip } = Astro.props;
 
 ### Placement
 
-- End of each major H2 section (not H3s)
+- End of select major H2 sections (**not every H2**)
 - Before the next H2 heading
-- Typically 2-4 ExpertInsights per standard article
-- 5-8 for pillar articles
+- **Maximum per article:**
+  - Standard (1000-1500w): 1-2 ExpertInsights
+  - Pillar (2500+w): 2-3 ExpertInsights
+
+**⚠️ Don't overuse:** One per H2 section = template-like. Reserve for genuinely insightful tips only.
 
 ### Content Guidelines
 
@@ -300,6 +327,32 @@ const { avatar, tip } = Astro.props;
 ```
 [Specific action] + [Why it works/insider reason] + [Concrete benefit]
 ```
+
+## Comparison Tables - Strategic Use
+
+**DON'T table every comparison.** The old rule "For ANY comparison (X vs Y), include a table" creates spec-sheet feel.
+
+**USE tables for:**
+- Comparing 3+ options across 4+ factors
+- Pricing tiers or packages
+- Data genuinely hard to parse in prose
+
+**USE prose for:**
+- Comparing 2 options with 1-2 differences
+- Building narrative around trade-offs
+- Explaining nuanced decisions
+
+Example where prose works better than table:
+```markdown
+DIY installation saves £1,500-£2,000 but takes 2-3 days of your time and
+carries all the risk if something fails. Professional installation costs
+more upfront but includes insurance, warranty, and—crucially—you're not
+the one on the roof in February.
+```
+
+---
+
+## Media & Interactive Elements
 
 Different intents require different media types to maximize engagement.
 

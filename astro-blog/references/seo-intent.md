@@ -290,4 +290,13 @@ CTA TYPE: [matching intent]
 INTERNAL LINKS PLANNED:
 1. [anchor] → [URL] (within first 100 words)
 2. [anchor] → [URL]
+3. [anchor] → [URL]
+
+EXTERNAL AUTHORITY SOURCES (min 3):
+1. [Citation] → [Source name + URL] (data/statistics)
+2. [Authority] → [Government/professional body + URL] (credibility)
+3. [Reputation] → [Author LinkedIn/profile + URL] (E-E-A-T)
+4. [Additional if needed]
+
+Note: All external links need context sentences and proper rel attributes.
 ```
