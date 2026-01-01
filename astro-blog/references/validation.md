@@ -53,10 +53,22 @@ Read the article aloud and ask:
 - [ ] NO identical sentence structures repeated
 - [ ] NO backwards phrasing for entity salience
 - [ ] NO template-like predictability
+- [ ] NO perfect spelling/grammar (should have 1-3 subtle typos)
 
 **If 2+ AI patterns detected, rewrite for human voice before proceeding.**
 
-See `references/human-voice.md` for detailed guidelines.
+### Intentional Imperfection Check
+
+**Human typos present (1-3 per article):**
+
+- [ ] Contains 1-3 realistic typos (homophone errors, common misspellings)
+- [ ] Typos placed in conversational sections (NOT in headings/CTAs/stats)
+- [ ] Mix of typo types (your/you're, definately, then/than, etc.)
+- [ ] NO typos in QueryAnswer, H2s, CTAs, or schema markup
+
+**If content is perfectly spelled, add 1-3 strategic typos in conversational sections.**
+
+See `references/human-voice.md` section "Intentional Imperfection" for guidance.
 
 ---
 

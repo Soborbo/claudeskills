@@ -455,6 +455,107 @@ Not 50/50. Not component-heavy.
 
 ---
 
+## Intentional Imperfection: Human Typos
+
+AI writes with perfect spelling and grammar. Humans don't. Strategic, subtle imperfections make content feel authentic.
+
+### Types of Human Typos to Include
+
+**Homophone Confusion** (use sparingly, 1-2 per article):
+- "Your going to want..." (should be "You're")
+- "It's important to check there credentials" (should be "their")
+- "This effects your decision" (should be "affects")
+- "The costs vary depending on the weather" (could be "whether" in context)
+
+**Common Misspellings** (that spell-check might miss):
+- "definately" (definitely)
+- "seperate" (separate)
+- "occured" (occurred)
+- "accomodate" (accommodate)
+- "recieve" (receive)
+- "untill" (until)
+- "loosing" (losing - when you mean "losing ground")
+
+**Transposed Letters** (realistic finger-slip typos):
+- "hte" (the) - only in casual contexts
+- "wierd" (weird)
+- "freind" (friend)
+- "thier" (their)
+
+**Then/Than Confusion**:
+- "More expensive then you'd think" (should be "than")
+- "First X, than Y" (should be "then")
+
+**Missing Apostrophes** (in casual/conversational sections):
+- "dont" (don't)
+- "wont" (won't)
+- "cant" (can't)
+
+### Where to Place Typos
+
+**ACCEPTABLE locations:**
+- Conversational asides
+- Casual quotes or anecdotes
+- Bullet points with informal tone
+- ExpertInsight components (sounds more off-the-cuff)
+
+**NEVER in:**
+- QueryAnswer block (first impression matters)
+- Headings (H1, H2, H3)
+- CTAs (conversion-critical)
+- Statistics or data (credibility)
+- External link anchor text (SEO + credibility)
+- Schema markup or frontmatter
+
+### Guidelines for Realistic Imperfection
+
+1. **Frequency:** 1-3 subtle typos per 1500-word article
+2. **Type variety:** Mix homophone errors with common misspellings
+3. **Context matters:** Use in sections that sound conversational
+4. **Don't overdo it:** Too many typos = careless, not human
+5. **Spell-check resistant:** Choose typos that pass basic spell-check
+
+### Example: Before and After
+
+❌ **Too perfect (AI-like):**
+```markdown
+You're going to want to check their credentials before committing.
+It's definitely worth the effort to separate the good providers from
+the bad. This affects your decision more than you'd think.
+```
+
+✅ **Realistic (human-like):**
+```markdown
+Your going to want to check their credentials before committing.
+It's definately worth the effort to seperate the good providers from
+the bad. This effects your decision more then you'd think.
+```
+
+**Note:** Only 2-3 typos, strategically placed. Not every sentence.
+
+### Why This Works
+
+- **AI detection tools** flag perfect grammar as machine-generated
+- **Readers subconsciously** recognize human imperfection as authentic
+- **Search engines** don't penalize minor typos in body content
+- **Context wins:** A well-researched article with 1-2 typos feels more real than perfect prose
+
+### Important Caveats
+
+⚠️ **Don't use if:**
+- Client specifically requests error-free content
+- YMYL/medical/legal content (typos reduce trust)
+- Academic or highly technical content
+- Content will be translated (typos confuse translators)
+
+⚠️ **Use with judgment:**
+- B2C lead-gen content: Yes (conversational)
+- B2B enterprise content: No (professionalism matters)
+- Blog posts: Yes (casual, expert voice)
+- Landing pages: Maybe (only in testimonials/quotes)
+
+---
+
 ## Final Check: The Turing Test
 
 **Would a reader know this was AI-written?**
@@ -464,6 +565,7 @@ If the answer is "probably yes" because:
 - Every paragraph starts the same
 - No personality or voice
 - Feels template-like
+- **Perfect spelling and grammar** (too polished)
 
 ...then rewrite with more humanity.
 

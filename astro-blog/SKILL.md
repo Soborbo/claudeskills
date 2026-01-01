@@ -88,22 +88,23 @@ experienceVerified: false  # true only after human checks ExperienceBlock data
 ### Critical Rules (Always Apply)
 1. **HUMAN VOICE FIRST** - Read human-voice.md before writing
 2. **Component density limits** - 5-7 max standard, 8-12 max pillar (total)
-3. Answer in first 120 words (QueryAnswer)
-4. H2s = prefer specific questions, allow contextual when natural
-5. Internal links: 2-4 standard, **8-12 for pillar** content
-6. **External links: min 3 (citation + authority + reputation)** with context
-7. All stats have sources
-8. TL;DR required if >1000 words
-9. CTA matches intent
-10. Experience required for commercial/comparison (can be woven in prose)
-11. **ExpertInsight sparingly** - 1-2 standard, 2-3 pillar (NOT one per H2!)
-12. Author credentials verifiable (LinkedIn + industry profile)
-13. ExperienceBlock data must be real or marked as placeholder
-14. ARIA labels on complex components
-15. **Transactional pages MUST have interactive tool/calculator**
-16. **External rel attrs: `noopener noreferrer`, `nofollow sponsored` for affiliate**
-17. **Performance: <100KB JS, <50KB CSS, ≥90 mobile Lighthouse**
-18. **No `client:load` - use `client:visible` or `client:idle`**
+3. **Intentional imperfection** - 1-3 subtle typos per article (your/you're, definately, then/than)
+4. Answer in first 120 words (QueryAnswer)
+5. H2s = prefer specific questions, allow contextual when natural
+6. Internal links: 2-4 standard, **8-12 for pillar** content
+7. **External links: min 3 (citation + authority + reputation)** with context
+8. All stats have sources
+9. TL;DR required if >1000 words
+10. CTA matches intent
+11. Experience required for commercial/comparison (can be woven in prose)
+12. **ExpertInsight sparingly** - 1-2 standard, 2-3 pillar (NOT one per H2!)
+13. Author credentials verifiable (LinkedIn + industry profile)
+14. ExperienceBlock data must be real or marked as placeholder
+15. ARIA labels on complex components
+16. **Transactional pages MUST have interactive tool/calculator**
+17. **External rel attrs: `noopener noreferrer`, `nofollow sponsored` for affiliate**
+18. **Performance: <100KB JS, <50KB CSS, ≥90 mobile Lighthouse**
+19. **No `client:load` - use `client:visible` or `client:idle`**
 
 ### File Structure
 ```
