@@ -1,294 +1,282 @@
 # Image Preparation Guide
 
-A simple guide for preparing images before sending them for your website. Following these guidelines ensures your site loads fast and looks sharp on all devices.
+A guide for preparing images for your website. Following these guidelines ensures fast loading and sharp display on all devices.
 
-> **Why these exact sizes?** Each image type below maps directly to our system patterns (Hero, Content, Thumbnail). These sizes are calculated to serve the right image to every device — from phones to 4K monitors. Please follow the size rules exactly.
-
----
-
-## Quick Reference
-
-| Image Type | System Pattern | Minimum Size | Format | Aspect Ratio |
-|------------|----------------|--------------|--------|--------------|
-| Hero/Banner | HERO | 2560 × 1440 | JPG | 16:9 |
-| Content/Blog | CONTENT | 1920 × 1280 | JPG | 3:2 or 16:9 |
-| Thumbnail/Card | THUMBNAIL | 800 × 600 | JPG | 4:3 |
-| Logo | FIXED | 400 × 200 | SVG or PNG | Your ratio |
-| Favicon | FIXED | 512 × 512 | PNG | 1:1 (square) |
+> **Key insight:** We optimize based on how WIDE the image displays, not its shape. The same rules apply whether your image is landscape, portrait, or square.
 
 ---
 
-## Hero Images (Main Banners)
+## Quick Reference by Width
 
-**System pattern:** HERO
+| Image Width on Page | Pattern | Minimum Source Width | Common Uses |
+|---------------------|---------|---------------------|-------------|
+| Full screen (100%) | FULL | 2560px | Full-bleed hero banners |
+| ~66% screen | TWO_THIRDS | 2048px | Dominant side of 66/33 split |
+| ~60% screen | LARGE | 1920px | Dominant side of 60/40 split |
+| ~50% screen | HALF | 1600px | Split hero, checkerboard |
+| ~40% screen | SMALL | 1280px | Smaller side of 60/40 split |
+| ~33% screen | THIRD | 1280px | 3-column grid, features |
+| ~25% screen | QUARTER | 960px | 4-column grid, team photos |
+| ~20% screen | FIFTH | 768px | 5-column grid, icon features |
+| ~16% screen | SIXTH | 640px | 6-column grid, partner logos |
+| Fixed size | FIXED | 2× display size | Logos, avatars, icons |
 
-These are the large, eye-catching images at the top of pages.
+---
+
+## Aspect Ratios (Shape)
+
+You can use ANY aspect ratio. The width rule stays the same.
+
+| Ratio | Shape | Common Uses |
+|-------|-------|-------------|
+| **16:9** | Wide landscape | Hero banners, video thumbnails |
+| **4:3** | Standard landscape | Traditional photos, features |
+| **3:2** | Photo landscape | Professional photography |
+| **1:1** | Square | Google search, social sharing, avatars |
+| **2:3** | Portrait | Standing person photos |
+| **3:4** | Portrait | Headshots, product shots |
+
+**Example:** A standing photo of the business owner (2:3 portrait) displayed at 50% screen width needs:
+- Minimum 1600px wide source (HALF pattern)
+- Dimensions: 1600×2400 or larger
+
+---
+
+## Hero Images
+
+### Full-Width Hero (100% screen)
 
 **Requirements:**
-- **Minimum width:** 2560 pixels
-- **Aspect ratio:** 16:9 (widescreen) or 21:9 (ultra-wide)
-- **Format:** JPG (photographs) or PNG (graphics with text)
-- **File size:** Under 2 MB before optimization
-
-**Why 2560px?**  
-Modern screens (including laptops and 4K monitors) display your hero at up to 2560 pixels wide. Providing this size ensures crisp display on all devices.
-
-**Tips:**
-- Avoid text baked into the image (we add text via code for SEO)
-- Keep important content centered (edges may crop on mobile)
-- High contrast works best for readability with overlaid text
-
----
-
-## Content Images (Blog Posts, Articles)
-
-**System pattern:** CONTENT
-
-Images within your page content, articles, or service descriptions.
-
-**Requirements:**
-- **Minimum width:** 1920 pixels
-- **Aspect ratio:** 3:2, 4:3, or 16:9
+- **Minimum width:** 2560px
+- **Aspect ratio:** 16:9 or 21:9 recommended
 - **Format:** JPG
-- **File size:** Under 1 MB before optimization
+- **Example size:** 2560×1440 (16:9)
 
-**Why 1920px?**  
-Content images display at around 720-960 pixels on desktop. The larger source allows us to serve sharp images to high-resolution (Retina) screens.
+### Split Hero (50% screen with text)
 
-**Tips:**
-- Landscape orientation works best for most layouts
-- Portrait images are fine but may display smaller
-- Consistent aspect ratio across a set looks more professional
+**Requirements:**
+- **Minimum width:** 1600px
+- **Aspect ratio:** Any (4:3, 3:2, 1:1, or portrait)
+- **Format:** JPG
+- **Example sizes:** 1600×1200 (4:3), 1600×1600 (1:1), 1600×2400 (2:3 portrait)
+
+### Asymmetric Split Hero (60/40 or 66/33)
+
+**Image-dominant side (60% or 66%):**
+- **Minimum width:** 1920px (60%) or 2048px (66%)
+- **Aspect ratio:** Any
+
+**Text-dominant side (40%):**
+- **Minimum width:** 1280px
+- **Aspect ratio:** Any
 
 ---
 
-## Thumbnails & Card Images
+## Grid Images
 
-**System pattern:** THUMBNAIL
-
-Small preview images for grids, cards, team members, portfolios.
+### 3-Column Grid (THIRD)
 
 **Requirements:**
-- **Minimum width:** 800 pixels
-- **Recommended:** 1200 pixels (for retina)
-- **Aspect ratio:** 4:3 or 1:1 (square)
-- **Format:** JPG
-- **File size:** Under 500 KB before optimization
+- **Minimum width:** 1280px
+- **Aspect ratio:** 4:3 or 1:1 work best
+- **Example size:** 1280×960 (4:3)
+
+### 4-Column Grid (QUARTER)
+
+**Requirements:**
+- **Minimum width:** 960px
+- **Aspect ratio:** 1:1 or 3:4
+- **Example sizes:** 960×960 (square), 960×1280 (3:4)
+
+### 5-Column Grid (FIFTH)
+
+**Requirements:**
+- **Minimum width:** 768px
+- **Aspect ratio:** 1:1 recommended
+- **Example size:** 768×768 (square)
+
+### 6-Column Grid (SIXTH)
+
+**Requirements:**
+- **Minimum width:** 640px
+- **Aspect ratio:** 1:1 recommended
+- **Example size:** 640×640 (square)
+- **Common use:** Partner logos, client logos, trust badges
+
+---
+
+## Person Photos
+
+### Standing/Full Body (Portrait)
+
+**Requirements:**
+- **Minimum width:** 1280-1600px (depends on display size)
+- **Aspect ratio:** 2:3 or 3:4
+- **Example size:** 1600×2400 (2:3)
 
 **Tips:**
-- Use consistent aspect ratio across all cards in a set
-- Center the subject (faces, products) for automatic cropping
-- Square (1:1) works well for team photos and avatars
+- Subject centered for cropping flexibility
+- Clear background or environment
+- Good lighting on face
+
+### Headshots / Team Grid
+
+**Requirements:**
+- **Minimum width:** 960px (4-column) or 768px (5-column)
+- **Aspect ratio:** 1:1 (square) or 3:4
+- **Example sizes:** 960×960 (square), 960×1280 (3:4)
+
+**Tips:**
+- Consistent background across all team photos
+- Similar framing (head and shoulders)
+- Same aspect ratio for all team members
+
+---
+
+## Google Search Images (Schema)
+
+For your website to appear with images in Google search results, we need THREE versions:
+
+| Ratio | Size | Purpose |
+|-------|------|---------|
+| **1:1** | 1200×1200 | Google Discover, mobile search |
+| **4:3** | 1200×900 | Standard thumbnails |
+| **16:9** | 1200×675 | Top Stories, video results |
+
+**What to provide:**
+- ONE high-quality photo that can be cropped to all three ratios
+- OR three separate images at these sizes
+- Subject should be centered so it looks good when cropped
 
 ---
 
 ## Logos
 
-**System pattern:** FIXED
+**Preferred:** SVG format (vector, scales perfectly)
 
-Your brand logo for header, footer, and meta images.
-
-**Requirements:**
-- **Preferred format:** SVG (scales perfectly to any size)
-- **Fallback format:** PNG with transparency
-- **Minimum width:** 400 pixels (for PNG)
-- **Recommended:** 800 pixels (for PNG)
-
-**Why SVG?**  
-SVG files are vector graphics — they stay perfectly sharp at any size and have tiny file sizes. Always provide SVG if you have it.
+**If SVG unavailable:**
+- Minimum width: 2× your largest display size
+- Format: PNG with transparency
+- Example: If logo displays at 200px, provide 400px source
 
 **What we need:**
-1. **Primary logo** — full color, horizontal layout
-2. **White version** — for dark backgrounds (if applicable)
-3. **Icon only** — square mark without text (for favicon)
-
-**File naming:**
 ```
-logo.svg              (primary)
-logo-white.svg        (white version)
-logo-icon.svg         (icon/mark only)
-logo.png              (fallback if no SVG)
+logo.svg              (primary - preferred)
+logo-white.svg        (for dark backgrounds)
+logo-icon.svg         (square mark for favicon)
+logo.png              (fallback if no SVG, 800px wide)
 ```
 
 ---
 
 ## Favicon
 
-The small icon that appears in browser tabs.
-
-**Requirements:**
-- **Size:** 512 × 512 pixels
+- **Size:** 512×512 pixels
 - **Format:** PNG with transparency
-- **Shape:** Square, but design can be any shape within
-
-We will generate all required sizes (16×16, 32×32, 180×180, etc.) from your 512px source.
+- **Shape:** Square (design can be any shape within)
 
 ---
 
-## File Formats Explained
+## File Formats
 
-| Format | Best For | Supports Transparency |
-|--------|----------|----------------------|
-| **JPG** | Photographs, complex images | No |
+| Format | Use For | Transparency |
+|--------|---------|--------------|
+| **JPG** | Photos | No |
 | **PNG** | Graphics, logos, screenshots | Yes |
 | **SVG** | Logos, icons, illustrations | Yes |
-| **WebP/AVIF** | We convert to these automatically | Yes |
 
-**Rule of thumb:**
-- Photos → JPG
-- Graphics with transparency → PNG
-- Logos and icons → SVG
-- Never use BMP, TIFF, or GIF for website images
-
----
-
-## Aspect Ratios Explained
-
-| Ratio | Shape | Common Uses |
-|-------|-------|-------------|
-| 16:9 | Wide rectangle | Heroes, videos, banners |
-| 4:3 | Standard rectangle | Cards, thumbnails |
-| 3:2 | Photo standard | Blog images, galleries |
-| 1:1 | Square | Avatars, team photos, Instagram-style |
-| 21:9 | Ultra-wide | Cinematic banners |
-
-**Important:** All images of the same type should use the SAME aspect ratio. Mixing ratios in a grid looks messy.
+**We automatically convert to:** AVIF and WebP for fast loading.
 
 ---
 
 ## How to Check Image Size
 
-### On Mac:
-1. Right-click the image file
-2. Click "Get Info"
-3. Look for "Dimensions" (e.g., 2560 × 1440)
+**Mac:** Right-click → Get Info → Look for "Dimensions"
 
-### On Windows:
-1. Right-click the image file
-2. Click "Properties"
-3. Click "Details" tab
-4. Look for "Width" and "Height"
+**Windows:** Right-click → Properties → Details → Width/Height
 
-### Online:
-Upload to [squoosh.app](https://squoosh.app) — it shows dimensions and lets you resize.
+**Online:** Upload to [squoosh.app](https://squoosh.app)
 
 ---
 
-## How to Resize Images
+## Common Mistakes to Avoid
 
-If your image is too small (below minimum requirements):
+❌ **Upscaling small images** — We cannot use a 500px image stretched to 2560px
 
-**Option 1: Use original/source file**  
-Check if you have a higher-resolution version (from camera, designer, or stock site).
+❌ **Wrong aspect ratio for layout** — A 16:9 image won't work well for a standing person shot
 
-**Option 2: Re-export from design software**  
-If created in Canva, Figma, or Photoshop, export at the required size.
+❌ **Inconsistent team photos** — Mix of squares, portraits, and landscapes looks messy
 
-**Option 3: Download larger from stock sites**  
-Stock photos usually offer multiple sizes. Choose the largest.
+❌ **Text baked into images** — We add text via code for SEO and accessibility
 
-**⚠️ Do NOT upscale small images** — stretching a 500px image to 2560px creates blurry, unusable results. We cannot use upscaled images.
-
----
-
-## File Naming
-
-Use simple, descriptive names with hyphens:
-
-**Good:**
-```
-hero-homepage.jpg
-team-john-smith.jpg
-service-web-design.jpg
-logo.svg
-```
-
-**Bad:**
-```
-IMG_20240315_142536.jpg
-Screenshot 2024-03-15.png
-final_v2_FINAL_new (1).jpg
-```
-
-**Rules:**
-- Lowercase only
-- Hyphens between words (not spaces or underscores)
-- Descriptive but short
-- No special characters
-
----
-
-## Sending Images
-
-**Best methods:**
-1. **Google Drive / Dropbox** — share a folder link
-2. **WeTransfer** — for large batches
-3. **Direct upload** — if we've set up a submission form
-
-**Organize by type:**
-```
-/images
-  /heroes
-    hero-homepage.jpg
-    hero-about.jpg
-  /content
-    blog-post-1.jpg
-    service-image.jpg
-  /team
-    john-smith.jpg
-    jane-doe.jpg
-  /logos
-    logo.svg
-    logo-white.svg
-    favicon.png
-```
+❌ **Low resolution phone screenshots** — Screenshots are often too small for hero use
 
 ---
 
 ## Checklist Before Sending
 
-- [ ] All hero images are at least 2560px wide
-- [ ] All content images are at least 1920px wide
-- [ ] All thumbnails are at least 800px wide
-- [ ] Logo provided as SVG (or high-res PNG if no SVG)
-- [ ] Favicon provided as 512×512 PNG
+- [ ] Full-width hero images are at least 2560px wide
+- [ ] Split hero images are at least 1600px wide
+- [ ] Asymmetric split (60-66%) images are at least 1920-2048px wide
+- [ ] 3-column grid images are at least 1280px wide
+- [ ] 4-column grid images are at least 960px wide
+- [ ] 5-column grid images are at least 768px wide
+- [ ] 6-column grid images are at least 640px wide
+- [ ] Logo provided as SVG (or 800px PNG)
+- [ ] Schema images provided (1200×1200, 1200×900, 1200×675)
+- [ ] Favicon provided at 512×512 PNG
+- [ ] All team photos use the same aspect ratio
 - [ ] Files are named descriptively (no IMG_12345.jpg)
-- [ ] Images are organized in folders by type
 - [ ] No upscaled/blurry images
-- [ ] Consistent aspect ratios within each type
 
 ---
 
-## Common Questions
+## Organizing Your Images
 
-**Q: Can I send iPhone photos?**  
-Yes! iPhone photos are typically 4032 × 3024 pixels — more than enough. Just send the original, unedited file.
-
-**Q: What about screenshots?**  
-Screenshots are often too small and low-quality for hero images. They're fine for blog content showing software interfaces.
-
-**Q: Do I need to optimize/compress images first?**  
-No. We handle all optimization automatically. Send the highest quality originals you have.
-
-**Q: Can I use images from Google?**  
-Only if they're licensed for commercial use. Stock sites like Unsplash, Pexels, or purchased stock are safe. Random Google images are not.
-
-**Q: What if I only have small images?**  
-Let us know. We can either source alternatives, use AI upscaling (limited quality), or adjust the design to work with smaller images. We cannot use undersized images without quality loss.
-
-**Q: Can I use GIFs or animated images?**  
-We avoid animated images on websites as they hurt performance. If you need animation, we'll use video or other optimized formats instead.
+```
+/images
+  /heroes
+    hero-homepage.jpg       (2560×1440)
+    hero-about-split.jpg    (1600×1200)
+  /features
+    feature-1.jpg           (1600×1200)
+    feature-2.jpg           (1600×1200)
+  /team
+    john-smith.jpg          (960×960 square)
+    jane-doe.jpg            (960×960 square)
+  /people
+    owner-standing.jpg      (1600×2400 portrait)
+  /partners
+    partner-logo-1.jpg      (640×640)
+    partner-logo-2.jpg      (640×640)
+  /schema
+    main-photo-square.jpg   (1200×1200)
+    main-photo-4x3.jpg      (1200×900)
+    main-photo-16x9.jpg     (1200×675)
+  /logos
+    logo.svg
+    logo-white.svg
+    favicon.png             (512×512)
+```
 
 ---
 
 ## Summary
 
-| Image Type | Pattern | Min Width | Format | Aspect Ratio |
-|------------|---------|-----------|--------|--------------|
-| Hero | HERO | 2560px | JPG | 16:9 |
-| Content | CONTENT | 1920px | JPG | 3:2 / 16:9 |
-| Thumbnail | THUMBNAIL | 800px | JPG | 4:3 / 1:1 |
-| Logo | FIXED | 400px | SVG / PNG | Any |
-| Favicon | FIXED | 512px | PNG | 1:1 |
+| What | Minimum Width | Shape Options |
+|------|---------------|---------------|
+| Full-width hero | 2560px | 16:9, 21:9 |
+| Dominant split (66%) | 2048px | Any |
+| Dominant split (60%) | 1920px | Any |
+| Split 50/50, features | 1600px | Any |
+| Smaller split (40%) | 1280px | Any |
+| 3-column grid | 1280px | Any |
+| 4-column grid | 960px | 1:1 or 3:4 |
+| 5-column grid | 768px | 1:1 |
+| 6-column grid | 640px | 1:1 |
+| Standing person | 1280-1600px | 2:3 or 3:4 |
+| Google schema | 1200px | 1:1, 4:3, 16:9 (all three) |
+| Logo | SVG or 800px | Any |
+| Favicon | 512px | 1:1 |
 
-**When in doubt:** bigger is better. We can always scale down, but we can't scale up.
+**When in doubt:** Bigger is better. We can scale down but cannot scale up.
