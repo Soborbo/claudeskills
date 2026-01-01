@@ -271,3 +271,73 @@ Run Lighthouse performance audit:
 3. Fix according to SKILL.md
 4. Re-run failed checks
 5. Full audit passes before deployment
+
+---
+
+## 15. Undersized Images Report
+
+Run this script to generate a report of all images that need replacement:
+
+```bash
+#!/bin/bash
+# undersized-report.sh
+# Generates table of images smaller than their pattern requires
+
+echo "| Image | Used In | Current Size | Pattern | Required Width | Action |"
+echo "|-------|---------|--------------|---------|----------------|--------|"
+
+# Find all Picture components and check source sizes
+grep -r "src={" src/components src/pages --include="*.astro" -l | while read file; do
+  # Extract image imports and usages
+  grep -oP "import \K\w+(?=.*from.*assets)" "$file" | while read img; do
+    # Get the source file path
+    src_path=$(grep "import $img" "$file" | grep -oP "from ['\"]\.\.?/\K[^'\"]+")
+    if [ -f "src/$src_path" ]; then
+      # Get image dimensions
+      width=$(identify -format "%w" "src/$src_path" 2>/dev/null)
+      # Get the widths array used
+      pattern=$(grep -A5 "src={$img}" "$file" | grep -oP "widths={\[\K[^\]]+")
+      max_width=$(echo "$pattern" | tr ',' '\n' | sort -n | tail -1)
+      
+      if [ "$width" -lt "$max_width" ] 2>/dev/null; then
+        echo "| $img | $file | ${width}px | - | ${max_width}px | ⚠️ Replace |"
+      fi
+    fi
+  done
+done
+```
+
+**Manual Alternative — Generate Report Table:**
+
+After build, manually check and fill this table:
+
+| Image | Used In | Current Size | Pattern | Required Width | Action |
+|-------|---------|--------------|---------|----------------|--------|
+| hero.jpg | pages/index.astro | ?×? | FULL | 2560px | ☐ Check |
+| owner.jpg | components/About.astro | ?×? | HALF | 1600px | ☐ Check |
+| team-1.jpg | components/Team.astro | ?×? | QUARTER | 960px | ☐ Check |
+| logo.png | components/Header.astro | ?×? | FIXED | 2× display | ☐ Check |
+
+**Quick size check command:**
+
+```bash
+# List all images with dimensions
+find src/assets -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.webp" \) \
+  -exec identify -format "| %f | - | %wx%h | - | - | ☐ |\n" {} \; 2>/dev/null
+```
+
+**Send this table to client for bulk replacement:**
+
+```markdown
+## Images Needing Replacement
+
+The following images are smaller than required for optimal display:
+
+| Image | Current Size | Required Size | Priority |
+|-------|--------------|---------------|----------|
+| hero-home.jpg | 1920×1080 | 2560×1440 | 🔴 High |
+| about-split.jpg | 1200×800 | 1600×1067 | 🟡 Medium |
+| team-john.jpg | 500×500 | 960×960 | 🟡 Medium |
+
+Please provide replacement images at the required sizes.
+```
