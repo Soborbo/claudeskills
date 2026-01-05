@@ -21,3 +21,9 @@ export { default as Testimonial } from './Testimonial/Testimonial.astro';
 export { default as GoogleReviewBadge } from './GoogleReviewBadge/GoogleReviewBadge.astro';
 export { default as Stats } from './Stats/Stats.astro';
 export { default as TrustBadges } from './TrustBadges/TrustBadges.astro';
+
+// Navigation
+export { default as Header } from './Header/Header.astro';
+export { default as MobileMenu } from './MobileMenu/MobileMenu.astro';
+export { default as MobileCtaBar } from './MobileCtaBar/MobileCtaBar.astro';
+export { default as Footer } from './Footer/Footer.astro';

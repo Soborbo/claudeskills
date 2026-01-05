@@ -280,6 +280,137 @@ import TrustBadges from '@leadgen/components/TrustBadges';
 
 ---
 
+## Navigation Components
+
+### Header
+
+Fixed header with scroll-triggered frosted glass CTA bar.
+
+```astro
+---
+import Header from '@leadgen/components/Header';
+import MobileMenu from '@leadgen/components/MobileMenu';
+
+const navItems = [
+  { label: 'Szolgáltatások', href: '/szolgaltatasok' },
+  { label: 'Árak', href: '/arak' },
+  { label: 'Rólunk', href: '/rolunk' },
+  { label: 'Kapcsolat', href: '/kapcsolat' },
+];
+---
+
+<Header
+  logo={{ src: '/logo.svg', alt: 'Cégünk', width: 120, height: 40 }}
+  navItems={navItems}
+  phone="+36 1 234 5678"
+  address="Budapest, Példa utca 1."
+  ctaText="Ingyenes Árajánlat"
+  ctaHref="/arajanlat"
+/>
+
+<MobileMenu
+  navItems={navItems}
+  phone="+36 1 234 5678"
+  ctaText="Ingyenes Árajánlat"
+  ctaHref="/arajanlat"
+/>
+```
+
+**Features:**
+- Fixed header, hidden on scroll past 50vh
+- Frosted glass CTA bar slides in on scroll
+- Desktop: logo + nav + phone + CTA
+- Mobile: logo + hamburger only
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `logo` | `Logo` | required | Logo config (src, alt, width, height) |
+| `navItems` | `NavItem[]` | `[]` | Navigation items |
+| `phone` | `string` | required | Phone number |
+| `address` | `string` | - | Address for CTA bar |
+| `ctaText` | `string` | required | CTA button text |
+| `ctaHref` | `string` | required | CTA button href |
+
+### MobileMenu
+
+Slide-in overlay menu for mobile.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `navItems` | `NavItem[]` | required | Navigation items |
+| `phone` | `string` | required | Phone number |
+| `phoneButtonText` | `string` | `'Hívás'` | Phone button label |
+| `ctaText` | `string` | required | CTA button text |
+| `ctaHref` | `string` | required | CTA button href |
+
+### MobileCtaBar
+
+Sticky bottom CTA bar for mobile.
+
+```astro
+---
+import MobileCtaBar from '@leadgen/components/MobileCtaBar';
+---
+
+<MobileCtaBar
+  phone="+36 1 234 5678"
+  phoneText="Hívjon most"
+  ctaText="Online Árkalkulátor"
+  ctaHref="/kalkulator"
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `phone` | `string` | required | Phone number |
+| `phoneText` | `string` | `'Hívjon most'` | Phone button text |
+| `ctaText` | `string` | `'Online Árkalkulátor'` | CTA button text |
+| `ctaHref` | `string` | required | CTA href |
+
+### Footer
+
+Site footer with columns and legal links.
+
+```astro
+---
+import Footer from '@leadgen/components/Footer';
+---
+
+<Footer
+  companyName="Cégünk Kft."
+  companyInfo="Megbízható költöztetés 2005 óta."
+  address="1234 Budapest, Példa utca 1."
+  phone="+36 1 234 5678"
+  email="info@example.hu"
+  columns={[
+    {
+      title: 'Szolgáltatások',
+      links: [
+        { label: 'Lakásköltöztetés', href: '/szolgaltatasok/lakas' },
+        { label: 'Irodaköltöztetés', href: '/szolgaltatasok/iroda' },
+      ],
+    },
+  ]}
+  legalLinks={[
+    { label: 'Adatvédelem', href: '/adatvedelem' },
+    { label: 'ÁSZF', href: '/aszf' },
+  ]}
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `companyName` | `string` | required | Company name |
+| `companyInfo` | `string` | - | Short description |
+| `logo` | `string` | - | Logo image src |
+| `address` | `string` | - | Physical address |
+| `phone` | `string` | - | Phone number |
+| `email` | `string` | - | Email address |
+| `columns` | `FooterColumn[]` | `[]` | Link columns |
+| `legalLinks` | `FooterLink[]` | `[]` | Legal/policy links |
+
+---
+
 ## Source Requirements
 
 Components will warn if source images are too small:

@@ -1,0 +1,238 @@
+---
+/**
+ * Header Component
+ *
+ * Fixed header with scroll-triggered CTA bar.
+ * Desktop: Full nav with sliding frosted glass CTA after 50vh scroll
+ * Mobile: Logo + hamburger only
+ *
+ * @example
+ * <Header
+ *   logo={{ src: '/logo.svg', alt: 'Company', width: 120, height: 40 }}
+ *   phone="+36 1 234 5678"
+ *   address="Budapest, Példa utca 1."
+ *   ctaText="Ingyenes Árajánlat"
+ *   ctaHref="/arajanlat"
+ *   navItems={[
+ *     { label: 'Szolgáltatások', href: '/szolgaltatasok' },
+ *     { label: 'Rólunk', href: '/rolunk' },
+ *   ]}
+ * />
+ */
+
+export interface NavItem {
+  label: string;
+  href: string;
+}
+
+export interface Logo {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+}
+
+export interface Props {
+  /** Logo configuration */
+  logo: Logo;
+
+  /** Navigation items (desktop only) */
+  navItems?: NavItem[];
+
+  /** Phone number for CTA bar */
+  phone: string;
+
+  /** Address for CTA bar */
+  address?: string;
+
+  /** Primary CTA button text */
+  ctaText: string;
+
+  /** Primary CTA button href */
+  ctaHref: string;
+
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  logo,
+  navItems = [],
+  phone,
+  address,
+  ctaText,
+  ctaHref,
+  class: className,
+} = Astro.props;
+
+const phoneClean = phone.replace(/\s/g, '');
+const currentPath = Astro.url.pathname;
+---
+
+<!-- Main Header -->
+<header
+  class:list={[
+    'fixed top-0 left-0 right-0 z-50 bg-white shadow-sm',
+    className,
+  ]}
+  id="main-header"
+>
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16 md:h-20">
+      <!-- Logo -->
+      <a href="/" class="flex-shrink-0">
+        <img
+          src={logo.src}
+          alt={logo.alt}
+          width={logo.width || 120}
+          height={logo.height || 40}
+          class="h-8 md:h-10 w-auto"
+        />
+      </a>
+
+      <!-- Desktop Nav -->
+      {navItems.length > 0 && (
+        <nav class="hidden lg:flex items-center gap-8" aria-label="Main navigation">
+          {navItems.map((item) => (
+            <a
+              href={item.href}
+              class:list={[
+                'text-gray-700 hover:text-primary-600 transition-colors font-medium',
+                currentPath === item.href && 'text-primary-600',
+              ]}
+              aria-current={currentPath === item.href ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      )}
+
+      <!-- Desktop CTA -->
+      <div class="hidden md:flex items-center gap-4">
+        <a
+          href={`tel:${phoneClean}`}
+          class="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
+        >
+          {phone}
+        </a>
+        <a
+          href={ctaHref}
+          class="inline-flex items-center justify-center px-5 py-2.5 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
+        >
+          {ctaText}
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button
+        type="button"
+        class="md:hidden p-2 -mr-2 text-gray-700"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Menü megnyitása"
+        id="mobile-menu-button"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Scroll CTA Bar (slides in after 50vh scroll) -->
+<div
+  id="scroll-cta-bar"
+  class="fixed top-0 left-0 right-0 z-40 transform -translate-y-full transition-transform duration-300 ease-out hidden md:block"
+>
+  <div class="backdrop-blur-md bg-white/80 border-b border-gray-200/50 shadow-lg">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-14">
+        <!-- Logo (smaller) -->
+        <a href="/" class="flex-shrink-0">
+          <img
+            src={logo.src}
+            alt={logo.alt}
+            width={logo.width || 120}
+            height={logo.height || 40}
+            class="h-7 w-auto"
+          />
+        </a>
+
+        <!-- Address -->
+        {address && (
+          <div class="hidden lg:flex items-center gap-2 text-gray-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span class="text-sm">{address}</span>
+          </div>
+        )}
+
+        <!-- Phone -->
+        <a
+          href={`tel:${phoneClean}`}
+          class="flex items-center gap-2 text-gray-700 hover:text-primary-600 transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg>
+          <span class="font-semibold">{phone}</span>
+        </a>
+
+        <!-- CTA Button -->
+        <a
+          href={ctaHref}
+          class="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 transition-colors"
+        >
+          {ctaText}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Spacer for fixed header -->
+<div class="h-16 md:h-20" aria-hidden="true"></div>
+
+<script>
+  function initScrollCta() {
+    const mainHeader = document.getElementById('main-header');
+    const scrollCtaBar = document.getElementById('scroll-cta-bar');
+
+    if (!mainHeader || !scrollCtaBar) return;
+
+    let lastScrollY = 0;
+    let isCtaVisible = false;
+    const triggerPoint = window.innerHeight * 0.5; // 50vh
+
+    function handleScroll() {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > triggerPoint && !isCtaVisible) {
+        // Show CTA bar, hide main header
+        scrollCtaBar.classList.remove('-translate-y-full');
+        mainHeader.classList.add('-translate-y-full');
+        isCtaVisible = true;
+      } else if (currentScrollY <= triggerPoint && isCtaVisible) {
+        // Hide CTA bar, show main header
+        scrollCtaBar.classList.add('-translate-y-full');
+        mainHeader.classList.remove('-translate-y-full');
+        isCtaVisible = false;
+      }
+
+      lastScrollY = currentScrollY;
+    }
+
+    // Add transition class to main header
+    mainHeader.classList.add('transition-transform', 'duration-300', 'ease-out');
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial state
+  }
+
+  initScrollCta();
+  document.addEventListener('astro:page-load', initScrollCta);
+</script>
