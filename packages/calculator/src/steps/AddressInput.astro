@@ -1,0 +1,325 @@
+---
+/**
+ * AddressInput - Postcode with City Autofill
+ *
+ * Hungarian postal code input that auto-fills city name.
+ */
+
+export interface Props {
+  /** Input name prefix */
+  name?: string;
+  /** Initial postcode */
+  postcode?: string;
+  /** Initial city */
+  city?: string;
+  /** Label */
+  label?: string;
+  /** Required field */
+  required?: boolean;
+  /** Show full address (street, etc.) */
+  showStreet?: boolean;
+  /** Additional classes */
+  class?: string;
+}
+
+const {
+  name = 'address',
+  postcode,
+  city,
+  label = 'Cím',
+  required = false,
+  showStreet = false,
+  class: className,
+} = Astro.props;
+---
+
+<fieldset class:list={['address-input', className]} data-address-input>
+  {label && (
+    <legend class="block text-sm font-medium text-gray-700 mb-4">
+      {label}
+      {required && <span class="text-red-500 ml-1">*</span>}
+    </legend>
+  )}
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    {/* Postcode */}
+    <div>
+      <label for={`${name}_postcode`} class="block text-sm text-gray-600 mb-1">
+        Irányítószám
+      </label>
+      <input
+        type="text"
+        id={`${name}_postcode`}
+        name={`${name}_postcode`}
+        value={postcode}
+        required={required}
+        pattern="[0-9]{4}"
+        maxlength={4}
+        inputmode="numeric"
+        autocomplete="postal-code"
+        placeholder="1234"
+        data-postcode
+        class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+      />
+    </div>
+
+    {/* City */}
+    <div class="sm:col-span-2">
+      <label for={`${name}_city`} class="block text-sm text-gray-600 mb-1">
+        Város
+      </label>
+      <input
+        type="text"
+        id={`${name}_city`}
+        name={`${name}_city`}
+        value={city}
+        required={required}
+        autocomplete="address-level2"
+        placeholder="Budapest"
+        data-city
+        class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-gray-50"
+        readonly
+      />
+    </div>
+  </div>
+
+  {showStreet && (
+    <div class="mt-4">
+      <label for={`${name}_street`} class="block text-sm text-gray-600 mb-1">
+        Utca, házszám
+      </label>
+      <input
+        type="text"
+        id={`${name}_street`}
+        name={`${name}_street`}
+        autocomplete="street-address"
+        placeholder="Példa utca 123."
+        class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+      />
+    </div>
+  )}
+
+  {/* Loading indicator */}
+  <div data-loading class="hidden mt-2 text-sm text-gray-500">
+    <svg class="inline-block w-4 h-4 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+    Keresés...
+  </div>
+
+  {/* Error message */}
+  <div data-error class="hidden mt-2 text-sm text-red-600">
+    Érvénytelen irányítószám
+  </div>
+</fieldset>
+
+<script>
+  // Hungarian postal code to city mapping (subset - real app would use API)
+  const postalCodes: Record<string, string> = {
+    '1011': 'Budapest',
+    '1012': 'Budapest',
+    '1013': 'Budapest',
+    '1014': 'Budapest',
+    '1015': 'Budapest',
+    '1016': 'Budapest',
+    '1021': 'Budapest',
+    '1022': 'Budapest',
+    '1023': 'Budapest',
+    '1024': 'Budapest',
+    '1025': 'Budapest',
+    '1026': 'Budapest',
+    '1027': 'Budapest',
+    '1028': 'Budapest',
+    '1029': 'Budapest',
+    '1031': 'Budapest',
+    '1032': 'Budapest',
+    '1033': 'Budapest',
+    '1034': 'Budapest',
+    '1035': 'Budapest',
+    '1036': 'Budapest',
+    '1037': 'Budapest',
+    '1038': 'Budapest',
+    '1039': 'Budapest',
+    '1041': 'Budapest',
+    '1042': 'Budapest',
+    '1043': 'Budapest',
+    '1044': 'Budapest',
+    '1045': 'Budapest',
+    '1046': 'Budapest',
+    '1047': 'Budapest',
+    '1048': 'Budapest',
+    '1051': 'Budapest',
+    '1052': 'Budapest',
+    '1053': 'Budapest',
+    '1054': 'Budapest',
+    '1055': 'Budapest',
+    '1056': 'Budapest',
+    '1061': 'Budapest',
+    '1062': 'Budapest',
+    '1063': 'Budapest',
+    '1064': 'Budapest',
+    '1065': 'Budapest',
+    '1066': 'Budapest',
+    '1067': 'Budapest',
+    '1068': 'Budapest',
+    '1071': 'Budapest',
+    '1072': 'Budapest',
+    '1073': 'Budapest',
+    '1074': 'Budapest',
+    '1075': 'Budapest',
+    '1076': 'Budapest',
+    '1077': 'Budapest',
+    '1078': 'Budapest',
+    '1081': 'Budapest',
+    '1082': 'Budapest',
+    '1083': 'Budapest',
+    '1084': 'Budapest',
+    '1085': 'Budapest',
+    '1086': 'Budapest',
+    '1087': 'Budapest',
+    '1088': 'Budapest',
+    '1089': 'Budapest',
+    '1091': 'Budapest',
+    '1092': 'Budapest',
+    '1093': 'Budapest',
+    '1094': 'Budapest',
+    '1095': 'Budapest',
+    '1096': 'Budapest',
+    '1097': 'Budapest',
+    '1098': 'Budapest',
+    '1101': 'Budapest',
+    '1102': 'Budapest',
+    '1103': 'Budapest',
+    '1104': 'Budapest',
+    '1105': 'Budapest',
+    '1106': 'Budapest',
+    '1107': 'Budapest',
+    '1108': 'Budapest',
+    '2000': 'Szentendre',
+    '2030': 'Érd',
+    '2040': 'Budaörs',
+    '2045': 'Törökbálint',
+    '2100': 'Gödöllő',
+    '2120': 'Dunakeszi',
+    '2220': 'Vecsés',
+    '2310': 'Szigetszentmiklós',
+    '3000': 'Hatvan',
+    '3100': 'Salgótarján',
+    '3200': 'Gyöngyös',
+    '3300': 'Eger',
+    '3400': 'Mezőkövesd',
+    '3500': 'Miskolc',
+    '3600': 'Ózd',
+    '3700': 'Kazincbarcika',
+    '3800': 'Szikszó',
+    '3900': 'Szerencs',
+    '4000': 'Debrecen',
+    '4100': 'Berettyóújfalu',
+    '4200': 'Hajdúszoboszló',
+    '4220': 'Hajdúböszörmény',
+    '4300': 'Nyírbátor',
+    '4400': 'Nyíregyháza',
+    '4500': 'Kisvárda',
+    '4600': 'Fehérgyarmat',
+    '4700': 'Mátészalka',
+    '4800': 'Vásárosnamény',
+    '5000': 'Szolnok',
+    '5100': 'Jászberény',
+    '5200': 'Törökszentmiklós',
+    '5300': 'Karcag',
+    '5400': 'Mezőtúr',
+    '5500': 'Gyomaendrőd',
+    '5600': 'Békéscsaba',
+    '5700': 'Gyula',
+    '5800': 'Mezőkovácsháza',
+    '5900': 'Orosháza',
+    '6000': 'Kecskemét',
+    '6100': 'Kiskunfélegyháza',
+    '6200': 'Kiskőrös',
+    '6300': 'Kalocsa',
+    '6400': 'Kiskunhalas',
+    '6500': 'Baja',
+    '6600': 'Szentes',
+    '6700': 'Szeged',
+    '6720': 'Szeged',
+    '6800': 'Hódmezővásárhely',
+    '6900': 'Makó',
+    '7000': 'Sárbogárd',
+    '7030': 'Paks',
+    '7100': 'Szekszárd',
+    '7200': 'Dombóvár',
+    '7300': 'Komló',
+    '7400': 'Kaposvár',
+    '7500': 'Nagyatád',
+    '7600': 'Pécs',
+    '7700': 'Mohács',
+    '7800': 'Siklós',
+    '7900': 'Szigetvár',
+    '8000': 'Székesfehérvár',
+    '8100': 'Várpalota',
+    '8200': 'Veszprém',
+    '8300': 'Tapolca',
+    '8360': 'Keszthely',
+    '8400': 'Ajka',
+    '8500': 'Pápa',
+    '8600': 'Siófok',
+    '8700': 'Marcali',
+    '8800': 'Nagykanizsa',
+    '8900': 'Zalaegerszeg',
+    '9000': 'Győr',
+    '9100': 'Tét',
+    '9200': 'Mosonmagyaróvár',
+    '9300': 'Csorna',
+    '9400': 'Sopron',
+    '9500': 'Celldömölk',
+    '9600': 'Sárvár',
+    '9700': 'Szombathely',
+    '9800': 'Vasvár',
+    '9900': 'Körmend',
+  };
+
+  function initAddressInputs() {
+    document.querySelectorAll<HTMLFieldSetElement>('[data-address-input]').forEach((container) => {
+      const postcodeInput = container.querySelector<HTMLInputElement>('[data-postcode]');
+      const cityInput = container.querySelector<HTMLInputElement>('[data-city]');
+      const loading = container.querySelector<HTMLDivElement>('[data-loading]');
+      const error = container.querySelector<HTMLDivElement>('[data-error]');
+
+      if (!postcodeInput || !cityInput) return;
+
+      postcodeInput.addEventListener('input', async () => {
+        const value = postcodeInput.value.replace(/\D/g, '');
+        postcodeInput.value = value;
+
+        // Reset
+        error?.classList.add('hidden');
+        cityInput.value = '';
+
+        if (value.length === 4) {
+          loading?.classList.remove('hidden');
+
+          // Simulate API call delay
+          await new Promise((r) => setTimeout(r, 200));
+
+          const city = postalCodes[value];
+
+          loading?.classList.add('hidden');
+
+          if (city) {
+            cityInput.value = city;
+            cityInput.classList.remove('bg-gray-50');
+          } else {
+            error?.classList.remove('hidden');
+          }
+        }
+      });
+    });
+  }
+
+  // Init on load
+  initAddressInputs();
+
+  // Re-init on navigation
+  document.addEventListener('astro:page-load', initAddressInputs);
+</script>

@@ -1,0 +1,102 @@
+---
+/**
+ * RadioCard - Single Select Option
+ *
+ * Card-style radio button with optional image and auto-advance.
+ */
+
+export interface Props {
+  /** Input name (shared across options) */
+  name: string;
+  /** Option value */
+  value: string;
+  /** Display label */
+  label: string;
+  /** Optional image URL */
+  image?: string;
+  /** Optional icon/emoji */
+  icon?: string;
+  /** Optional description */
+  description?: string;
+  /** Is this option selected? */
+  checked?: boolean;
+  /** Is this option disabled? */
+  disabled?: boolean;
+  /** Auto-advance delay in ms (default: 200) */
+  autoAdvanceDelay?: number;
+}
+
+const {
+  name,
+  value,
+  label,
+  image,
+  icon,
+  description,
+  checked = false,
+  disabled = false,
+  autoAdvanceDelay = 200,
+} = Astro.props;
+---
+
+<label
+  class:list={[
+    'radio-card',
+    'group relative flex flex-col items-center p-4 rounded-xl cursor-pointer',
+    'bg-primary-50 hover:bg-primary-100 border-2 border-transparent',
+    'transition-all duration-200',
+    'has-[:checked]:bg-primary-600 has-[:checked]:border-primary-600 has-[:checked]:text-white',
+    'has-[:disabled]:opacity-50 has-[:disabled]:cursor-not-allowed',
+  ]}
+  data-auto-advance={autoAdvanceDelay}
+>
+  <input
+    type="radio"
+    name={name}
+    value={value}
+    checked={checked}
+    disabled={disabled}
+    class="sr-only"
+  />
+
+  {/* Image or Icon */}
+  {image ? (
+    <div class="w-full aspect-square mb-3 rounded-lg overflow-hidden bg-white">
+      <img
+        src={image}
+        alt=""
+        class="w-full h-full object-cover"
+        loading="lazy"
+      />
+    </div>
+  ) : icon ? (
+    <span class="text-4xl mb-3">{icon}</span>
+  ) : null}
+
+  {/* Label */}
+  <span class="font-semibold text-center text-gray-900 group-has-[:checked]:text-white">
+    {label}
+  </span>
+
+  {/* Description */}
+  {description && (
+    <span class="text-sm text-gray-600 text-center mt-1 group-has-[:checked]:text-primary-100">
+      {description}
+    </span>
+  )}
+
+  {/* Check indicator */}
+  <div class="absolute top-2 right-2 w-6 h-6 rounded-full border-2 border-primary-300 group-has-[:checked]:bg-white group-has-[:checked]:border-white flex items-center justify-center">
+    <svg
+      class="w-4 h-4 text-primary-600 opacity-0 group-has-[:checked]:opacity-100"
+      fill="currentColor"
+      viewBox="0 0 20 20"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+        clip-rule="evenodd"
+      />
+    </svg>
+  </div>
+</label>

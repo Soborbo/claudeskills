@@ -1,0 +1,123 @@
+---
+/**
+ * StickyMobileCTA - Mobile-Only Sticky CTA
+ *
+ * Fixed bottom CTA for mobile devices showing price summary.
+ */
+
+export interface Props {
+  /** Price display text */
+  price?: string;
+  /** CTA button text */
+  buttonText?: string;
+  /** Button click action (form submit or scroll) */
+  action?: 'submit' | 'scroll';
+  /** Target element ID for scroll */
+  scrollTarget?: string;
+  /** Show on desktop too */
+  showOnDesktop?: boolean;
+  /** Additional classes */
+  class?: string;
+}
+
+const {
+  price,
+  buttonText = 'Árajánlat kérése',
+  action = 'submit',
+  scrollTarget = 'contact-form',
+  showOnDesktop = false,
+  class: className,
+} = Astro.props;
+---
+
+<div
+  class:list={[
+    'sticky-mobile-cta',
+    'fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg p-4',
+    { 'md:hidden': !showOnDesktop },
+    className,
+  ]}
+  data-sticky-cta
+>
+  <div class="flex items-center justify-between gap-4 max-w-lg mx-auto">
+    {/* Price display */}
+    {price && (
+      <div class="flex-1 min-w-0">
+        <p class="text-xs text-gray-500">Becsült ár</p>
+        <p class="text-lg font-bold text-gray-900 truncate" data-sticky-price>
+          {price}
+        </p>
+      </div>
+    )}
+
+    {/* CTA button */}
+    <button
+      type={action === 'submit' ? 'submit' : 'button'}
+      data-sticky-cta-button
+      data-action={action}
+      data-scroll-target={scrollTarget}
+      class="flex-shrink-0 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors"
+    >
+      {buttonText}
+    </button>
+  </div>
+</div>
+
+<script>
+  function initStickyCTA() {
+    document.querySelectorAll<HTMLDivElement>('[data-sticky-cta]').forEach((cta) => {
+      const button = cta.querySelector<HTMLButtonElement>('[data-sticky-cta-button]');
+
+      if (!button) return;
+
+      const action = button.dataset.action;
+      const scrollTarget = button.dataset.scrollTarget;
+
+      if (action === 'scroll' && scrollTarget) {
+        button.addEventListener('click', () => {
+          const target = document.getElementById(scrollTarget);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      }
+
+      // Hide when scrolled to bottom (near form)
+      if (scrollTarget) {
+        const target = document.getElementById(scrollTarget);
+        if (target) {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                cta.classList.toggle('translate-y-full', entry.isIntersecting);
+              });
+            },
+            { threshold: 0.1 }
+          );
+          observer.observe(target);
+        }
+      }
+    });
+  }
+
+  // Init
+  initStickyCTA();
+  document.addEventListener('astro:page-load', initStickyCTA);
+</script>
+
+<style>
+  .sticky-mobile-cta {
+    transition: transform 0.3s ease-out;
+  }
+
+  /* Add padding to body to prevent content being hidden behind sticky CTA */
+  :global(body:has(.sticky-mobile-cta)) {
+    padding-bottom: 80px;
+  }
+
+  @media (min-width: 768px) {
+    :global(body:has(.sticky-mobile-cta.md\:hidden)) {
+      padding-bottom: 0;
+    }
+  }
+</style>

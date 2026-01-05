@@ -1,0 +1,202 @@
+---
+/**
+ * Calculator - Main Calculator Shell
+ *
+ * Wrapper component with progress bar, navigation, and step container.
+ */
+
+import type { CalculatorConfig } from '../types';
+import ProgressBar from '../steps/ProgressBar.astro';
+
+export interface Props {
+  /** Calculator configuration */
+  config: CalculatorConfig;
+  /** Current step index (0-based) */
+  currentStep?: number;
+  /** Base path for step URLs */
+  basePath?: string;
+  /** Show progress bar */
+  showProgress?: boolean;
+  /** Show navigation buttons */
+  showNavigation?: boolean;
+  /** Additional classes */
+  class?: string;
+}
+
+const {
+  config,
+  currentStep = 0,
+  basePath = '',
+  showProgress = true,
+  showNavigation = true,
+  class: className,
+} = Astro.props;
+
+const totalSteps = config.steps.length;
+const currentStepConfig = config.steps[currentStep];
+const isFirstStep = currentStep === 0;
+const isLastStep = currentStep === totalSteps - 1;
+const stepLabels = config.steps.map((s) => s.shortTitle || s.title);
+const stepIds = config.steps.map((s) => s.id);
+---
+
+<div
+  class:list={['calculator', className]}
+  data-calculator={config.id}
+  data-current-step={currentStep}
+  data-total-steps={totalSteps}
+>
+  {/* Progress bar */}
+  {showProgress && totalSteps > 1 && (
+    <div class="mb-8">
+      <ProgressBar
+        current={currentStep + 1}
+        total={totalSteps}
+        labels={stepLabels}
+        basePath={basePath}
+        stepIds={stepIds}
+        clickable={true}
+      />
+    </div>
+  )}
+
+  {/* Step header */}
+  <header class="text-center mb-8">
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-900">
+      {currentStepConfig.title}
+    </h2>
+    {currentStepConfig.description && (
+      <p class="mt-2 text-gray-600">
+        {currentStepConfig.description}
+      </p>
+    )}
+  </header>
+
+  {/* Step content */}
+  <div class="calculator-content" data-step-content>
+    <slot />
+  </div>
+
+  {/* Navigation */}
+  {showNavigation && (
+    <nav class="mt-8 flex items-center justify-between gap-4" data-calculator-nav>
+      {/* Back button */}
+      <div>
+        {!isFirstStep && (
+          <button
+            type="button"
+            data-prev-step
+            class="inline-flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Vissza
+          </button>
+        )}
+      </div>
+
+      {/* Next button (for steps without auto-advance) */}
+      <div>
+        {!isLastStep && currentStepConfig.type !== 'single-select' && (
+          <button
+            type="button"
+            data-next-step
+            class="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
+          >
+            Tovább
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
+      </div>
+    </nav>
+  )}
+
+  {/* Skip link (for optional steps) */}
+  {currentStepConfig.optional && !isLastStep && (
+    <div class="mt-4 text-center">
+      <button
+        type="button"
+        data-skip-step
+        class="text-sm text-gray-500 hover:text-gray-700 underline"
+      >
+        Kihagyom ezt a lépést
+      </button>
+    </div>
+  )}
+</div>
+
+<script>
+  import { initNavigation, navigateToNextStep, navigateToPrevStep } from '../client/navigation';
+  import { getState } from '../client/state';
+  import { trackStepView } from '../client/events';
+
+  function initCalculatorShell() {
+    document.querySelectorAll<HTMLDivElement>('[data-calculator]').forEach((calculator) => {
+      const calculatorId = calculator.dataset.calculator!;
+      const currentStep = parseInt(calculator.dataset.currentStep || '0', 10);
+      const totalSteps = parseInt(calculator.dataset.totalSteps || '1', 10);
+
+      // Get step IDs from calculator config (stored in window)
+      const config = (window as any).__calculatorConfig?.[calculatorId];
+      const stepIds = config?.steps?.map((s: any) => s.id) || [];
+
+      // Initialize navigation
+      initNavigation({
+        calculatorId,
+        steps: stepIds,
+        basePath: calculator.closest('[data-base-path]')?.getAttribute('data-base-path') || '',
+      });
+
+      // Track step view
+      const state = getState(calculatorId);
+      trackStepView(calculatorId, currentStep, stepIds[currentStep] || `step-${currentStep}`);
+
+      // Back button
+      const prevButton = calculator.querySelector<HTMLButtonElement>('[data-prev-step]');
+      if (prevButton) {
+        prevButton.addEventListener('click', () => {
+          navigateToPrevStep();
+        });
+      }
+
+      // Next button
+      const nextButton = calculator.querySelector<HTMLButtonElement>('[data-next-step]');
+      if (nextButton) {
+        nextButton.addEventListener('click', () => {
+          navigateToNextStep();
+        });
+      }
+
+      // Skip button
+      const skipButton = calculator.querySelector<HTMLButtonElement>('[data-skip-step]');
+      if (skipButton) {
+        skipButton.addEventListener('click', () => {
+          navigateToNextStep();
+        });
+      }
+    });
+  }
+
+  // Init on load
+  initCalculatorShell();
+
+  // Re-init on navigation
+  document.addEventListener('astro:page-load', initCalculatorShell);
+</script>
+
+<style>
+  .calculator {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .calculator {
+      padding: 2rem;
+    }
+  }
+</style>
