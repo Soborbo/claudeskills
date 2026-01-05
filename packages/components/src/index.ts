@@ -15,3 +15,9 @@ export { PATTERNS, LAYOUT_PATTERNS } from './types';
 export { default as Picture } from './Picture/Picture.astro';
 export { default as FixedImage } from './FixedImage/FixedImage.astro';
 export { default as YouTubeFacade } from './YouTubeFacade/YouTubeFacade.astro';
+
+// Social Proof
+export { default as Testimonial } from './Testimonial/Testimonial.astro';
+export { default as GoogleReviewBadge } from './GoogleReviewBadge/GoogleReviewBadge.astro';
+export { default as Stats } from './Stats/Stats.astro';
+export { default as TrustBadges } from './TrustBadges/TrustBadges.astro';

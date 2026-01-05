@@ -168,6 +168,118 @@ Fires `video_play` event on click:
 
 ---
 
+## Social Proof Components
+
+### Testimonial
+
+Testimonial card with rating, quote, and attribution.
+
+```astro
+---
+import Testimonial from '@leadgen/components/Testimonial';
+---
+
+<Testimonial
+  quote="The team was professional and efficient. Highly recommend!"
+  name="Sarah Mitchell"
+  location="Clifton, Bristol"
+  rating={5}
+  date="December 2024"
+/>
+
+<!-- Featured variant -->
+<Testimonial
+  quote="Best service we've ever used..."
+  name="John Smith"
+  location="Bath"
+  rating={5}
+  variant="featured"
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `quote` | `string` | required | Testimonial text |
+| `name` | `string` | required | Customer name |
+| `location` | `string` | required | Location for credibility |
+| `rating` | `1-5` | required | Star rating |
+| `image` | `ImageMetadata \| string` | - | Avatar (real photos only) |
+| `date` | `string` | - | Date of testimonial |
+| `variant` | `'card' \| 'minimal' \| 'featured'` | `'card'` | Visual variant |
+
+### GoogleReviewBadge
+
+Google rating badge for hero sections.
+
+```astro
+---
+import GoogleReviewBadge from '@leadgen/components/GoogleReviewBadge';
+---
+
+<GoogleReviewBadge rating={4.9} reviewCount={127} url="https://g.page/..." />
+
+<!-- Size variants -->
+<GoogleReviewBadge rating={4.9} reviewCount={127} size="lg" />
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `rating` | `number` | required | Google rating (e.g., 4.9) |
+| `reviewCount` | `number` | required | Total reviews |
+| `url` | `string` | - | Link to Google reviews |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Size variant |
+
+### Stats
+
+Statistics section with big numbers.
+
+```astro
+---
+import Stats from '@leadgen/components/Stats';
+---
+
+<Stats
+  items={[
+    { value: '2,500+', label: 'Moves Completed' },
+    { value: '4.9', label: 'Google Rating', suffix: '/5' },
+    { value: '15+', label: 'Years Experience' },
+    { value: '0', label: 'Damage Claims' },
+  ]}
+  variant="dark"
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `StatItem[]` | required | Array of stats |
+| `variant` | `'dark' \| 'light' \| 'primary'` | `'dark'` | Color scheme |
+| `columns` | `2 \| 3 \| 4` | `4` | Grid columns |
+
+### TrustBadges
+
+Row of trust/accreditation badges.
+
+```astro
+---
+import TrustBadges from '@leadgen/components/TrustBadges';
+---
+
+<TrustBadges
+  badges={[
+    { src: '/badges/which-trusted.svg', alt: 'Which? Trusted Trader' },
+    { src: '/badges/checkatrade.svg', alt: 'Checkatrade Approved' },
+  ]}
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `badges` | `Badge[]` | required | Array of badges |
+| `variant` | `'default' \| 'grayscale' \| 'compact'` | `'grayscale'` | Display style |
+| `align` | `'left' \| 'center' \| 'right'` | `'center'` | Alignment |
+
+---
+
 ## Source Requirements
 
 Components will warn if source images are too small:

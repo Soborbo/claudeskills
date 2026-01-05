@@ -1,0 +1,93 @@
+---
+/**
+ * Stats Component
+ *
+ * Displays key statistics in a grid layout.
+ * Use specific numbers ("2,347") not vague claims ("thousands").
+ *
+ * @example
+ * <Stats
+ *   items={[
+ *     { value: '2,500+', label: 'Moves Completed' },
+ *     { value: '4.9', label: 'Google Rating', suffix: '/5' },
+ *     { value: '15+', label: 'Years Experience' },
+ *     { value: '0', label: 'Damage Claims' },
+ *   ]}
+ * />
+ */
+
+export interface StatItem {
+  /** The statistic value (e.g., "2,500+", "4.9") */
+  value: string;
+
+  /** Label describing the stat */
+  label: string;
+
+  /** Optional suffix (e.g., "/5", "%") */
+  suffix?: string;
+
+  /** Optional prefix (e.g., "£", "$") */
+  prefix?: string;
+}
+
+export interface Props {
+  /** Array of statistics to display */
+  items: StatItem[];
+
+  /** Visual variant */
+  variant?: 'dark' | 'light' | 'primary';
+
+  /** Number of columns on desktop */
+  columns?: 2 | 3 | 4;
+
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  items,
+  variant = 'dark',
+  columns = 4,
+  class: className,
+} = Astro.props;
+
+const variantClasses = {
+  dark: 'bg-gray-900 text-white',
+  light: 'bg-gray-50 text-gray-900',
+  primary: 'bg-primary-900 text-white',
+};
+
+const labelClasses = {
+  dark: 'text-gray-400',
+  light: 'text-gray-500',
+  primary: 'text-primary-200',
+};
+
+const columnClasses = {
+  2: 'md:grid-cols-2',
+  3: 'md:grid-cols-3',
+  4: 'md:grid-cols-4',
+};
+---
+
+<section class:list={['py-12 md:py-16', variantClasses[variant], className]}>
+  <div class="container mx-auto px-4">
+    <div class:list={[
+      'grid grid-cols-2 gap-8 text-center',
+      columnClasses[columns],
+    ]}>
+      {items.map((stat) => (
+        <div>
+          <p class="text-3xl md:text-4xl lg:text-5xl font-bold mb-2">
+            {stat.prefix && <span>{stat.prefix}</span>}
+            {stat.value}
+            {stat.suffix && <span class="text-xl md:text-2xl">{stat.suffix}</span>}
+          </p>
+          <p class:list={['text-sm md:text-base', labelClasses[variant]]}>
+            {stat.label}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
