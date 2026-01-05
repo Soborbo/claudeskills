@@ -1,0 +1,113 @@
+---
+/**
+ * ProgressBar - Step Progress Indicator
+ *
+ * Shows current progress through calculator steps.
+ * Clickable to navigate back to previous steps.
+ */
+
+export interface Props {
+  /** Current step (1-based) */
+  current: number;
+  /** Total number of steps */
+  total: number;
+  /** Step labels (optional) */
+  labels?: string[];
+  /** Allow clicking to navigate */
+  clickable?: boolean;
+  /** Calculator base path */
+  basePath?: string;
+  /** Step IDs for navigation */
+  stepIds?: string[];
+  /** Additional classes */
+  class?: string;
+}
+
+const {
+  current,
+  total,
+  labels,
+  clickable = true,
+  basePath = '',
+  stepIds = [],
+  class: className,
+} = Astro.props;
+
+const percentage = Math.round((current / total) * 100);
+---
+
+<nav class:list={['calculator-progress', className]} aria-label="Kalkulátor lépések">
+  {/* Progress bar */}
+  <div class="relative mb-4">
+    <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div
+        class="h-full bg-primary-500 transition-all duration-300 ease-out"
+        style={`width: ${percentage}%`}
+        role="progressbar"
+        aria-valuenow={current}
+        aria-valuemin={1}
+        aria-valuemax={total}
+      />
+    </div>
+  </div>
+
+  {/* Step indicators */}
+  <div class="flex justify-between">
+    {Array.from({ length: total }, (_, i) => {
+      const stepNum = i + 1;
+      const isCompleted = stepNum < current;
+      const isCurrent = stepNum === current;
+      const isClickable = clickable && stepNum < current;
+      const stepId = stepIds[i] || `step-${stepNum}`;
+      const href = isClickable ? `${basePath}/${stepId}` : undefined;
+
+      return (
+        <div class="flex flex-col items-center">
+          {isClickable ? (
+            <a
+              href={href}
+              class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors bg-primary-500 text-white hover:bg-primary-600"
+              aria-label={labels?.[i] || `Lépés ${stepNum}`}
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </a>
+          ) : (
+            <span
+              class:list={[
+                'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors',
+                {
+                  'bg-primary-500 text-white': isCurrent,
+                  'bg-gray-200 text-gray-500': !isCompleted && !isCurrent,
+                },
+              ]}
+              aria-current={isCurrent ? 'step' : undefined}
+            >
+              {stepNum}
+            </span>
+          )}
+
+          {labels?.[i] && (
+            <span
+              class:list={[
+                'mt-1 text-xs text-center max-w-[80px] truncate',
+                {
+                  'text-primary-600 font-medium': isCurrent,
+                  'text-gray-500': !isCurrent,
+                },
+              ]}
+            >
+              {labels[i]}
+            </span>
+          )}
+        </div>
+      );
+    })}
+  </div>
+
+  {/* Step counter */}
+  <p class="mt-4 text-center text-sm text-gray-500">
+    {current}. lépés / {total}
+  </p>
+</nav>

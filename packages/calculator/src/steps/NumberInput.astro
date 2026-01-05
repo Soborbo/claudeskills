@@ -1,0 +1,103 @@
+---
+/**
+ * NumberInput - Number Input with +/- Buttons
+ *
+ * Stepper-style number input for quantities, floors, etc.
+ */
+
+export interface Props {
+  /** Input name */
+  name: string;
+  /** Current value */
+  value?: number;
+  /** Minimum value */
+  min?: number;
+  /** Maximum value */
+  max?: number;
+  /** Step increment */
+  step?: number;
+  /** Prefix text (e.g., 'kb.') */
+  prefix?: string;
+  /** Suffix text (e.g., 'm²', 'db', '. emelet') */
+  suffix?: string;
+  /** Show +/- buttons */
+  showButtons?: boolean;
+  /** Label */
+  label?: string;
+  /** Additional classes */
+  class?: string;
+}
+
+const {
+  name,
+  value = 0,
+  min = 0,
+  max = 100,
+  step = 1,
+  prefix,
+  suffix,
+  showButtons = true,
+  label,
+  class: className,
+} = Astro.props;
+---
+
+<div class:list={['number-input', className]} data-number-input>
+  {label && (
+    <label for={name} class="block text-sm font-medium text-gray-700 mb-2">
+      {label}
+    </label>
+  )}
+
+  <div class="flex items-center justify-center gap-4">
+    {/* Minus button */}
+    {showButtons && (
+      <button
+        type="button"
+        data-minus
+        disabled={value <= min}
+        class="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-2xl font-bold text-gray-700 transition-colors"
+        aria-label="Csökkentés"
+      >
+        −
+      </button>
+    )}
+
+    {/* Input with prefix/suffix */}
+    <div class="flex items-center gap-2">
+      {prefix && <span class="text-gray-500">{prefix}</span>}
+
+      <input
+        type="number"
+        id={name}
+        name={name}
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        class="w-20 text-center text-3xl font-bold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+
+      {suffix && <span class="text-gray-500 text-lg">{suffix}</span>}
+    </div>
+
+    {/* Plus button */}
+    {showButtons && (
+      <button
+        type="button"
+        data-plus
+        disabled={value >= max}
+        class="w-12 h-12 rounded-full bg-primary-100 hover:bg-primary-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-2xl font-bold text-primary-700 transition-colors"
+        aria-label="Növelés"
+      >
+        +
+      </button>
+    )}
+  </div>
+
+  {/* Range indicator */}
+  <div class="mt-4 flex justify-between text-sm text-gray-500">
+    <span>Min: {min}{suffix}</span>
+    <span>Max: {max}{suffix}</span>
+  </div>
+</div>

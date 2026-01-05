@@ -1,0 +1,154 @@
+---
+/**
+ * RangeSlider - Range Selection Component
+ *
+ * Slider for selecting a value within a range.
+ */
+
+export interface Props {
+  /** Input name */
+  name: string;
+  /** Current value */
+  value?: number;
+  /** Minimum value */
+  min?: number;
+  /** Maximum value */
+  max?: number;
+  /** Step increment */
+  step?: number;
+  /** Label */
+  label?: string;
+  /** Show value display */
+  showValue?: boolean;
+  /** Value prefix (e.g., 'kb.') */
+  prefix?: string;
+  /** Value suffix (e.g., 'm²', 'Ft') */
+  suffix?: string;
+  /** Show min/max labels */
+  showLimits?: boolean;
+  /** Format large numbers */
+  formatNumber?: boolean;
+  /** Additional classes */
+  class?: string;
+}
+
+const {
+  name,
+  value,
+  min = 0,
+  max = 100,
+  step = 1,
+  label,
+  showValue = true,
+  prefix,
+  suffix,
+  showLimits = true,
+  formatNumber = false,
+  class: className,
+} = Astro.props;
+
+const defaultValue = value ?? Math.round((min + max) / 2);
+
+function formatNum(n: number): string {
+  if (!formatNumber) return String(n);
+  return new Intl.NumberFormat('hu-HU').format(n);
+}
+---
+
+<div class:list={['range-slider', className]} data-range-slider>
+  {label && (
+    <label for={name} class="block text-sm font-medium text-gray-700 mb-2">
+      {label}
+    </label>
+  )}
+
+  {/* Value display */}
+  {showValue && (
+    <div class="text-center mb-4">
+      <span class="text-3xl font-bold text-gray-900">
+        {prefix && <span class="text-gray-500 text-lg">{prefix}</span>}
+        <span data-value-display>{formatNum(defaultValue)}</span>
+        {suffix && <span class="text-gray-500 text-lg ml-1">{suffix}</span>}
+      </span>
+    </div>
+  )}
+
+  {/* Slider */}
+  <div class="relative">
+    <input
+      type="range"
+      id={name}
+      name={name}
+      value={defaultValue}
+      min={min}
+      max={max}
+      step={step}
+      data-range-input
+      data-format={formatNumber}
+      class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-500
+             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-primary-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110
+             [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:bg-primary-500 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md"
+    />
+
+    {/* Track fill */}
+    <div
+      class="absolute top-0 left-0 h-2 bg-primary-500 rounded-l-lg pointer-events-none"
+      data-track-fill
+      style={`width: ${((defaultValue - min) / (max - min)) * 100}%`}
+    />
+  </div>
+
+  {/* Min/max labels */}
+  {showLimits && (
+    <div class="flex justify-between mt-2 text-sm text-gray-500">
+      <span>{prefix}{formatNum(min)}{suffix}</span>
+      <span>{prefix}{formatNum(max)}{suffix}</span>
+    </div>
+  )}
+</div>
+
+<script>
+  function formatNumber(n: number): string {
+    return new Intl.NumberFormat('hu-HU').format(n);
+  }
+
+  function initRangeSliders() {
+    document.querySelectorAll<HTMLDivElement>('[data-range-slider]').forEach((container) => {
+      const input = container.querySelector<HTMLInputElement>('[data-range-input]');
+      const valueDisplay = container.querySelector<HTMLSpanElement>('[data-value-display]');
+      const trackFill = container.querySelector<HTMLDivElement>('[data-track-fill]');
+
+      if (!input) return;
+
+      const shouldFormat = input.dataset.format === 'true';
+      const min = parseFloat(input.min);
+      const max = parseFloat(input.max);
+
+      function updateDisplay() {
+        const value = parseFloat(input.value);
+
+        // Update value display
+        if (valueDisplay) {
+          valueDisplay.textContent = shouldFormat ? formatNumber(value) : String(value);
+        }
+
+        // Update track fill
+        if (trackFill) {
+          const percentage = ((value - min) / (max - min)) * 100;
+          trackFill.style.width = `${percentage}%`;
+        }
+      }
+
+      input.addEventListener('input', updateDisplay);
+
+      // Initial update
+      updateDisplay();
+    });
+  }
+
+  // Init on load
+  initRangeSliders();
+
+  // Re-init on navigation
+  document.addEventListener('astro:page-load', initRangeSliders);
+</script>

@@ -1,0 +1,36 @@
+{
+  "name": "@leadgen/calculator",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Config-driven multi-step calculator for lead generation",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./Calculator": "./src/components/Calculator.astro",
+    "./steps/*": "./src/steps/*.astro",
+    "./client": "./src/client/index.ts",
+    "./pricing": "./src/lib/pricing.ts",
+    "./types": "./src/types.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "astro": "^4.0.0 || ^5.0.0"
+  },
+  "devDependencies": {
+    "astro": "^5.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "astro",
+    "calculator",
+    "lead-generation",
+    "multi-step-form",
+    "quote-calculator"
+  ]
+}

@@ -1,0 +1,107 @@
+---
+/**
+ * CheckboxCard - Multi-Select Option
+ *
+ * Card-style checkbox for selecting multiple options.
+ */
+
+export interface Props {
+  /** Input name (shared across options) */
+  name: string;
+  /** Option value */
+  value: string;
+  /** Display label */
+  label: string;
+  /** Optional image URL */
+  image?: string;
+  /** Optional icon/emoji */
+  icon?: string;
+  /** Optional description */
+  description?: string;
+  /** Optional price to show */
+  price?: number;
+  /** Currency for price display */
+  currency?: string;
+  /** Is this option selected? */
+  checked?: boolean;
+  /** Is this option disabled? */
+  disabled?: boolean;
+}
+
+const {
+  name,
+  value,
+  label,
+  image,
+  icon,
+  description,
+  price,
+  currency = 'Ft',
+  checked = false,
+  disabled = false,
+} = Astro.props;
+
+const formattedPrice = price
+  ? new Intl.NumberFormat('hu-HU').format(price) + ' ' + currency
+  : null;
+---
+
+<label
+  class:list={[
+    'checkbox-card',
+    'group relative flex items-center gap-4 p-4 rounded-xl cursor-pointer',
+    'bg-white border-2 border-gray-200 hover:border-primary-300',
+    'transition-all duration-200',
+    'has-[:checked]:bg-primary-50 has-[:checked]:border-primary-600',
+    'has-[:disabled]:opacity-50 has-[:disabled]:cursor-not-allowed',
+  ]}
+>
+  {/* Checkbox */}
+  <div class="flex-shrink-0">
+    <div class="w-6 h-6 rounded border-2 border-gray-300 group-has-[:checked]:bg-primary-600 group-has-[:checked]:border-primary-600 flex items-center justify-center">
+      <input
+        type="checkbox"
+        name={name}
+        value={value}
+        checked={checked}
+        disabled={disabled}
+        class="sr-only"
+      />
+      <svg
+        class="w-4 h-4 text-white opacity-0 group-has-[:checked]:opacity-100"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+          clip-rule="evenodd"
+        />
+      </svg>
+    </div>
+  </div>
+
+  {/* Icon/Image */}
+  {image ? (
+    <div class="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden">
+      <img src={image} alt="" class="w-full h-full object-cover" loading="lazy" />
+    </div>
+  ) : icon ? (
+    <span class="text-2xl flex-shrink-0">{icon}</span>
+  ) : null}
+
+  {/* Content */}
+  <div class="flex-grow min-w-0">
+    <span class="font-semibold text-gray-900 block">{label}</span>
+    {description && (
+      <span class="text-sm text-gray-600 block mt-0.5">{description}</span>
+    )}
+  </div>
+
+  {/* Price */}
+  {formattedPrice && (
+    <span class="text-sm font-semibold text-primary-600 flex-shrink-0">
+      +{formattedPrice}
+    </span>
+  )}
+</label>
