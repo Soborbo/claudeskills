@@ -25,51 +25,51 @@ export interface PatternConfig {
 
 /**
  * Complete pattern definitions
- * Matches the astro-images skill specification exactly
+ * Includes 480px breakpoint for better mobile coverage
  */
 export const PATTERNS: Record<ImagePattern, PatternConfig> = {
   FULL: {
-    widths: [640, 750, 828, 1080, 1200, 1920, 2048, 2560],
+    widths: [480, 640, 750, 828, 1080, 1200, 1920, 2048, 2560],
     sizes: '100vw',
     minSourceWidth: 2560,
   },
   TWO_THIRDS: {
-    widths: [384, 640, 768, 1024, 1280, 1706, 2048],
+    widths: [384, 480, 640, 768, 1024, 1280, 1706, 2048],
     sizes: '(min-width: 1024px) 66vw, 100vw',
     minSourceWidth: 2048,
   },
   LARGE: {
-    widths: [384, 640, 768, 1024, 1280, 1536, 1920],
+    widths: [384, 480, 640, 768, 1024, 1280, 1536, 1920],
     sizes: '(min-width: 1024px) 60vw, 100vw',
     minSourceWidth: 1920,
   },
   HALF: {
-    widths: [320, 640, 960, 1280, 1600],
+    widths: [320, 480, 640, 960, 1280, 1600],
     sizes: '(min-width: 1024px) 50vw, 100vw',
     minSourceWidth: 1600,
   },
   SMALL: {
-    widths: [256, 512, 640, 1024, 1280],
+    widths: [256, 480, 512, 640, 1024, 1280],
     sizes: '(min-width: 1024px) 40vw, 100vw',
     minSourceWidth: 1280,
   },
   THIRD: {
-    widths: [256, 512, 640, 853, 1280],
+    widths: [256, 480, 512, 640, 853, 1280],
     sizes: '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
     minSourceWidth: 1280,
   },
   QUARTER: {
-    widths: [192, 384, 512, 640, 960],
+    widths: [192, 384, 480, 512, 640, 960],
     sizes: '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw',
     minSourceWidth: 960,
   },
   FIFTH: {
-    widths: [160, 320, 512, 640, 768],
+    widths: [160, 320, 480, 512, 640, 768],
     sizes: '(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw',
     minSourceWidth: 768,
   },
   SIXTH: {
-    widths: [128, 256, 427, 512, 640],
+    widths: [128, 256, 427, 480, 512, 640],
     sizes: '(min-width: 1024px) 16vw, (min-width: 640px) 33vw, 50vw',
     minSourceWidth: 640,
   },

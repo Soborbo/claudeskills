@@ -9,5 +9,8 @@
 export type { ImagePattern, PatternConfig } from './types';
 export { PATTERNS, LAYOUT_PATTERNS } from './types';
 
-// Components are exported via package.json exports field
-// Import directly: import Picture from '@leadgen/components/Picture'
+// Component re-exports for convenience
+// Primary usage: import Picture from '@leadgen/components/Picture'
+// Alternative: import { Picture } from '@leadgen/components'
+export { default as Picture } from './Picture/Picture.astro';
+export { default as FixedImage } from './FixedImage/FixedImage.astro';

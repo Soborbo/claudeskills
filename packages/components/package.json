@@ -4,8 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./Picture": "./src/Picture.astro",
-    "./FixedImage": "./src/FixedImage.astro"
+    "./Picture": "./src/Picture/index.ts",
+    "./FixedImage": "./src/FixedImage/index.ts"
   },
   "files": ["src"],
   "keywords": ["astro", "astro-component", "withastro"],
