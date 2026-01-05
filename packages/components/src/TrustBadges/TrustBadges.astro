@@ -1,0 +1,104 @@
+---
+/**
+ * TrustBadges Component
+ *
+ * Displays a row of trust/accreditation badges.
+ * Only show badges you actually have.
+ *
+ * @example
+ * <TrustBadges
+ *   badges={[
+ *     { src: '/badges/which-trusted.svg', alt: 'Which? Trusted Trader' },
+ *     { src: '/badges/checkatrade.svg', alt: 'Checkatrade Approved' },
+ *   ]}
+ * />
+ */
+
+export interface Badge {
+  /** Badge image source */
+  src: string;
+
+  /** Alt text for accessibility */
+  alt: string;
+
+  /** Optional link */
+  url?: string;
+}
+
+export interface Props {
+  /** Array of badges to display */
+  badges: Badge[];
+
+  /** Display variant */
+  variant?: 'default' | 'grayscale' | 'compact';
+
+  /** Alignment */
+  align?: 'left' | 'center' | 'right';
+
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  badges,
+  variant = 'grayscale',
+  align = 'center',
+  class: className,
+} = Astro.props;
+
+const alignClasses = {
+  left: 'justify-start',
+  center: 'justify-center',
+  right: 'justify-end',
+};
+
+const sizeClasses = {
+  default: 'h-12 md:h-16',
+  grayscale: 'h-12 md:h-16',
+  compact: 'h-8 md:h-10',
+};
+
+const imageClasses = {
+  default: '',
+  grayscale: 'grayscale hover:grayscale-0 opacity-70 hover:opacity-100 transition-all duration-200',
+  compact: 'opacity-60 hover:opacity-100 transition-opacity',
+};
+---
+
+<div
+  class:list={[
+    'flex flex-wrap items-center gap-6 md:gap-8 py-6',
+    alignClasses[align],
+    className,
+  ]}
+  role="list"
+  aria-label="Trust badges and accreditations"
+>
+  {badges.map((badge) => {
+    const imgElement = (
+      <img
+        src={badge.src}
+        alt={badge.alt}
+        class:list={[sizeClasses[variant], imageClasses[variant], 'w-auto']}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+
+    return badge.url ? (
+      <a
+        href={badge.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex-shrink-0"
+        role="listitem"
+      >
+        {imgElement}
+      </a>
+    ) : (
+      <div class="flex-shrink-0" role="listitem">
+        {imgElement}
+      </div>
+    );
+  })}
+</div>

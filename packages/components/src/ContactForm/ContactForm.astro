@@ -1,0 +1,390 @@
+---
+/**
+ * ContactForm Component
+ *
+ * Lead generation form with spam protection, validation, and GDPR compliance.
+ * Requires server-side API endpoint for processing.
+ *
+ * @example
+ * <ContactForm
+ *   action="/api/contact"
+ *   turnstileSiteKey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
+ *   thankYouUrl="/koszonjuk"
+ *   privacyPolicyUrl="/adatvedelem"
+ * />
+ *
+ * Features:
+ * - Honeypot field (spam trap)
+ * - Form start time tracking (prevents bot speed)
+ * - Turnstile CAPTCHA integration
+ * - GDPR consent with timestamp
+ * - Client-side validation
+ * - GA4 form_submit event
+ * - Accessible error messages
+ */
+
+export interface Props {
+  /** Form submission endpoint */
+  action: string;
+
+  /** Cloudflare Turnstile site key */
+  turnstileSiteKey: string;
+
+  /** Redirect URL after successful submission */
+  thankYouUrl: string;
+
+  /** Privacy policy page URL */
+  privacyPolicyUrl: string;
+
+  /** Form title */
+  title?: string;
+
+  /** Form description */
+  description?: string;
+
+  /** Submit button text */
+  submitText?: string;
+
+  /** Loading state text */
+  loadingText?: string;
+
+  /** Show phone field */
+  showPhone?: boolean;
+
+  /** Show message field */
+  showMessage?: boolean;
+
+  /** Additional CSS classes */
+  class?: string;
+
+  /** Form ID for analytics */
+  formId?: string;
+}
+
+const {
+  action,
+  turnstileSiteKey,
+  thankYouUrl,
+  privacyPolicyUrl,
+  title,
+  description,
+  submitText = 'Küldés',
+  loadingText = 'Küldés...',
+  showPhone = true,
+  showMessage = true,
+  class: className,
+  formId = 'contact-form',
+} = Astro.props;
+
+const currentUrl = Astro.url.href;
+---
+
+<div class:list={['contact-form-wrapper', className]}>
+  {title && (
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{title}</h2>
+  )}
+  {description && (
+    <p class="text-gray-600 mb-6">{description}</p>
+  )}
+
+  <form
+    id={formId}
+    action={action}
+    method="POST"
+    class="space-y-5"
+    novalidate
+    data-thank-you-url={thankYouUrl}
+  >
+    <!-- Honeypot (spam trap - must stay empty) -->
+    <div class="hidden" aria-hidden="true">
+      <label for="website">Website</label>
+      <input
+        type="text"
+        id="website"
+        name="honeypot"
+        tabindex="-1"
+        autocomplete="off"
+      />
+    </div>
+
+    <!-- Form start time (bot speed detection) -->
+    <input type="hidden" name="formStartTime" id="formStartTime" />
+
+    <!-- Source URL for tracking -->
+    <input type="hidden" name="sourceUrl" value={currentUrl} />
+
+    <!-- UTM params (populated by script) -->
+    <input type="hidden" name="utmSource" id="utmSource" />
+    <input type="hidden" name="utmMedium" id="utmMedium" />
+    <input type="hidden" name="utmCampaign" id="utmCampaign" />
+
+    <!-- Name -->
+    <div>
+      <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+        Név <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        required
+        minlength="2"
+        autocomplete="name"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+        aria-describedby="name-error"
+      />
+      <p id="name-error" class="mt-1 text-sm text-red-600 hidden" role="alert"></p>
+    </div>
+
+    <!-- Email -->
+    <div>
+      <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+        Email <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        autocomplete="email"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+        aria-describedby="email-error"
+      />
+      <p id="email-error" class="mt-1 text-sm text-red-600 hidden" role="alert"></p>
+    </div>
+
+    <!-- Phone (optional) -->
+    {showPhone && (
+      <div>
+        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
+          Telefon <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="tel"
+          id="phone"
+          name="phone"
+          required
+          autocomplete="tel"
+          placeholder="+36 20 123 4567"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+          aria-describedby="phone-error"
+        />
+        <p id="phone-error" class="mt-1 text-sm text-red-600 hidden" role="alert"></p>
+      </div>
+    )}
+
+    <!-- Message (optional) -->
+    {showMessage && (
+      <div>
+        <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
+          Üzenet
+        </label>
+        <textarea
+          id="message"
+          name="message"
+          rows="4"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-none"
+          aria-describedby="message-error"
+        ></textarea>
+        <p id="message-error" class="mt-1 text-sm text-red-600 hidden" role="alert"></p>
+      </div>
+    )}
+
+    <!-- GDPR Consent -->
+    <div class="flex items-start gap-3">
+      <input
+        type="checkbox"
+        id="gdprConsent"
+        name="gdprConsent"
+        required
+        value="true"
+        class="mt-1 w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+        aria-describedby="gdpr-error"
+      />
+      <label for="gdprConsent" class="text-sm text-gray-600">
+        Elfogadom az <a href={privacyPolicyUrl} class="text-primary-600 hover:underline" target="_blank">adatvédelmi szabályzatot</a> <span class="text-red-500">*</span>
+      </label>
+    </div>
+    <input type="hidden" name="gdprTimestamp" id="gdprTimestamp" />
+    <p id="gdpr-error" class="text-sm text-red-600 hidden" role="alert"></p>
+
+    <!-- Turnstile CAPTCHA -->
+    <div
+      class="cf-turnstile"
+      data-sitekey={turnstileSiteKey}
+      data-theme="light"
+      data-size="flexible"
+    ></div>
+    <p id="turnstile-error" class="text-sm text-red-600 hidden" role="alert"></p>
+
+    <!-- General Error Message -->
+    <div id="form-error" class="p-4 bg-red-50 border border-red-200 rounded-lg hidden" role="alert">
+      <p class="text-sm text-red-700"></p>
+    </div>
+
+    <!-- Submit Button -->
+    <button
+      type="submit"
+      class="w-full px-6 py-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      data-submit-text={submitText}
+      data-loading-text={loadingText}
+    >
+      {submitText}
+    </button>
+  </form>
+</div>
+
+<!-- Turnstile Script -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
+  function initContactForm() {
+    const forms = document.querySelectorAll('form[id^="contact-form"]');
+
+    forms.forEach((form) => {
+      const formEl = form as HTMLFormElement;
+
+      // Prevent re-initialization
+      if (formEl.dataset.initialized) return;
+      formEl.dataset.initialized = 'true';
+
+      // Set form start time
+      const startTimeInput = formEl.querySelector('#formStartTime') as HTMLInputElement;
+      if (startTimeInput) {
+        startTimeInput.value = Date.now().toString();
+      }
+
+      // Populate UTM params from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const utmSource = formEl.querySelector('#utmSource') as HTMLInputElement;
+      const utmMedium = formEl.querySelector('#utmMedium') as HTMLInputElement;
+      const utmCampaign = formEl.querySelector('#utmCampaign') as HTMLInputElement;
+
+      if (utmSource) utmSource.value = urlParams.get('utm_source') || '';
+      if (utmMedium) utmMedium.value = urlParams.get('utm_medium') || '';
+      if (utmCampaign) utmCampaign.value = urlParams.get('utm_campaign') || '';
+
+      // GDPR timestamp on check
+      const gdprCheckbox = formEl.querySelector('#gdprConsent') as HTMLInputElement;
+      const gdprTimestamp = formEl.querySelector('#gdprTimestamp') as HTMLInputElement;
+
+      gdprCheckbox?.addEventListener('change', () => {
+        if (gdprCheckbox.checked && gdprTimestamp) {
+          gdprTimestamp.value = new Date().toISOString();
+        }
+      });
+
+      // Form submission
+      formEl.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const submitBtn = formEl.querySelector('button[type="submit"]') as HTMLButtonElement;
+        const submitText = submitBtn.dataset.submitText || 'Küldés';
+        const loadingText = submitBtn.dataset.loadingText || 'Küldés...';
+        const thankYouUrl = formEl.dataset.thankYouUrl;
+
+        // Clear previous errors
+        formEl.querySelectorAll('[role="alert"]').forEach((el) => {
+          el.classList.add('hidden');
+          el.textContent = '';
+        });
+
+        // Client-side validation
+        const errors: Record<string, string> = {};
+
+        const name = (formEl.querySelector('#name') as HTMLInputElement)?.value;
+        const email = (formEl.querySelector('#email') as HTMLInputElement)?.value;
+        const phone = (formEl.querySelector('#phone') as HTMLInputElement)?.value;
+        const gdprConsent = (formEl.querySelector('#gdprConsent') as HTMLInputElement)?.checked;
+
+        if (!name || name.length < 2) {
+          errors.name = 'Kérjük, adja meg a nevét (min. 2 karakter)';
+        }
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          errors.email = 'Kérjük, adjon meg érvényes email címet';
+        }
+
+        if (phone !== undefined && (!phone || !/^(\+36|06)?[\s-]?[0-9]{1,2}[\s-]?[0-9]{3}[\s-]?[0-9]{3,4}$/.test(phone.replace(/\s/g, '')))) {
+          errors.phone = 'Kérjük, adjon meg érvényes telefonszámot';
+        }
+
+        if (!gdprConsent) {
+          errors.gdpr = 'Az adatvédelmi szabályzat elfogadása kötelező';
+        }
+
+        // Check Turnstile
+        const turnstileResponse = (formEl.querySelector('[name="cf-turnstile-response"]') as HTMLInputElement)?.value;
+        if (!turnstileResponse) {
+          errors.turnstile = 'Kérjük, igazolja, hogy nem robot';
+        }
+
+        // Show errors if any
+        if (Object.keys(errors).length > 0) {
+          Object.entries(errors).forEach(([field, message]) => {
+            const errorEl = formEl.querySelector(`#${field}-error`);
+            if (errorEl) {
+              errorEl.textContent = message;
+              errorEl.classList.remove('hidden');
+            }
+          });
+          return;
+        }
+
+        // Submit
+        try {
+          submitBtn.disabled = true;
+          submitBtn.textContent = loadingText;
+
+          const formData = new FormData(formEl);
+          const data = Object.fromEntries(formData.entries());
+
+          const response = await fetch(formEl.action, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Hiba történt az űrlap elküldésekor');
+          }
+
+          // GA4 Event
+          if (typeof window !== 'undefined' && (window as any).dataLayer) {
+            (window as any).dataLayer.push({
+              event: 'form_submit',
+              form_id: formEl.id,
+              form_name: 'contact_form',
+            });
+          }
+
+          // Redirect to thank you page
+          if (thankYouUrl) {
+            window.location.href = thankYouUrl;
+          }
+        } catch (error) {
+          const formError = formEl.querySelector('#form-error');
+          const errorText = formError?.querySelector('p');
+          if (formError && errorText) {
+            errorText.textContent = error instanceof Error ? error.message : 'Hiba történt. Kérjük, próbálja újra később.';
+            formError.classList.remove('hidden');
+          }
+
+          submitBtn.disabled = false;
+          submitBtn.textContent = submitText;
+        }
+      });
+    });
+  }
+
+  initContactForm();
+  document.addEventListener('astro:page-load', initContactForm);
+</script>
+
+<style>
+  /* Turnstile responsive */
+  .cf-turnstile {
+    min-height: 65px;
+  }
+</style>

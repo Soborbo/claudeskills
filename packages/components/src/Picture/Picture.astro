@@ -1,0 +1,123 @@
+---
+/**
+ * Picture Component
+ *
+ * Responsive image component with pattern-based width optimization.
+ * Replaces manual widths/sizes calculations with a single pattern prop.
+ *
+ * @example
+ * // Full-bleed hero (LCP)
+ * <Picture src={heroImage} pattern="FULL" lcp alt="Hero banner" />
+ *
+ * // 50/50 split layout
+ * <Picture src={featureImage} pattern="HALF" alt="Feature" />
+ *
+ * // Team grid (4 columns)
+ * <Picture src={teamMember} pattern="QUARTER" alt="John Smith" />
+ */
+import { Picture as AstroPicture } from 'astro:assets';
+import type { ImagePattern } from '../types';
+import { PATTERNS } from '../types';
+
+export interface Props {
+  /** Image source - must be from /src/assets/ */
+  src: ImageMetadata;
+
+  /**
+   * Pattern determines rendered width
+   * FULL=100vw, TWO_THIRDS=66vw, LARGE=60vw, HALF=50vw,
+   * SMALL=40vw, THIRD=33vw, QUARTER=25vw, FIFTH=20vw, SIXTH=16vw
+   * Default: HALF (safest default for unknown layouts)
+   */
+  pattern?: ImagePattern;
+
+  /** Alt text - required for accessibility. Use alt="" only for decorative images */
+  alt: string;
+
+  /**
+   * LCP (Largest Contentful Paint) flag
+   * Sets loading="eager" and fetchpriority="high"
+   * Only ONE image per page should have this
+   */
+  lcp?: boolean;
+
+  /**
+   * Above-fold but not LCP
+   * Sets loading="eager" without fetchpriority
+   * Use for 2-3 images visible on initial load
+   */
+  aboveFold?: boolean;
+
+  /** Image quality (1-100). Default: 60 - optimal for web */
+  quality?: number;
+
+  /** Output formats. Default: ['avif', 'webp'] */
+  formats?: ('avif' | 'webp' | 'png' | 'jpg')[];
+
+  /** Additional CSS classes */
+  class?: string;
+
+  /** Custom sizes override (use only when pattern doesn't match layout) */
+  sizes?: string;
+
+  /** Custom widths override (use only when pattern doesn't match layout) */
+  widths?: number[];
+}
+
+const {
+  src,
+  pattern = 'HALF',
+  alt,
+  lcp = false,
+  aboveFold = false,
+  quality = 60,
+  formats = ['avif', 'webp'],
+  class: className,
+  sizes: customSizes,
+  widths: customWidths,
+} = Astro.props;
+
+// Get pattern configuration
+const config = PATTERNS[pattern];
+
+// Use custom values if provided, otherwise use pattern defaults
+let finalWidths = customWidths ?? config.widths;
+const finalSizes = customSizes ?? config.sizes;
+
+// Handle undersized sources: cap widths at source width
+// Exception: FULL pattern for LCP - undersized is an error
+const sourceWidth = src.width;
+if (sourceWidth < config.minSourceWidth) {
+  if (pattern === 'FULL' && lcp) {
+    console.warn(
+      `[Picture] LCP image source (${sourceWidth}px) is smaller than FULL pattern minimum (${config.minSourceWidth}px). ` +
+      `This will cause poor quality on high-DPI displays. Please provide a larger source image.`
+    );
+  }
+  // Cap widths array at source width
+  finalWidths = finalWidths.filter((w) => w <= sourceWidth);
+  // Ensure at least the source width is included
+  if (!finalWidths.includes(sourceWidth)) {
+    finalWidths.push(sourceWidth);
+    finalWidths.sort((a, b) => a - b);
+  }
+}
+
+// Determine loading behavior
+const loading = lcp || aboveFold ? 'eager' : 'lazy';
+const fetchpriority = lcp ? 'high' : undefined;
+const decoding = lcp ? undefined : 'async';
+---
+
+<AstroPicture
+  src={src}
+  widths={finalWidths}
+  sizes={finalSizes}
+  formats={formats}
+  quality={quality}
+  alt={alt}
+  loading={loading}
+  fetchpriority={fetchpriority}
+  decoding={decoding}
+  class={className}
+/>

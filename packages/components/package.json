@@ -1,0 +1,25 @@
+{
+  "name": "@leadgen/components",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./Picture": "./src/Picture/index.ts",
+    "./FixedImage": "./src/FixedImage/index.ts",
+    "./YouTubeFacade": "./src/YouTubeFacade/index.ts",
+    "./Testimonial": "./src/Testimonial/index.ts",
+    "./GoogleReviewBadge": "./src/GoogleReviewBadge/index.ts",
+    "./Stats": "./src/Stats/index.ts",
+    "./TrustBadges": "./src/TrustBadges/index.ts",
+    "./Header": "./src/Header/index.ts",
+    "./MobileMenu": "./src/MobileMenu/index.ts",
+    "./MobileCtaBar": "./src/MobileCtaBar/index.ts",
+    "./Footer": "./src/Footer/index.ts",
+    "./ContactForm": "./src/ContactForm/index.ts"
+  },
+  "files": ["src"],
+  "keywords": ["astro", "astro-component", "withastro"],
+  "peerDependencies": {
+    "astro": "^4.0.0 || ^5.0.0"
+  }
+}

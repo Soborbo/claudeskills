@@ -1,0 +1,165 @@
+---
+/**
+ * YouTubeFacade Component
+ *
+ * Embeds YouTube videos without loading YouTube scripts until user clicks.
+ * Uses facade pattern for massive performance gains.
+ *
+ * @example
+ * import YouTubeFacade from '@leadgen/components/YouTubeFacade';
+ * import poster from '../assets/videos/intro.jpg';
+ *
+ * <YouTubeFacade
+ *   videoId="dQw4w9WgXcQ"
+ *   title="Company Introduction"
+ *   poster={poster}
+ * />
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+export interface Props {
+  /** YouTube video ID (the part after v= in URL) */
+  videoId: string;
+
+  /** Video title for accessibility and tracking */
+  title: string;
+
+  /**
+   * Local poster image from /src/assets/
+   * Download from: https://i.ytimg.com/vi/{VIDEO_ID}/maxresdefault.jpg
+   * Fallback: sddefault.jpg if maxres unavailable
+   */
+  poster: ImageMetadata;
+
+  /** Additional CSS classes */
+  class?: string;
+
+  /**
+   * Load poster eagerly (above-fold videos)
+   * Never use fetchpriority="high" on video facades
+   */
+  priority?: boolean;
+
+  /** Aspect ratio. Default: 16/9 */
+  aspectRatio?: '16/9' | '4/3' | '1/1';
+}
+
+const {
+  videoId,
+  title,
+  poster,
+  class: className,
+  priority = false,
+  aspectRatio = '16/9',
+} = Astro.props;
+
+const aspectClass = {
+  '16/9': 'aspect-[16/9]',
+  '4/3': 'aspect-[4/3]',
+  '1/1': 'aspect-square',
+}[aspectRatio];
+---
+
+<div
+  class:list={[
+    'video-facade relative cursor-pointer group overflow-hidden rounded-lg',
+    aspectClass,
+    className,
+  ]}
+  data-video-id={videoId}
+  data-video-title={title}
+  role="button"
+  tabindex="0"
+  aria-label={`Play video: ${title}`}
+>
+  <Picture
+    src={poster}
+    alt={title}
+    formats={['avif', 'webp']}
+    fallbackFormat="jpg"
+    widths={[480, 640, 800, 1280]}
+    sizes="(max-width: 800px) 100vw, 800px"
+    quality={70}
+    loading={priority ? 'eager' : 'lazy'}
+    decoding={priority ? 'sync' : 'async'}
+    class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+  />
+
+  <!-- Dark overlay for better play button visibility -->
+  <div class="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
+
+  <!-- Play button (custom, not YouTube logo per trademark rules) -->
+  <div class="absolute inset-0 flex items-center justify-center">
+    <div class="w-16 h-16 md:w-20 md:h-20 bg-red-600 rounded-full flex items-center justify-center group-hover:bg-red-700 group-hover:scale-110 transition-all duration-200 shadow-lg">
+      <svg
+        class="w-6 h-6 md:w-8 md:h-8 text-white ml-1"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initVideoFacades() {
+    document.querySelectorAll('.video-facade').forEach((facade) => {
+      const el = facade as HTMLElement;
+      if (el.dataset.initialized) return;
+      el.dataset.initialized = 'true';
+
+      let played = false;
+
+      const playVideo = () => {
+        if (played) return;
+        played = true;
+
+        const videoId = el.dataset.videoId;
+        const title = el.dataset.videoTitle;
+
+        // GA4 Event
+        if (typeof window !== 'undefined' && (window as any).dataLayer) {
+          (window as any).dataLayer.push({
+            event: 'video_play',
+            video_id: videoId,
+            video_title: title,
+          });
+        }
+
+        // Create and insert iframe (privacy-enhanced embed)
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+        iframe.title = title || 'YouTube video';
+        iframe.allow =
+          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        iframe.className = 'absolute inset-0 w-full h-full';
+
+        // Replace facade content with iframe
+        el.replaceChildren(iframe);
+        el.removeAttribute('role');
+        el.removeAttribute('tabindex');
+        el.removeAttribute('aria-label');
+        el.classList.remove('cursor-pointer', 'group');
+      };
+
+      // Click handler
+      el.addEventListener('click', playVideo);
+
+      // Keyboard accessibility (Enter/Space)
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          playVideo();
+        }
+      });
+    });
+  }
+
+  // Initialize on load and Astro page transitions
+  initVideoFacades();
+  document.addEventListener('astro:page-load', initVideoFacades);
+</script>
