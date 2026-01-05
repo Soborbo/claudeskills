@@ -1,0 +1,151 @@
+# @leadgen/components
+
+Astro component library for high-performance lead generation websites. Encapsulates best practices as reusable, type-safe components.
+
+## Installation
+
+```bash
+# In your Astro project, add as a local package
+# In package.json:
+{
+  "dependencies": {
+    "@leadgen/components": "file:../claudeskills/packages/components"
+  }
+}
+```
+
+## Components
+
+### Picture
+
+Pattern-based responsive images. Replaces manual `widths`/`sizes` calculations with a single `pattern` prop.
+
+#### Usage
+
+```astro
+---
+import Picture from '@leadgen/components/Picture';
+import heroImage from '../assets/hero.jpg';
+import featureImage from '../assets/feature.jpg';
+import teamMember from '../assets/team/john.jpg';
+---
+
+<!-- Full-bleed hero (LCP - only ONE per page) -->
+<Picture src={heroImage} pattern="FULL" lcp alt="Hero banner" />
+
+<!-- 50/50 split layout -->
+<Picture src={featureImage} pattern="HALF" alt="Feature description" />
+
+<!-- Team grid (4 columns) -->
+<Picture src={teamMember} pattern="QUARTER" alt="John Smith, CEO" />
+
+<!-- Above-fold but not LCP (2-3 images) -->
+<Picture src={secondaryImage} pattern="HALF" aboveFold alt="Secondary" />
+```
+
+#### Patterns
+
+| Pattern | Width | Use Case |
+|---------|-------|----------|
+| `FULL` | 100vw | Full-bleed hero banners |
+| `TWO_THIRDS` | 66vw | Dominant side of 66/33 split |
+| `LARGE` | 60vw | Dominant side of 60/40 split |
+| `HALF` | 50vw | Split 50/50, checkerboard (default) |
+| `SMALL` | 40vw | Text-dominant split (40/60) |
+| `THIRD` | 33vw | 3-col grid, standing person |
+| `QUARTER` | 25vw | 4-col team grid |
+| `FIFTH` | 20vw | 5-col icons |
+| `SIXTH` | 16vw | 6-col logos |
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `src` | `ImageMetadata` | required | Image from `/src/assets/` |
+| `pattern` | `ImagePattern` | `'HALF'` | Rendered width pattern |
+| `alt` | `string` | required | Alt text (use `""` for decorative) |
+| `lcp` | `boolean` | `false` | LCP flag - only ONE per page |
+| `aboveFold` | `boolean` | `false` | Eager load without fetchpriority |
+| `quality` | `number` | `60` | Image quality (1-100) |
+| `formats` | `array` | `['avif', 'webp']` | Output formats |
+| `class` | `string` | - | CSS classes |
+
+### FixedImage
+
+For logos, avatars, and icons with fixed pixel dimensions.
+
+#### Usage
+
+```astro
+---
+import FixedImage from '@leadgen/components/FixedImage';
+import logo from '../assets/logo.png';
+import avatar from '../assets/avatar.jpg';
+---
+
+<!-- Logo at 200px -->
+<FixedImage src={logo} width={200} alt="Company Logo" />
+
+<!-- Avatar with 3x for high-DPI (icons >= 64px) -->
+<FixedImage src={avatar} width={64} alt="User avatar" include3x />
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `src` | `ImageMetadata` | required | Image from `/src/assets/` |
+| `width` | `number` | required | Display width in pixels |
+| `height` | `number` | auto | Display height (auto from aspect ratio) |
+| `alt` | `string` | required | Alt text |
+| `include3x` | `boolean` | `false` | Add 3x for high-DPI |
+| `quality1x` | `number` | `80` | Quality for 1x |
+| `qualityHighDpi` | `number` | `60` | Quality for 2x/3x |
+| `class` | `string` | - | CSS classes |
+| `loading` | `'lazy' \| 'eager'` | `'lazy'` | Loading behavior |
+
+## Source Requirements
+
+Components will warn if source images are too small:
+
+| Pattern | Minimum Source |
+|---------|----------------|
+| FULL | 2560px |
+| TWO_THIRDS | 2048px |
+| LARGE | 1920px |
+| HALF | 1600px |
+| SMALL, THIRD | 1280px |
+| QUARTER | 960px |
+| FIFTH | 768px |
+| SIXTH | 640px |
+
+## Migration from astro-images skill
+
+Before (manual):
+```astro
+<Picture
+  src={image}
+  widths={[320, 640, 960, 1280, 1600]}
+  sizes="(min-width: 1024px) 50vw, 100vw"
+  formats={['avif', 'webp']}
+  quality={60}
+  alt="Feature"
+  decoding="async"
+/>
+```
+
+After (with component):
+```astro
+<Picture src={image} pattern="HALF" alt="Feature" />
+```
+
+## Type Exports
+
+```typescript
+import { PATTERNS, LAYOUT_PATTERNS } from '@leadgen/components';
+import type { ImagePattern, PatternConfig } from '@leadgen/components';
+
+// Use LAYOUT_PATTERNS for semantic lookups
+const pattern = LAYOUT_PATTERNS['split-50']; // 'HALF'
+const pattern2 = LAYOUT_PATTERNS['team'];    // 'QUARTER'
+```

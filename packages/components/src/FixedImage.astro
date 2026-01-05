@@ -1,0 +1,106 @@
+---
+/**
+ * FixedImage Component
+ *
+ * For images with fixed pixel dimensions (logos, avatars, icons).
+ * Generates 1x and 2x versions for standard and high-DPI displays.
+ *
+ * @example
+ * // Logo at 200px width
+ * <FixedImage src={logo} width={200} alt="Company Logo" />
+ *
+ * // Avatar at 64px (include 3x for small high-fidelity icons)
+ * <FixedImage src={avatar} width={64} alt="User avatar" include3x />
+ */
+import { getImage } from 'astro:assets';
+
+export interface Props {
+  /** Image source - must be from /src/assets/ */
+  src: ImageMetadata;
+
+  /** Display width in pixels */
+  width: number;
+
+  /** Display height in pixels (optional - calculated from aspect ratio if omitted) */
+  height?: number;
+
+  /** Alt text - required for accessibility */
+  alt: string;
+
+  /**
+   * Include 3x version for high-DPI displays
+   * Only use for icons >= 64px where fidelity matters
+   * Default: false (1x + 2x only)
+   */
+  include3x?: boolean;
+
+  /** Quality for 1x version. Default: 80 */
+  quality1x?: number;
+
+  /** Quality for 2x/3x versions. Default: 60 (lower quality acceptable at higher resolution) */
+  qualityHighDpi?: number;
+
+  /** Additional CSS classes */
+  class?: string;
+
+  /** Loading behavior. Default: 'lazy' */
+  loading?: 'lazy' | 'eager';
+}
+
+const {
+  src,
+  width,
+  height,
+  alt,
+  include3x = false,
+  quality1x = 80,
+  qualityHighDpi = 60,
+  class: className,
+  loading = 'lazy',
+} = Astro.props;
+
+// Calculate height from aspect ratio if not provided
+const aspectRatio = src.width / src.height;
+const finalHeight = height ?? Math.round(width / aspectRatio);
+
+// Generate optimized images at 1x, 2x, and optionally 3x
+const img1x = await getImage({
+  src,
+  width,
+  height: finalHeight,
+  quality: quality1x,
+  format: 'webp',
+});
+
+const img2x = await getImage({
+  src,
+  width: width * 2,
+  height: finalHeight * 2,
+  quality: qualityHighDpi,
+  format: 'webp',
+});
+
+let srcset = `${img1x.src} 1x, ${img2x.src} 2x`;
+
+if (include3x) {
+  const img3x = await getImage({
+    src,
+    width: width * 3,
+    height: finalHeight * 3,
+    quality: qualityHighDpi,
+    format: 'webp',
+  });
+  srcset = `${img1x.src} 1x, ${img2x.src} 2x, ${img3x.src} 3x`;
+}
+---
+
+<img
+  src={img1x.src}
+  srcset={srcset}
+  width={width}
+  height={finalHeight}
+  alt={alt}
+  loading={loading}
+  decoding="async"
+  class={className}
+/>
