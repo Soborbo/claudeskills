@@ -411,6 +411,91 @@ import Footer from '@leadgen/components/Footer';
 
 ---
 
+## Form Components
+
+### ContactForm
+
+Lead generation form with spam protection, validation, and GDPR compliance.
+
+```astro
+---
+import ContactForm from '@leadgen/components/ContactForm';
+---
+
+<ContactForm
+  action="/api/contact"
+  turnstileSiteKey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
+  thankYouUrl="/koszonjuk"
+  privacyPolicyUrl="/adatvedelem"
+  title="Kérjen ingyenes árajánlatot"
+  description="Töltse ki az űrlapot és 24 órán belül felvesszük Önnel a kapcsolatot."
+/>
+```
+
+**Features:**
+- Honeypot field (invisible spam trap)
+- Form timing check (blocks bots)
+- Turnstile CAPTCHA
+- GDPR consent with timestamp
+- Client-side validation (Hungarian messages)
+- GA4 `form_submit` event
+- UTM parameter tracking
+- Accessible error messages
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `action` | `string` | required | API endpoint |
+| `turnstileSiteKey` | `string` | required | Cloudflare Turnstile key |
+| `thankYouUrl` | `string` | required | Redirect after submit |
+| `privacyPolicyUrl` | `string` | required | Privacy policy link |
+| `title` | `string` | - | Form title |
+| `description` | `string` | - | Form description |
+| `submitText` | `string` | `'Küldés'` | Submit button text |
+| `showPhone` | `boolean` | `true` | Show phone field |
+| `showMessage` | `boolean` | `true` | Show message field |
+
+**Required API endpoint:**
+
+The form posts JSON to your `action` endpoint. Create `/src/pages/api/contact.ts`:
+
+```typescript
+import type { APIRoute } from 'astro';
+import { z } from 'zod';
+
+const schema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  message: z.string().optional(),
+  gdprConsent: z.literal('true'),
+  gdprTimestamp: z.string(),
+  honeypot: z.string().max(0),
+  formStartTime: z.coerce.number().refine(
+    (start) => Date.now() - start > 3000,
+    'Too fast'
+  ),
+  'cf-turnstile-response': z.string().min(1),
+  sourceUrl: z.string(),
+});
+
+export const POST: APIRoute = async ({ request }) => {
+  const body = await request.json();
+  const result = schema.safeParse(body);
+
+  if (!result.success) {
+    return new Response(JSON.stringify({ errors: result.error.flatten() }), {
+      status: 400,
+    });
+  }
+
+  // Verify Turnstile, send email, store lead...
+
+  return new Response(JSON.stringify({ success: true }));
+};
+```
+
+---
+
 ## Source Requirements
 
 Components will warn if source images are too small:

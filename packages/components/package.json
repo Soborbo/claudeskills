@@ -14,7 +14,8 @@
     "./Header": "./src/Header/index.ts",
     "./MobileMenu": "./src/MobileMenu/index.ts",
     "./MobileCtaBar": "./src/MobileCtaBar/index.ts",
-    "./Footer": "./src/Footer/index.ts"
+    "./Footer": "./src/Footer/index.ts",
+    "./ContactForm": "./src/ContactForm/index.ts"
   },
   "files": ["src"],
   "keywords": ["astro", "astro-component", "withastro"],

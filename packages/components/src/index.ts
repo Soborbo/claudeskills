@@ -27,3 +27,6 @@ export { default as Header } from './Header/Header.astro';
 export { default as MobileMenu } from './MobileMenu/MobileMenu.astro';
 export { default as MobileCtaBar } from './MobileCtaBar/MobileCtaBar.astro';
 export { default as Footer } from './Footer/Footer.astro';
+
+// Forms
+export { default as ContactForm } from './ContactForm/ContactForm.astro';
