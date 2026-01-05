@@ -1,0 +1,307 @@
+---
+/**
+ * ArticleLayout
+ *
+ * Layout for blog posts and articles with Article schema.org support.
+ *
+ * @example
+ * <ArticleLayout
+ *   title="10 tipp a költözéshez"
+ *   description="Hasznos tanácsok..."
+ *   author={{ name: 'Kovács János', url: '/szerzo/kovacs-janos' }}
+ *   datePublished="2024-01-15"
+ *   dateModified="2024-01-20"
+ *   image="/images/blog/koltozes-tippek.jpg"
+ *   category="Útmutatók"
+ *   readingTime={8}
+ *   breadcrumbs={[
+ *     { name: 'Főoldal', url: '/' },
+ *     { name: 'Blog', url: '/blog' },
+ *     { name: '10 tipp a költözéshez' }
+ *   ]}
+ * >
+ *   <article>Article content</article>
+ * </ArticleLayout>
+ */
+
+import BaseLayout from './BaseLayout.astro';
+import type { Props as BaseProps } from './BaseLayout.astro';
+
+export interface Author {
+  name: string;
+  url?: string;
+  image?: string;
+}
+
+export interface BreadcrumbItem {
+  name: string;
+  url?: string;
+}
+
+export interface Props extends Omit<BaseProps, 'schema'> {
+  /** Article author */
+  author?: Author;
+
+  /** ISO date string */
+  datePublished?: string;
+
+  /** ISO date string */
+  dateModified?: string;
+
+  /** Article category */
+  category?: string;
+
+  /** Tags/keywords */
+  tags?: string[];
+
+  /** Featured image URL */
+  image?: string;
+
+  /** Reading time in minutes */
+  readingTime?: number;
+
+  /** Breadcrumb navigation */
+  breadcrumbs?: BreadcrumbItem[];
+
+  /** Publisher/organization name */
+  publisherName?: string;
+
+  /** Publisher logo URL */
+  publisherLogo?: string;
+
+  /** Show table of contents */
+  showToc?: boolean;
+
+  /** Article ID for comments/sharing */
+  articleId?: string;
+}
+
+const {
+  title,
+  description,
+  author,
+  datePublished,
+  dateModified,
+  category,
+  tags = [],
+  image,
+  readingTime,
+  breadcrumbs = [],
+  publisherName,
+  publisherLogo,
+  showToc = false,
+  articleId,
+  ...baseProps
+} = Astro.props;
+
+// Build Article schema
+const articleSchema: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  ...(description && { description }),
+  ...(image && { image }),
+  ...(datePublished && { datePublished }),
+  ...(dateModified && { dateModified }),
+  ...(author && {
+    author: {
+      '@type': 'Person',
+      name: author.name,
+      ...(author.url && { url: author.url }),
+      ...(author.image && { image: author.image }),
+    },
+  }),
+  ...(publisherName && {
+    publisher: {
+      '@type': 'Organization',
+      name: publisherName,
+      ...(publisherLogo && {
+        logo: {
+          '@type': 'ImageObject',
+          url: publisherLogo,
+        },
+      }),
+    },
+  }),
+  ...(category && { articleSection: category }),
+  ...(tags.length > 0 && { keywords: tags.join(', ') }),
+};
+
+// Build Breadcrumb schema
+const breadcrumbSchema = breadcrumbs.length > 0 ? {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    ...(item.url && { item: item.url }),
+  })),
+} : null;
+
+// Combine schemas
+const schemas = [articleSchema];
+if (breadcrumbSchema) schemas.push(breadcrumbSchema);
+
+// Format date for display
+function formatDate(isoDate: string): string {
+  try {
+    return new Date(isoDate).toLocaleDateString('hu-HU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  } catch {
+    return isoDate;
+  }
+}
+---
+
+<BaseLayout
+  {...baseProps}
+  title={title}
+  description={description}
+  ogImage={image}
+  schema={schemas}
+  bodyClass="min-h-screen flex flex-col"
+>
+  <slot name="head" slot="head" />
+
+  <!-- Header Slot -->
+  <slot name="header" />
+
+  <!-- Breadcrumbs -->
+  {breadcrumbs.length > 0 && (
+    <nav class="container mx-auto px-4 py-4" aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+        {breadcrumbs.map((crumb, index) => (
+          <li class="flex items-center">
+            {index > 0 && (
+              <svg class="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            )}
+            {crumb.url ? (
+              <a href={crumb.url} class="hover:text-primary-600 transition-colors">
+                {crumb.name}
+              </a>
+            ) : (
+              <span class="text-gray-900 font-medium">{crumb.name}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )}
+
+  <!-- Article Container -->
+  <main class="flex-1">
+    <article class="container mx-auto px-4 py-8 max-w-4xl" id={articleId}>
+      <!-- Article Header -->
+      <header class="mb-8">
+        {category && (
+          <span class="inline-block px-3 py-1 text-sm font-medium text-primary-600 bg-primary-50 rounded-full mb-4">
+            {category}
+          </span>
+        )}
+
+        <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          {title}
+        </h1>
+
+        {description && (
+          <p class="text-xl text-gray-600 mb-6">{description}</p>
+        )}
+
+        <!-- Article Meta -->
+        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+          {author && (
+            <div class="flex items-center gap-2">
+              {author.image && (
+                <img
+                  src={author.image}
+                  alt={author.name}
+                  class="w-10 h-10 rounded-full object-cover"
+                />
+              )}
+              <div>
+                {author.url ? (
+                  <a href={author.url} class="font-medium text-gray-900 hover:text-primary-600">
+                    {author.name}
+                  </a>
+                ) : (
+                  <span class="font-medium text-gray-900">{author.name}</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {datePublished && (
+            <div class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <time datetime={datePublished}>{formatDate(datePublished)}</time>
+            </div>
+          )}
+
+          {readingTime && (
+            <div class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{readingTime} perc olvasás</span>
+            </div>
+          )}
+        </div>
+      </header>
+
+      <!-- Featured Image -->
+      {image && (
+        <figure class="mb-8 -mx-4 md:mx-0">
+          <img
+            src={image}
+            alt={title}
+            class="w-full h-auto rounded-lg md:rounded-xl"
+            loading="eager"
+          />
+        </figure>
+      )}
+
+      <!-- Table of Contents Slot -->
+      {showToc && (
+        <aside class="mb-8 p-6 bg-gray-50 rounded-xl">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Tartalomjegyzék</h2>
+          <slot name="toc" />
+        </aside>
+      )}
+
+      <!-- Article Content -->
+      <div class="prose prose-lg prose-gray max-w-none">
+        <slot />
+      </div>
+
+      <!-- Tags -->
+      {tags.length > 0 && (
+        <footer class="mt-12 pt-8 border-t border-gray-200">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-sm text-gray-500">Címkék:</span>
+            {tags.map((tag) => (
+              <span class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </footer>
+      )}
+    </article>
+
+    <!-- Related Articles Slot -->
+    <slot name="related" />
+  </main>
+
+  <!-- Footer Slot -->
+  <slot name="footer" />
+
+  <slot name="body-end" slot="body-end" />
+</BaseLayout>

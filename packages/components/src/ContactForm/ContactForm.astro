@@ -54,6 +54,24 @@ export interface Props {
   /** Show message field */
   showMessage?: boolean;
 
+  /** Enable file upload field */
+  showFileUpload?: boolean;
+
+  /** Accepted file types for upload */
+  acceptedFileTypes?: string;
+
+  /** Max file size in MB */
+  maxFileSizeMB?: number;
+
+  /** File upload label */
+  fileUploadLabel?: string;
+
+  /** Rate limit: max submissions per session */
+  maxSubmissionsPerSession?: number;
+
+  /** Rate limit warning text */
+  rateLimitText?: string;
+
   /** Additional CSS classes */
   class?: string;
 
@@ -72,6 +90,12 @@ const {
   loadingText = 'Küldés...',
   showPhone = true,
   showMessage = true,
+  showFileUpload = false,
+  acceptedFileTypes = '.pdf,.doc,.docx,.jpg,.jpeg,.png',
+  maxFileSizeMB = 5,
+  fileUploadLabel = 'Fájl csatolása',
+  maxSubmissionsPerSession = 3,
+  rateLimitText = 'Elérte a maximális küldésszámot. Kérjük, próbálja később.',
   class: className,
   formId = 'contact-form',
 } = Astro.props;
@@ -94,6 +118,8 @@ const currentUrl = Astro.url.href;
     class="space-y-5"
     novalidate
     data-thank-you-url={thankYouUrl}
+    data-max-submissions={maxSubmissionsPerSession}
+    data-rate-limit-text={rateLimitText}
   >
     <!-- Honeypot (spam trap - must stay empty) -->
     <div class="hidden" aria-hidden="true">
@@ -190,6 +216,30 @@ const currentUrl = Astro.url.href;
       </div>
     )}
 
+    <!-- File Upload (optional) -->
+    {showFileUpload && (
+      <div>
+        <label for="file" class="block text-sm font-medium text-gray-700 mb-1">
+          {fileUploadLabel}
+        </label>
+        <div class="relative">
+          <input
+            type="file"
+            id="file"
+            name="file"
+            accept={acceptedFileTypes}
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+            aria-describedby="file-error file-hint"
+            data-max-size-mb={maxFileSizeMB}
+          />
+        </div>
+        <p id="file-hint" class="mt-1 text-xs text-gray-500">
+          Max {maxFileSizeMB}MB. Elfogadott: {acceptedFileTypes}
+        </p>
+        <p id="file-error" class="mt-1 text-sm text-red-600 hidden" role="alert"></p>
+      </div>
+    )}
+
     <!-- GDPR Consent -->
     <div class="flex items-start gap-3">
       <input
@@ -238,6 +288,56 @@ const currentUrl = Astro.url.href;
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <script>
+  // UTM localStorage helpers
+  const UTM_STORAGE_KEY = 'leadgen_utm_params';
+
+  function saveUtmToStorage(params: Record<string, string>) {
+    try {
+      const existing = JSON.parse(localStorage.getItem(UTM_STORAGE_KEY) || '{}');
+      const merged = { ...existing, ...params, timestamp: Date.now() };
+      localStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(merged));
+    } catch (e) {
+      // localStorage not available
+    }
+  }
+
+  function getUtmFromStorage(): Record<string, string> {
+    try {
+      const stored = localStorage.getItem(UTM_STORAGE_KEY);
+      if (stored) {
+        const data = JSON.parse(stored);
+        // Expire after 30 days
+        if (data.timestamp && Date.now() - data.timestamp < 30 * 24 * 60 * 60 * 1000) {
+          return data;
+        }
+      }
+    } catch (e) {
+      // localStorage not available
+    }
+    return {};
+  }
+
+  // Rate limiting helpers
+  const SUBMISSION_KEY = 'leadgen_form_submissions';
+
+  function getSubmissionCount(): number {
+    try {
+      const stored = sessionStorage.getItem(SUBMISSION_KEY);
+      return stored ? parseInt(stored, 10) : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function incrementSubmissionCount(): void {
+    try {
+      const current = getSubmissionCount();
+      sessionStorage.setItem(SUBMISSION_KEY, (current + 1).toString());
+    } catch (e) {
+      // sessionStorage not available
+    }
+  }
+
   function initContactForm() {
     const forms = document.querySelectorAll('form[id^="contact-form"]');
 
@@ -254,15 +354,30 @@ const currentUrl = Astro.url.href;
         startTimeInput.value = Date.now().toString();
       }
 
-      // Populate UTM params from URL
+      // UTM handling: URL params take priority, fallback to localStorage
       const urlParams = new URLSearchParams(window.location.search);
+      const storedUtm = getUtmFromStorage();
+
       const utmSource = formEl.querySelector('#utmSource') as HTMLInputElement;
       const utmMedium = formEl.querySelector('#utmMedium') as HTMLInputElement;
       const utmCampaign = formEl.querySelector('#utmCampaign') as HTMLInputElement;
 
-      if (utmSource) utmSource.value = urlParams.get('utm_source') || '';
-      if (utmMedium) utmMedium.value = urlParams.get('utm_medium') || '';
-      if (utmCampaign) utmCampaign.value = urlParams.get('utm_campaign') || '';
+      // Get UTM values with URL priority, localStorage fallback
+      const utmValues = {
+        utm_source: urlParams.get('utm_source') || storedUtm.utm_source || '',
+        utm_medium: urlParams.get('utm_medium') || storedUtm.utm_medium || '',
+        utm_campaign: urlParams.get('utm_campaign') || storedUtm.utm_campaign || '',
+      };
+
+      // Set form values
+      if (utmSource) utmSource.value = utmValues.utm_source;
+      if (utmMedium) utmMedium.value = utmValues.utm_medium;
+      if (utmCampaign) utmCampaign.value = utmValues.utm_campaign;
+
+      // Save UTM to localStorage if found in URL
+      if (urlParams.get('utm_source') || urlParams.get('utm_medium') || urlParams.get('utm_campaign')) {
+        saveUtmToStorage(utmValues);
+      }
 
       // GDPR timestamp on check
       const gdprCheckbox = formEl.querySelector('#gdprConsent') as HTMLInputElement;
@@ -274,6 +389,26 @@ const currentUrl = Astro.url.href;
         }
       });
 
+      // File upload validation
+      const fileInput = formEl.querySelector('#file') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.addEventListener('change', () => {
+          const file = fileInput.files?.[0];
+          const errorEl = formEl.querySelector('#file-error');
+          const maxSizeMB = parseInt(fileInput.dataset.maxSizeMb || '5', 10);
+
+          if (file && file.size > maxSizeMB * 1024 * 1024) {
+            if (errorEl) {
+              errorEl.textContent = `A fájl túl nagy. Maximum ${maxSizeMB}MB engedélyezett.`;
+              errorEl.classList.remove('hidden');
+            }
+            fileInput.value = '';
+          } else if (errorEl) {
+            errorEl.classList.add('hidden');
+          }
+        });
+      }
+
       // Form submission
       formEl.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -282,6 +417,19 @@ const currentUrl = Astro.url.href;
         const submitText = submitBtn.dataset.submitText || 'Küldés';
         const loadingText = submitBtn.dataset.loadingText || 'Küldés...';
         const thankYouUrl = formEl.dataset.thankYouUrl;
+        const maxSubmissions = parseInt(formEl.dataset.maxSubmissions || '3', 10);
+        const rateLimitText = formEl.dataset.rateLimitText || 'Túl sok küldés. Próbálja később.';
+
+        // Check rate limit
+        if (getSubmissionCount() >= maxSubmissions) {
+          const formError = formEl.querySelector('#form-error');
+          const errorText = formError?.querySelector('p');
+          if (formError && errorText) {
+            errorText.textContent = rateLimitText;
+            formError.classList.remove('hidden');
+          }
+          return;
+        }
 
         // Clear previous errors
         formEl.querySelectorAll('[role="alert"]').forEach((el) => {
@@ -319,6 +467,15 @@ const currentUrl = Astro.url.href;
           errors.turnstile = 'Kérjük, igazolja, hogy nem robot';
         }
 
+        // File validation
+        const fileInputEl = formEl.querySelector('#file') as HTMLInputElement;
+        if (fileInputEl?.files?.[0]) {
+          const maxSizeMB = parseInt(fileInputEl.dataset.maxSizeMb || '5', 10);
+          if (fileInputEl.files[0].size > maxSizeMB * 1024 * 1024) {
+            errors.file = `A fájl túl nagy. Maximum ${maxSizeMB}MB engedélyezett.`;
+          }
+        }
+
         // Show errors if any
         if (Object.keys(errors).length > 0) {
           Object.entries(errors).forEach(([field, message]) => {
@@ -337,18 +494,32 @@ const currentUrl = Astro.url.href;
           submitBtn.textContent = loadingText;
 
           const formData = new FormData(formEl);
-          const data = Object.fromEntries(formData.entries());
 
-          const response = await fetch(formEl.action, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          });
+          // For file uploads, use FormData directly
+          const hasFile = fileInputEl?.files?.[0];
+          let response: Response;
+
+          if (hasFile) {
+            response = await fetch(formEl.action, {
+              method: 'POST',
+              body: formData,
+            });
+          } else {
+            const data = Object.fromEntries(formData.entries());
+            response = await fetch(formEl.action, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+          }
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.message || 'Hiba történt az űrlap elküldésekor');
           }
+
+          // Increment submission count on success
+          incrementSubmissionCount();
 
           // GA4 Event
           if (typeof window !== 'undefined' && (window as any).dataLayer) {
