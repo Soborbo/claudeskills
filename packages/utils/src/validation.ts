@@ -38,13 +38,22 @@ export function validatePhone(phone: string): boolean {
   // Remove all spaces, dashes, parentheses
   const cleaned = phone.replace(/[\s\-\(\)]/g, '');
 
-  // Hungarian mobile/landline patterns
+  // Hungarian mobile/landline patterns (stricter validation)
   const patterns = [
-    /^\+36[0-9]{9}$/,           // +36 + 9 digits
-    /^06[0-9]{9}$/,             // 06 + 9 digits
-    /^[0-9]{9}$/,               // 9 digits only
-    /^\+36[0-9]{1,2}[0-9]{6,7}$/, // +36 + area + number
-    /^06[0-9]{1,2}[0-9]{6,7}$/,   // 06 + area + number
+    // Mobile: +36 20/30/31/50/70 + 7 digits
+    /^\+36(20|30|31|50|70)[0-9]{7}$/,
+    /^06(20|30|31|50|70)[0-9]{7}$/,
+
+    // Budapest landline: +36 1 + 7 digits
+    /^\+361[0-9]{7}$/,
+    /^061[0-9]{7}$/,
+
+    // Other landline: +36 XX + 6 digits (area codes 22-99)
+    /^\+36[2-9][0-9][0-9]{6}$/,
+    /^06[2-9][0-9][0-9]{6}$/,
+
+    // Without prefix (9 digits starting with valid mobile prefix)
+    /^(20|30|31|50|70)[0-9]{7}$/,
   ];
 
   return patterns.some((pattern) => pattern.test(cleaned));

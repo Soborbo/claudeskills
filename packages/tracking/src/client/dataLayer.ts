@@ -11,8 +11,10 @@ import type { UserProvidedData, ConversionDataLayerEvent, DataLayerEvent } from 
 // Browser Guard
 // =============================================================================
 
-if (typeof window === 'undefined') {
-  throw new Error('@leadgen/tracking/client/dataLayer can only be used in browser');
+const IS_BROWSER = typeof window !== 'undefined';
+
+if (!IS_BROWSER) {
+  console.warn('[Tracking] @leadgen/tracking/client/dataLayer should only be imported in browser context');
 }
 
 // =============================================================================

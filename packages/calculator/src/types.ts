@@ -14,8 +14,12 @@ export interface BaseStep {
   id: string;
   /** Step title/question */
   title: string;
+  /** Short title for progress bar display */
+  shortTitle?: string;
   /** Optional subtitle/description */
   subtitle?: string;
+  /** Is this step optional? */
+  optional?: boolean;
   /** Is this step required? */
   required?: boolean;
   /** Auto-advance to next step after selection */

@@ -72,6 +72,9 @@ export interface Props {
 
   /** Body class */
   bodyClass?: string;
+
+  /** HTML lang attribute (default: derived from locale) */
+  language?: string;
 }
 
 const {
@@ -93,7 +96,11 @@ const {
   appleTouchIcon,
   class: className,
   bodyClass,
+  language,
 } = Astro.props;
+
+// Derive HTML lang from language prop or locale
+const htmlLang = language || locale?.split('_')[0] || 'hu';
 
 // Build schema array
 const schemas: Record<string, unknown>[] = [];
@@ -107,7 +114,7 @@ if (schema) {
 ---
 
 <!DOCTYPE html>
-<html lang="hu" class={className}>
+<html lang={htmlLang} class={className}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

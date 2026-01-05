@@ -11,8 +11,10 @@ import type { ConsentState, ConsentChangeCallback } from '../types';
 // Browser Guard
 // =============================================================================
 
-if (typeof window === 'undefined') {
-  throw new Error('@leadgen/tracking/client/consent can only be used in browser');
+const IS_BROWSER = typeof window !== 'undefined';
+
+if (!IS_BROWSER) {
+  console.warn('[Tracking] @leadgen/tracking/client/consent should only be imported in browser context');
 }
 
 // =============================================================================

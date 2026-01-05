@@ -203,6 +203,15 @@ const {
         });
       }
 
+      // Helper to reset form state
+      function resetFormState() {
+        if (submitButton && buttonText && buttonLoading) {
+          submitButton.disabled = false;
+          buttonText.classList.remove('hidden');
+          buttonLoading.classList.add('hidden');
+        }
+      }
+
       // Form submission handling
       form.addEventListener('submit', async (e) => {
         // Let the parent handle submission, just show loading state
@@ -213,6 +222,27 @@ const {
         }
 
         formError?.classList.add('hidden');
+      });
+
+      // Listen for custom error/complete events from parent
+      form.addEventListener('form:error', () => {
+        resetFormState();
+        formError?.classList.remove('hidden');
+      });
+
+      form.addEventListener('form:success', () => {
+        resetFormState();
+      });
+
+      // Also reset after timeout (safety net)
+      form.addEventListener('submit', () => {
+        setTimeout(() => {
+          // If still loading after 30s, reset (something went wrong)
+          if (submitButton?.disabled) {
+            resetFormState();
+            formError?.classList.remove('hidden');
+          }
+        }, 30000);
       });
     });
   }

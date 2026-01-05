@@ -7,9 +7,11 @@
 
 import type { CalculatorState } from '../types';
 
-// Browser guard
-if (typeof window === 'undefined') {
-  throw new Error('@leadgen/calculator/client/state can only be used in browser');
+// Browser guard - soft warning instead of throw to avoid SSR crashes
+const IS_BROWSER = typeof window !== 'undefined';
+
+if (!IS_BROWSER) {
+  console.warn('[Calculator] @leadgen/calculator/client/state should only be imported in browser context');
 }
 
 // =============================================================================

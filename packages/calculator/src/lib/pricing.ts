@@ -225,8 +225,8 @@ export function calculatePrice(
     }
   });
 
-  // 3. Calculate total
-  const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
+  // 3. Calculate total (round to avoid floating point errors)
+  const total = Math.round(breakdown.reduce((sum, item) => sum + item.amount, 0));
 
   // 4. Build result
   const result: PriceResult = {

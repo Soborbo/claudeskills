@@ -8,9 +8,11 @@
 import { setCurrentStep, getCurrentStep, setAnswer, getAnswers } from './state';
 import { trackStepView, trackOptionSelect } from './events';
 
-// Browser guard
-if (typeof window === 'undefined') {
-  throw new Error('@leadgen/calculator/client/navigation can only be used in browser');
+// Browser guard - soft warning instead of throw to avoid SSR crashes
+const IS_BROWSER = typeof window !== 'undefined';
+
+if (!IS_BROWSER) {
+  console.warn('[Calculator] @leadgen/calculator/client/navigation should only be imported in browser context');
 }
 
 // =============================================================================
@@ -30,6 +32,7 @@ interface NavigationConfig {
 
 let config: NavigationConfig | null = null;
 let initialized = false;
+let popstateHandler: ((event: PopStateEvent) => void) | null = null;
 
 // =============================================================================
 // Initialization
@@ -71,12 +74,32 @@ function initHistoryHandler(): void {
     window.location.href
   );
 
-  // Listen for back/forward
-  window.addEventListener('popstate', (event) => {
+  // Remove previous handler if exists (prevents memory leak)
+  if (popstateHandler) {
+    window.removeEventListener('popstate', popstateHandler);
+  }
+
+  // Create new handler
+  popstateHandler = (event: PopStateEvent) => {
     if (event.state?.calculatorStep !== undefined) {
       navigateToStep(event.state.calculatorStep, false);
     }
-  });
+  };
+
+  // Listen for back/forward
+  window.addEventListener('popstate', popstateHandler);
+}
+
+/**
+ * Cleanup navigation - call when calculator is destroyed
+ */
+export function destroyNavigation(): void {
+  if (popstateHandler) {
+    window.removeEventListener('popstate', popstateHandler);
+    popstateHandler = null;
+  }
+  initialized = false;
+  config = null;
 }
 
 // =============================================================================

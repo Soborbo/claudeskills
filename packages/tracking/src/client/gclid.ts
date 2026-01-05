@@ -11,8 +11,10 @@ import type { TrackingParams } from '../types';
 // Browser Guard
 // =============================================================================
 
-if (typeof window === 'undefined') {
-  throw new Error('@leadgen/tracking/client/gclid can only be used in browser');
+const IS_BROWSER = typeof window !== 'undefined';
+
+if (!IS_BROWSER) {
+  console.warn('[Tracking] @leadgen/tracking/client/gclid should only be imported in browser context');
 }
 
 // =============================================================================

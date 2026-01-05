@@ -21,8 +21,11 @@ import {
 // Browser Guard
 // =============================================================================
 
-if (typeof window === 'undefined') {
-  throw new Error('@leadgen/tracking/client/events can only be used in browser');
+const IS_BROWSER = typeof window !== 'undefined';
+const DEBUG = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
+
+if (!IS_BROWSER) {
+  console.warn('[Tracking] @leadgen/tracking/client/events should only be imported in browser context');
 }
 
 // =============================================================================
@@ -94,7 +97,7 @@ export function trackConversion(params: ConversionParams): TrackingResult {
 
   // Check for duplicate
   if (firedConversions.has(eventId)) {
-    console.warn('[Tracking] Duplicate conversion blocked:', eventId);
+    if (DEBUG) console.warn('[Tracking] Duplicate conversion blocked:', eventId);
     return {
       success: false,
       eventId,
@@ -106,7 +109,7 @@ export function trackConversion(params: ConversionParams): TrackingResult {
 
   // Check consent
   if (!hasMarketingConsent()) {
-    console.log('[Tracking] Conversion blocked - no marketing consent');
+    if (DEBUG) console.log('[Tracking] Conversion blocked - no marketing consent');
     return {
       success: false,
       eventId,

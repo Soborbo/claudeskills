@@ -5,9 +5,11 @@
  * CLIENT-ONLY - Do not import in server context.
  */
 
-// Browser guard
-if (typeof window === 'undefined') {
-  throw new Error('@leadgen/calculator/client can only be used in browser');
+// Browser guard - soft warning instead of throw to avoid SSR crashes
+const IS_BROWSER = typeof window !== 'undefined';
+
+if (!IS_BROWSER) {
+  console.warn('[Calculator] @leadgen/calculator/client should only be imported in browser context');
 }
 
 // =============================================================================
@@ -32,6 +34,7 @@ export {
 // Navigation
 export {
   initNavigation,
+  destroyNavigation,
   navigateToNextStep,
   navigateToPrevStep,
   navigateToStep,
@@ -115,25 +118,21 @@ export function initCalculator(options: InitOptions): void {
 export function initStepComponents(): void {
   // Radio cards with auto-advance
   document.querySelectorAll<HTMLElement>('[data-auto-advance]').forEach((container) => {
-    const { initRadioAutoAdvance } = require('./navigation');
     initRadioAutoAdvance(container);
   });
 
   // Checkbox groups
   document.querySelectorAll<HTMLElement>('[data-min-select]').forEach((container) => {
-    const { initCheckboxHandler } = require('./navigation');
     initCheckboxHandler(container);
   });
 
   // Dropdowns
   document.querySelectorAll<HTMLSelectElement>('select[data-calculator-select]').forEach((select) => {
-    const { initDropdownAutoAdvance } = require('./navigation');
     initDropdownAutoAdvance(select);
   });
 
   // Number inputs
   document.querySelectorAll<HTMLElement>('[data-number-input]').forEach((container) => {
-    const { initNumberInput } = require('./navigation');
     initNumberInput(container);
   });
 }
