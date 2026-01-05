@@ -1,119 +1,83 @@
 ---
 name: astro-blog
-description: Orchestrated blog creation for Astro lead-gen sites. 5-phase workflow with automatic reference loading.
+description: Orchestrator for 5-phase blog article creation workflow
 ---
 
-# Astro Blog Skill
+# Astro Blog - Workflow Orchestrator
 
-## Workflow (Execute All Phases Sequentially)
-
-```
-PHASE 1: RESEARCH    → Read references/seo-intent.md
-PHASE 2: STRUCTURE   → Read references/content-structure.md  
-PHASE 3: WRITE       → Read references/writing-rules.md
-PHASE 4: TECHNICAL   → Read references/technical.md
-PHASE 5: VALIDATE    → Read references/validation.md
-```
-
-**⚠️ STOP at each phase. Read the reference file BEFORE proceeding.**
+This skill orchestrates a 5-phase workflow for creating SEO-optimized blog articles.
 
 ---
 
-## PHASE 1: RESEARCH
-**→ Read `references/seo-intent.md` NOW**
+## 5-Phase Workflow
 
-Do: Gap analysis, identify intent, plan entities, match CTA
-Output: Intent, Consensus, Gap, Entities, CTA type
+Use these skills in sequence:
 
----
+### Phase 1: Research
+**Skill:** `astro-blog-research`
+**What:** SEO & intent research, keyword targeting, SERP analysis
+**Output:** Intent type, primary keyword, unique angle, CTA type, pillar/cluster designation
 
-## PHASE 2: STRUCTURE  
-**→ Read `references/content-structure.md` NOW**
+### Phase 2: Structure
+**Skill:** `astro-blog-structure`
+**What:** Content outline, component placement, linking strategy
+**Output:** Full outline with H2s, components, links, images, CTAs
 
-Do: Plan H2s (specific questions only), place components
-Output: Full outline with QueryAnswer, TL;DR, hooks, CTAs
+### Phase 3: Write
+**Skill:** `astro-blog-write`
+**What:** Write article with human voice, featured snippet optimization
+**Output:** Full article draft with citations and intentional imperfections
 
----
+### Phase 4: Technical
+**Skill:** `astro-blog-technical`
+**What:** Frontmatter, schema markup, performance optimization
+**Output:** Complete frontmatter, schema, performance settings
 
-## PHASE 3: WRITE
-**→ Read `references/writing-rules.md` NOW**
-
-Do: Write answer-first paragraphs, entity as subject, cite sources
-Constraints: No vague H2s, no "Many people...", all stats sourced
-
----
-
-## PHASE 4: TECHNICAL
-**→ Read `references/technical.md` NOW**
-**→ Also reference `references/visual-design.md` for component styling**
-
-Do: Frontmatter, @graph schema, image optimization, llms.txt entry
-Required: title, description, intent, topic, primaryCTA, entities
+### Phase 5: Validate
+**Skill:** `astro-blog-validate`
+**What:** Quality checks, readability scores, performance audit
+**Output:** All checks passed, ready to publish
 
 ---
 
-## PHASE 5: VALIDATE
-**→ Read `references/validation.md` NOW**
+## How to Use
 
-Do: Run all checks, fix failures, confirm ready to publish
+**Option 1 - Full workflow:**
+1. Start with `astro-blog-research`
+2. Then `astro-blog-structure`
+3. Then `astro-blog-write`
+4. Then `astro-blog-technical`
+5. Finally `astro-blog-validate`
 
----
-
-## Quick Reference
-
-### Intent → CTA Mapping
-| Intent | CTA Type |
-|--------|----------|
-| informational | Newsletter, Guide |
-| commercial | Calculator, Quote |
-| comparison | Consultation |
-| transactional | Contact, Book |
-
-### Required Frontmatter
-```yaml
-title: ""           # max 60 chars
-description: ""     # max 160 chars  
-pubDate: 2025-XX-XX
-intent: commercial  # informational|commercial|comparison|transactional
-topic: ""           # pillar/cluster linking
-primaryCTA: ""      # GTM tracking
-category: ""
-author: team        # or named for YMYL
-entities: []        # 5-10 items
-pillar: false       # true = 2500+ words, 8-12 internal links
-experienceVerified: false  # true only after human checks ExperienceBlock data
-```
-
-### Critical Rules (Always Apply)
-1. Answer in first 120 words (QueryAnswer)
-2. H2s = specific questions, never "Overview"
-3. Internal links: 2-4 standard, **8-12 for pillar** content
-4. **External links: min 3 (citation + authority + reputation)** with context
-5. Entity in subject position
-6. All stats have sources
-7. TL;DR required if >1000 words
-8. CTA matches intent
-9. ExperienceBlock required for commercial/comparison content
-10. **ExpertInsight at end of each H2** (practical insider tips only)
-11. Author credentials verifiable (LinkedIn + industry profile)
-12. ExperienceBlock data must be real or marked as placeholder
-13. ARIA labels on complex components
-14. **Transactional pages MUST have interactive tool/calculator**
-15. **External rel attrs: `noopener noreferrer`, `nofollow sponsored` for affiliate**
-
-### File Structure
-```
-src/content/blog/[slug].md
-src/content/authors/[author].md
-public/llms.txt
-```
+**Option 2 - Jump to specific phase:**
+- Already have research? Start with `astro-blog-structure`
+- Already have outline? Start with `astro-blog-write`
+- Article written? Start with `astro-blog-technical`
+- Need validation only? Use `astro-blog-validate`
 
 ---
 
-## Forbidden
-- Vague H2s (Overview, Introduction, Details)
-- "Many people...", "It's important..." openings
-- Stats without sources
-- "Click here" anchor text
-- Heavy JS components
-- YMYL without named author
+## When to Use Each Skill
+
+| Situation | Use This Skill |
+|-----------|----------------|
+| Starting new article from scratch | `astro-blog-research` |
+| Have keyword, need outline | `astro-blog-structure` |
+| Have outline, need to write | `astro-blog-write` |
+| Article written, need technical setup | `astro-blog-technical` |
+| Article complete, need validation | `astro-blog-validate` |
+
+---
+
+## Reference Files
+
+All skills are self-contained. Read detailed references only for edge cases:
+
+- `references/CHECKLIST.md` - Complete checklist (all phases)
+- `references/human-voice.md` - AI pattern avoidance
+- `references/seo-intent.md` - Skyscraper, SERP strategies
+- `references/content-structure.md` - Component examples
+- `references/writing-rules.md` - Advanced formatting
+- `references/technical.md` - Complex schema, monitoring
+- `references/validation.md` - Detailed criteria
+- `references/visual-design.md` - Component styling
