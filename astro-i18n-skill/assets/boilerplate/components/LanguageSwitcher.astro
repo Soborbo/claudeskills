@@ -1,0 +1,245 @@
+---
+/**
+ * LanguageSwitcher Component
+ * 
+ * Accessible language selector that preserves current path.
+ * Uses native links for full static compatibility.
+ * 
+ * Features:
+ * - Preserves current page path when switching
+ * - Shows native language names (accessible)
+ * - Flags are decorative only (aria-hidden)
+ * - No JavaScript required for core functionality
+ */
+
+import { i18nConfig, type Locale, getLocaleInfo } from '../config';
+import { 
+  getRelativeLocaleUrl, 
+  getCurrentLocale, 
+  getPathWithoutLocale 
+} from '../routing';
+
+interface Props {
+  /**
+   * Visual style variant
+   * - 'inline': Horizontal list (default, accessible)
+   * - 'buttons': Styled buttons
+   * - 'dropdown': Collapsed dropdown (requires JS)
+   */
+  variant?: 'dropdown' | 'inline' | 'buttons';
+  
+  /**
+   * Show flag emoji (decorative, always aria-hidden)
+   * Default: false for better accessibility
+   */
+  showFlags?: boolean;
+  
+  /**
+   * Additional CSS classes
+   */
+  class?: string;
+}
+
+const { 
+  variant = 'inline',
+  showFlags = false,  // Changed default to false for a11y
+  class: className = ''
+} = Astro.props;
+
+// Get current locale and path from URL
+const currentLocale = getCurrentLocale(Astro.url);
+const currentPath = getPathWithoutLocale(Astro.url);
+
+// Build URLs for each locale
+const localeLinks = i18nConfig.locales.map((locale) => ({
+  locale,
+  href: getRelativeLocaleUrl(locale, currentPath),
+  info: getLocaleInfo(locale),
+  isCurrent: locale === currentLocale,
+}));
+
+// Accessible label based on current locale
+const switcherLabel = currentLocale === 'hu' ? 'Nyelvválasztó' : 'Language switcher';
+---
+
+{variant === 'inline' && (
+  <nav 
+    aria-label={switcherLabel}
+    class:list={['language-switcher', className]}
+  >
+    <ul class="flex gap-2 list-none p-0 m-0">
+      {localeLinks.map(({ locale, href, info, isCurrent }) => (
+        <li>
+          <a
+            href={href}
+            class:list={[
+              'inline-flex items-center gap-1 px-3 py-1 rounded transition-colors',
+              'hover:bg-gray-100 dark:hover:bg-gray-800',
+              'focus:outline-none focus:ring-2 focus:ring-primary-500',
+              isCurrent && 'bg-primary-100 text-primary-700 font-medium'
+            ]}
+            aria-current={isCurrent ? 'page' : undefined}
+            hreflang={locale}
+            lang={locale}
+          >
+            {showFlags && <span aria-hidden="true">{info.flag}</span>}
+            <span>{info.nativeName}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+{variant === 'buttons' && (
+  <nav 
+    aria-label="Language switcher"
+    class:list={['language-switcher', className]}
+  >
+    <div class="flex gap-1">
+      {localeLinks.map(({ locale, href, info, isCurrent }) => (
+        <a
+          href={href}
+          class:list={[
+            'inline-flex items-center justify-center gap-1 px-4 py-2 rounded-lg',
+            'text-sm font-medium transition-all',
+            'border-2',
+            isCurrent 
+              ? 'bg-primary-600 text-white border-primary-600' 
+              : 'bg-white text-gray-700 border-gray-200 hover:border-primary-300 hover:text-primary-600'
+          ]}
+          aria-current={isCurrent ? 'page' : undefined}
+          hreflang={locale}
+          lang={locale}
+        >
+          {showFlags && <span aria-hidden="true">{info.flag}</span>}
+          {showFullName ? info.nativeName : locale.toUpperCase()}
+        </a>
+      ))}
+    </div>
+  </nav>
+)}
+
+{variant === 'dropdown' && (
+  <div class:list={['language-switcher relative', className]}>
+    <button
+      type="button"
+      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+      aria-haspopup="listbox"
+      aria-expanded="false"
+      data-language-dropdown
+    >
+      {showFlags && (
+        <span aria-hidden="true">
+          {getLocaleInfo(currentLocale).flag}
+        </span>
+      )}
+      <span>{showFullName ? getLocaleInfo(currentLocale).nativeName : currentLocale.toUpperCase()}</span>
+      <svg 
+        class="w-4 h-4 text-gray-500" 
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+    
+    <ul
+      class="absolute right-0 mt-2 py-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible transition-all z-50"
+      role="listbox"
+      data-language-menu
+    >
+      {localeLinks.map(({ locale, href, info, isCurrent }) => (
+        <li role="option" aria-selected={isCurrent}>
+          <a
+            href={href}
+            class:list={[
+              'flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50',
+              isCurrent && 'bg-primary-50 text-primary-700 font-medium'
+            ]}
+            hreflang={locale}
+            lang={locale}
+          >
+            {showFlags && <span aria-hidden="true">{info.flag}</span>}
+            {info.nativeName}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
+{/* Dropdown JavaScript - only loaded for dropdown variant */}
+{variant === 'dropdown' && (
+  <script>
+    document.querySelectorAll('[data-language-dropdown]').forEach((button) => {
+      const menu = button.nextElementSibling;
+      
+      button.addEventListener('click', () => {
+        const isExpanded = button.getAttribute('aria-expanded') === 'true';
+        button.setAttribute('aria-expanded', String(!isExpanded));
+        menu?.classList.toggle('opacity-0');
+        menu?.classList.toggle('invisible');
+      });
+      
+      // Close on click outside
+      document.addEventListener('click', (e) => {
+        if (!button.contains(e.target as Node) && !menu?.contains(e.target as Node)) {
+          button.setAttribute('aria-expanded', 'false');
+          menu?.classList.add('opacity-0', 'invisible');
+        }
+      });
+      
+      // Close on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          button.setAttribute('aria-expanded', 'false');
+          menu?.classList.add('opacity-0', 'invisible');
+        }
+      });
+    });
+  </script>
+)}
+
+{/* Scroll preservation - works with all variants */}
+<script>
+  // Save scroll position before navigating
+  document.querySelectorAll('.language-switcher a').forEach((link) => {
+    link.addEventListener('click', () => {
+      try {
+        sessionStorage.setItem('i18n_scroll_y', String(window.scrollY));
+        sessionStorage.setItem('i18n_scroll_path', window.location.pathname);
+      } catch {
+        // sessionStorage unavailable
+      }
+    });
+  });
+  
+  // Restore scroll position on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      const savedY = sessionStorage.getItem('i18n_scroll_y');
+      const savedPath = sessionStorage.getItem('i18n_scroll_path');
+      
+      if (savedY && savedPath) {
+        // Check if we're on the same page (different locale)
+        const currentPath = window.location.pathname.replace(/^\/[a-z]{2}(?:\/|$)/, '/') || '/';
+        const cleanSavedPath = savedPath.replace(/^\/[a-z]{2}(?:\/|$)/, '/') || '/';
+        
+        if (currentPath === cleanSavedPath || currentPath.startsWith(cleanSavedPath.replace(/\/$/, ''))) {
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: parseInt(savedY, 10), behavior: 'instant' });
+          });
+        }
+        
+        // Clean up
+        sessionStorage.removeItem('i18n_scroll_y');
+        sessionStorage.removeItem('i18n_scroll_path');
+      }
+    } catch {
+      // Ignore errors
+    }
+  });
+</script>

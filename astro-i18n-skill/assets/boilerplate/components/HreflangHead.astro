@@ -1,0 +1,54 @@
+---
+/**
+ * HreflangHead Component
+ * 
+ * Generates SEO-critical hreflang tags for multilingual sites.
+ * Respects locale lifecycle (active/paused/deprecated).
+ * Place in the <head> of your layout.
+ */
+
+import { 
+  i18nConfig, 
+  type Locale, 
+  getActiveLocales,
+  shouldIndexLocale,
+  shouldIncludeInHreflang 
+} from '../config';
+import { getAbsoluteLocaleUrl, generateHreflangTags } from '../routing';
+
+interface Props {
+  currentLocale: Locale;
+  currentPath: string;
+  /** Override available locales (for incomplete translations) */
+  availableLocales?: Locale[];
+}
+
+const { 
+  currentLocale, 
+  currentPath,
+  availableLocales
+} = Astro.props;
+
+// Filter to only active locales that should be in hreflang
+const activeLocales = availableLocales 
+  ? availableLocales.filter(shouldIncludeInHreflang)
+  : getActiveLocales();
+
+const canonicalUrl = getAbsoluteLocaleUrl(currentLocale, currentPath);
+const hreflangTags = generateHreflangTags(currentPath, activeLocales);
+
+// Determine robots directive based on locale state
+const shouldIndex = shouldIndexLocale(currentLocale);
+const robotsContent = shouldIndex ? 'index, follow' : 'noindex, follow';
+---
+
+<!-- Robots (respects locale lifecycle) -->
+<meta name="robots" content={robotsContent} />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalUrl} />
+
+<!-- Hreflang tags (only active locales) -->
+{hreflangTags.map(({ hreflang, href }) => (
+  <link rel="alternate" hreflang={hreflang} href={href} />
+))}

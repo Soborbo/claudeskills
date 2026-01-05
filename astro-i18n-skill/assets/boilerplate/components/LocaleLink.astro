@@ -1,0 +1,55 @@
+---
+/**
+ * LocaleLink Component
+ * 
+ * A locale-aware link component that automatically prefixes
+ * internal links with the current locale.
+ * 
+ * Features:
+ * - Auto-prefixes href with current locale
+ * - Preserves external links unchanged
+ * - Supports explicit locale override
+ * - Full anchor tag attribute passthrough
+ */
+
+import { getCurrentLocale } from '../routing';
+import { localizeHref } from '../routing';
+import type { Locale } from '../config';
+
+interface Props extends Omit<astroHTML.JSX.AnchorHTMLAttributes, 'href'> {
+  /**
+   * Target URL (will be localized automatically)
+   */
+  href: string;
+  
+  /**
+   * Override the locale (uses current locale by default)
+   */
+  locale?: Locale;
+  
+  /**
+   * Skip localization for this link
+   */
+  skipLocalization?: boolean;
+}
+
+const { 
+  href, 
+  locale: explicitLocale,
+  skipLocalization = false,
+  ...attrs 
+} = Astro.props;
+
+// Determine locale
+const currentLocale = getCurrentLocale(Astro.url);
+const targetLocale = explicitLocale ?? currentLocale;
+
+// Compute final href
+const finalHref = skipLocalization 
+  ? href 
+  : localizeHref(href, targetLocale);
+---
+
+<a href={finalHref} {...attrs}>
+  <slot />
+</a>
