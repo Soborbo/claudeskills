@@ -5,7 +5,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./Picture": "./src/Picture/index.ts",
-    "./FixedImage": "./src/FixedImage/index.ts"
+    "./FixedImage": "./src/FixedImage/index.ts",
+    "./YouTubeFacade": "./src/YouTubeFacade/index.ts"
   },
   "files": ["src"],
   "keywords": ["astro", "astro-component", "withastro"],

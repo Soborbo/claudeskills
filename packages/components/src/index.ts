@@ -14,3 +14,4 @@ export { PATTERNS, LAYOUT_PATTERNS } from './types';
 // Alternative: import { Picture } from '@leadgen/components'
 export { default as Picture } from './Picture/Picture.astro';
 export { default as FixedImage } from './FixedImage/FixedImage.astro';
+export { default as YouTubeFacade } from './YouTubeFacade/YouTubeFacade.astro';

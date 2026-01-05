@@ -104,6 +104,70 @@ import avatar from '../assets/avatar.jpg';
 | `class` | `string` | - | CSS classes |
 | `loading` | `'lazy' \| 'eager'` | `'lazy'` | Loading behavior |
 
+### YouTubeFacade
+
+Performance-optimized YouTube embeds. No YouTube scripts load until user clicks.
+
+#### Usage
+
+```astro
+---
+import YouTubeFacade from '@leadgen/components/YouTubeFacade';
+import poster from '../assets/videos/intro.jpg';
+---
+
+<!-- Basic usage -->
+<YouTubeFacade
+  videoId="dQw4w9WgXcQ"
+  title="Company Introduction"
+  poster={poster}
+/>
+
+<!-- Above-fold video -->
+<YouTubeFacade
+  videoId="dQw4w9WgXcQ"
+  title="Hero Video"
+  poster={poster}
+  priority
+/>
+```
+
+#### Poster Images
+
+Download from YouTube and store locally:
+1. Try: `https://i.ytimg.com/vi/{VIDEO_ID}/maxresdefault.jpg`
+2. Fallback: `https://i.ytimg.com/vi/{VIDEO_ID}/sddefault.jpg`
+3. Save to: `src/assets/videos/{slug}.jpg`
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `videoId` | `string` | required | YouTube video ID |
+| `title` | `string` | required | Video title for a11y & tracking |
+| `poster` | `ImageMetadata` | required | Local poster image |
+| `class` | `string` | - | CSS classes |
+| `priority` | `boolean` | `false` | Eager load poster |
+| `aspectRatio` | `'16/9' \| '4/3' \| '1/1'` | `'16/9'` | Video aspect ratio |
+
+#### GA4 Event
+
+Fires `video_play` event on click:
+```javascript
+{ event: 'video_play', video_id: '...', video_title: '...' }
+```
+
+#### Features
+
+- Facade pattern (no YouTube until click)
+- Privacy-enhanced (`youtube-nocookie.com`)
+- Keyboard accessible (Enter/Space)
+- GA4 tracking built-in
+- Autoplay on click
+- Hover effects
+
+---
+
 ## Source Requirements
 
 Components will warn if source images are too small:
