@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "title": "Weboldal Címe",
+    "description": "Az oldal leírása SEO-hoz. Tartsa 160 karakter alatt.",
+    "ogTitle": "Weboldal Címe | Open Graph",
+    "ogDescription": "Leírás közösségi média megosztáshoz"
+  },
+  "nav": {
+    "home": "Főoldal",
+    "about": "Rólunk",
+    "services": "Szolgáltatások",
+    "contact": "Kapcsolat",
+    "blog": "Blog"
+  },
+  "hero": {
+    "title": "Üdvözöljük a {company}-nál",
+    "subtitle": "Megbízható partnere a kiválóságban",
+    "cta": "Kezdjük",
+    "secondaryCta": "Tudjon meg többet"
+  },
+  "about": {
+    "title": "Rólunk",
+    "description": "Ismerje meg cégünket és küldetésünket."
+  },
+  "services": {
+    "title": "Szolgáltatásaink",
+    "description": "Fedezze fel, mit tehetünk Önért."
+  },
+  "contact": {
+    "title": "Kapcsolat",
+    "description": "Lépjen kapcsolatba csapatunkkal.",
+    "form": {
+      "firstName": "Keresztnév",
+      "lastName": "Vezetéknév",
+      "email": "E-mail cím",
+      "phone": "Telefonszám",
+      "message": "Üzenete",
+      "submit": "Üzenet küldése",
+      "submitting": "Küldés..."
+    },
+    "success": {
+      "title": "Köszönjük!",
+      "message": "Megkaptuk üzenetét, és hamarosan felvesszük Önnel a kapcsolatot."
+    }
+  },
+  "common": {
+    "buttons": {
+      "submit": "Beküldés",
+      "cancel": "Mégse",
+      "save": "Mentés",
+      "delete": "Törlés",
+      "edit": "Szerkesztés",
+      "close": "Bezárás",
+      "back": "Vissza",
+      "next": "Tovább",
+      "previous": "Előző",
+      "search": "Keresés",
+      "loadMore": "Több betöltése",
+      "readMore": "Tovább olvasom"
+    },
+    "form": {
+      "required": "*",
+      "requiredField": "Kötelező mező",
+      "optional": "(opcionális)"
+    },
+    "validation": {
+      "required": "Ez a mező kötelező",
+      "email": "Kérjük, adjon meg érvényes e-mail címet",
+      "phone": "Kérjük, adjon meg érvényes telefonszámot",
+      "minLength": "Minimum {min} karakter szükséges",
+      "maxLength": "Maximum {max} karakter engedélyezett"
+    },
+    "messages": {
+      "success": "Sikeres művelet",
+      "error": "Hiba történt",
+      "loading": "Betöltés...",
+      "noResults": "Nincs találat",
+      "confirmDelete": "Biztosan törölni szeretné?"
+    },
+    "accessibility": {
+      "skipToContent": "Ugrás a tartalomhoz",
+      "mainNavigation": "Főmenü",
+      "languageSwitcher": "Nyelvválasztó",
+      "openMenu": "Menü megnyitása",
+      "closeMenu": "Menü bezárása"
+    }
+  },
+  "footer": {
+    "copyright": "© {year} {company}. Minden jog fenntartva.",
+    "privacyPolicy": "Adatvédelmi irányelvek",
+    "termsOfService": "Felhasználási feltételek",
+    "cookiePolicy": "Cookie szabályzat"
+  },
+  "errors": {
+    "404": {
+      "title": "Az oldal nem található",
+      "description": "A keresett oldal nem létezik.",
+      "cta": "Vissza a főoldalra"
+    },
+    "500": {
+      "title": "Szerverhiba",
+      "description": "Valami hiba történt a szerverünkön.",
+      "cta": "Próbálja újra"
+    }
+  }
+}
