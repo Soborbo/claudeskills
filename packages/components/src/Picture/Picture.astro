@@ -48,10 +48,13 @@ export interface Props {
    */
   aboveFold?: boolean;
 
-  /** Image quality (1-100). Default: 60 - optimal for web */
+  /** Image quality for modern formats (1-100). Default: 60 */
   quality?: number;
 
-  /** Output formats. Default: ['avif', 'webp'] */
+  /** JPG fallback quality (1-100). Default: 70 */
+  fallbackQuality?: number;
+
+  /** Output formats. Default: ['avif', 'webp'] with jpg fallback */
   formats?: ('avif' | 'webp' | 'png' | 'jpg')[];
 
   /** Additional CSS classes */
@@ -62,6 +65,9 @@ export interface Props {
 
   /** Custom widths override (use only when pattern doesn't match layout) */
   widths?: number[];
+
+  /** Disable aspect-ratio CSS (for art-directed images) */
+  noAspectRatio?: boolean;
 }
 
 const {
@@ -71,22 +77,26 @@ const {
   lcp = false,
   aboveFold = false,
   quality = 60,
+  fallbackQuality = 70,
   formats = ['avif', 'webp'],
   class: className,
   sizes: customSizes,
   widths: customWidths,
+  noAspectRatio = false,
 } = Astro.props;
 
 // Get pattern configuration
 const config = PATTERNS[pattern];
 
 // Use custom values if provided, otherwise use pattern defaults
-let finalWidths = customWidths ?? config.widths;
+let finalWidths = customWidths ?? [...config.widths];
 const finalSizes = customSizes ?? config.sizes;
 
 // Handle undersized sources: cap widths at source width
 // Exception: FULL pattern for LCP - undersized is an error
 const sourceWidth = src.width;
+const sourceHeight = src.height;
+
 if (sourceWidth < config.minSourceWidth) {
   if (pattern === 'FULL' && lcp) {
     console.warn(
@@ -107,17 +117,48 @@ if (sourceWidth < config.minSourceWidth) {
 const loading = lcp || aboveFold ? 'eager' : 'lazy';
 const fetchpriority = lcp ? 'high' : undefined;
 const decoding = lcp ? undefined : 'async';
+
+// Calculate aspect ratio for CLS prevention
+const aspectRatio = sourceWidth / sourceHeight;
+
+// Build CSS classes with aspect-ratio
+const pictureClasses = [
+  className,
+  !noAspectRatio && 'picture-aspect',
+].filter(Boolean).join(' ');
+
+// Style for aspect ratio (inline to avoid global CSS conflicts)
+const aspectStyle = !noAspectRatio ? `--aspect-ratio: ${aspectRatio};` : undefined;
 ---
 
-<AstroPicture
-  src={src}
-  widths={finalWidths}
-  sizes={finalSizes}
-  formats={formats}
-  quality={quality}
-  alt={alt}
-  loading={loading}
-  fetchpriority={fetchpriority}
-  decoding={decoding}
-  class={className}
-/>
+<div
+  class={pictureClasses}
+  style={aspectStyle}
+>
+  <AstroPicture
+    src={src}
+    widths={finalWidths}
+    sizes={finalSizes}
+    formats={formats}
+    fallbackFormat="jpg"
+    quality={quality}
+    alt={alt}
+    loading={loading}
+    fetchpriority={fetchpriority}
+    decoding={decoding}
+    data-fallback-quality={fallbackQuality}
+  />
+</div>
+
+<style>
+  .picture-aspect {
+    aspect-ratio: var(--aspect-ratio);
+    overflow: hidden;
+  }
+
+  .picture-aspect :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>

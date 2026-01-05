@@ -1,0 +1,202 @@
+---
+/**
+ * BaseLayout
+ *
+ * Foundation layout with SEO meta, Open Graph, Schema.org, and analytics.
+ * Provides slots for head and body content.
+ *
+ * @example
+ * <BaseLayout
+ *   title="Költöztetés Budapest - Gyors és Megbízható"
+ *   description="Professzionális költöztetés Budapesten és környékén..."
+ *   canonicalUrl="https://koltoztetes.hu/"
+ *   ogImage="/images/og-default.jpg"
+ *   siteName="Költöztető Kft."
+ *   locale="hu_HU"
+ * >
+ *   <main>Content here</main>
+ * </BaseLayout>
+ */
+
+export interface Props {
+  /** Page title (appears in browser tab and search results) */
+  title: string;
+
+  /** Meta description (max ~160 chars for search) */
+  description?: string;
+
+  /** Canonical URL (for duplicate content) */
+  canonicalUrl?: string;
+
+  /** Site name for Open Graph */
+  siteName?: string;
+
+  /** Locale for Open Graph (default: hu_HU) */
+  locale?: string;
+
+  /** Open Graph image URL */
+  ogImage?: string;
+
+  /** Open Graph image alt text */
+  ogImageAlt?: string;
+
+  /** Twitter card type */
+  twitterCard?: 'summary' | 'summary_large_image';
+
+  /** Twitter handle (without @) */
+  twitterHandle?: string;
+
+  /** Robots meta (default: index, follow) */
+  robots?: string;
+
+  /** Additional schema.org JSON-LD */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+
+  /** Google Analytics 4 Measurement ID */
+  ga4Id?: string;
+
+  /** Google Tag Manager ID */
+  gtmId?: string;
+
+  /** Theme color for mobile browsers */
+  themeColor?: string;
+
+  /** Favicon path */
+  favicon?: string;
+
+  /** Apple touch icon path */
+  appleTouchIcon?: string;
+
+  /** Additional head content via slot */
+  class?: string;
+
+  /** Body class */
+  bodyClass?: string;
+}
+
+const {
+  title,
+  description,
+  canonicalUrl,
+  siteName,
+  locale = 'hu_HU',
+  ogImage,
+  ogImageAlt,
+  twitterCard = 'summary_large_image',
+  twitterHandle,
+  robots = 'index, follow',
+  schema,
+  ga4Id,
+  gtmId,
+  themeColor = '#2563eb',
+  favicon = '/favicon.ico',
+  appleTouchIcon,
+  class: className,
+  bodyClass,
+} = Astro.props;
+
+// Build schema array
+const schemas: Record<string, unknown>[] = [];
+if (schema) {
+  if (Array.isArray(schema)) {
+    schemas.push(...schema);
+  } else {
+    schemas.push(schema);
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="hu" class={className}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta -->
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <meta name="robots" content={robots} />
+
+    <!-- Canonical -->
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    {siteName && <meta property="og:site_name" content={siteName} />}
+    <meta property="og:locale" content={locale} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImageAlt && <meta property="og:image:alt" content={ogImageAlt} />}
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content={twitterCard} />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    {twitterHandle && <meta name="twitter:site" content={`@${twitterHandle}`} />}
+
+    <!-- Theme & Icons -->
+    <meta name="theme-color" content={themeColor} />
+    <link rel="icon" href={favicon} />
+    {appleTouchIcon && <link rel="apple-touch-icon" href={appleTouchIcon} />}
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    {ga4Id && <link rel="preconnect" href="https://www.googletagmanager.com" />}
+
+    <!-- Google Tag Manager -->
+    {gtmId && (
+      <script is:inline define:vars={{ gtmId }}>
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer',gtmId);
+      </script>
+    )}
+
+    <!-- GA4 (standalone, if no GTM) -->
+    {ga4Id && !gtmId && (
+      <>
+        <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+        <script is:inline define:vars={{ ga4Id }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', ga4Id);
+        </script>
+      </>
+    )}
+
+    <!-- Schema.org JSON-LD -->
+    {schemas.length > 0 && schemas.map((s) => (
+      <script type="application/ld+json" set:html={JSON.stringify(s, null, 2)} />
+    ))}
+
+    <!-- Head Slot -->
+    <slot name="head" />
+  </head>
+
+  <body class={bodyClass}>
+    <!-- GTM noscript -->
+    {gtmId && (
+      <noscript>
+        <iframe
+          src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+          height="0"
+          width="0"
+          style="display:none;visibility:hidden"
+        ></iframe>
+      </noscript>
+    )}
+
+    <!-- Main Content -->
+    <slot />
+
+    <!-- Body End Slot (for scripts) -->
+    <slot name="body-end" />
+  </body>
+</html>

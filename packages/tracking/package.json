@@ -1,0 +1,37 @@
+{
+  "name": "@leadgen/tracking",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Zero-cost conversion tracking Astro integration for lead generation sites",
+  "main": "./src/integration.ts",
+  "types": "./src/types.ts",
+  "exports": {
+    ".": "./src/integration.ts",
+    "./client": "./src/client/index.ts",
+    "./init": "./src/scripts/init.ts",
+    "./types": "./src/types.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "astro": "^4.0.0 || ^5.0.0"
+  },
+  "devDependencies": {
+    "astro": "^5.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "astro",
+    "astro-integration",
+    "tracking",
+    "gtm",
+    "ga4",
+    "google-ads",
+    "conversion-tracking",
+    "lead-generation"
+  ]
+}

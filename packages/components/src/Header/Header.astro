@@ -16,6 +16,14 @@
  *   navItems={[
  *     { label: 'Szolgáltatások', href: '/szolgaltatasok' },
  *     { label: 'Rólunk', href: '/rolunk' },
+ *     {
+ *       label: 'Területek',
+ *       href: '/teruletek',
+ *       children: [
+ *         { label: 'Budapest', href: '/teruletek/budapest' },
+ *         { label: 'Pest megye', href: '/teruletek/pest-megye' },
+ *       ],
+ *     },
  *   ]}
  * />
  */
@@ -23,6 +31,8 @@
 export interface NavItem {
   label: string;
   href: string;
+  /** Child items for dropdown menu */
+  children?: NavItem[];
 }
 
 export interface Logo {
@@ -51,6 +61,12 @@ export interface Props {
   /** Primary CTA button href */
   ctaHref: string;
 
+  /** Skip link text */
+  skipLinkText?: string;
+
+  /** Main content ID for skip link */
+  mainContentId?: string;
+
   /** Additional CSS classes */
   class?: string;
 }
@@ -62,12 +78,29 @@ const {
   address,
   ctaText,
   ctaHref,
+  skipLinkText = 'Ugrás a tartalomhoz',
+  mainContentId = 'main-content',
   class: className,
 } = Astro.props;
 
 const phoneClean = phone.replace(/\s/g, '');
 const currentPath = Astro.url.pathname;
+
+// Check if a nav item or its children is active
+function isActive(item: NavItem): boolean {
+  if (currentPath === item.href) return true;
+  if (item.children?.some(child => currentPath === child.href)) return true;
+  return false;
+}
 ---
+
+<!-- Skip Link (visible on focus) -->
+<a
+  href={`#${mainContentId}`}
+  class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400"
+>
+  {skipLinkText}
+</a>
 
 <!-- Main Header -->
 <header
@@ -92,18 +125,56 @@ const currentPath = Astro.url.pathname;
 
       <!-- Desktop Nav -->
       {navItems.length > 0 && (
-        <nav class="hidden lg:flex items-center gap-8" aria-label="Main navigation">
+        <nav class="hidden lg:flex items-center gap-6" aria-label="Fő navigáció">
           {navItems.map((item) => (
-            <a
-              href={item.href}
-              class:list={[
-                'text-gray-700 hover:text-primary-600 transition-colors font-medium',
-                currentPath === item.href && 'text-primary-600',
-              ]}
-              aria-current={currentPath === item.href ? 'page' : undefined}
-            >
-              {item.label}
-            </a>
+            item.children && item.children.length > 0 ? (
+              <!-- Dropdown -->
+              <div class="relative group">
+                <button
+                  type="button"
+                  class:list={[
+                    'flex items-center gap-1 text-gray-700 hover:text-primary-600 transition-colors font-medium py-2',
+                    isActive(item) && 'text-primary-600',
+                  ]}
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                >
+                  {item.label}
+                  <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <!-- Dropdown Menu -->
+                <div class="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div class="bg-white rounded-lg shadow-lg border border-gray-100 py-2 min-w-[200px]">
+                    {item.children.map((child) => (
+                      <a
+                        href={child.href}
+                        class:list={[
+                          'block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors',
+                          currentPath === child.href && 'bg-primary-50 text-primary-600',
+                        ]}
+                        aria-current={currentPath === child.href ? 'page' : undefined}
+                      >
+                        {child.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <!-- Regular Link -->
+              <a
+                href={item.href}
+                class:list={[
+                  'text-gray-700 hover:text-primary-600 transition-colors font-medium',
+                  currentPath === item.href && 'text-primary-600',
+                ]}
+                aria-current={currentPath === item.href ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            )
           ))}
         </nav>
       )}
@@ -204,7 +275,6 @@ const currentPath = Astro.url.pathname;
 
     if (!mainHeader || !scrollCtaBar) return;
 
-    let lastScrollY = 0;
     let isCtaVisible = false;
     const triggerPoint = window.innerHeight * 0.5; // 50vh
 
@@ -222,8 +292,6 @@ const currentPath = Astro.url.pathname;
         mainHeader.classList.remove('-translate-y-full');
         isCtaVisible = false;
       }
-
-      lastScrollY = currentScrollY;
     }
 
     // Add transition class to main header
