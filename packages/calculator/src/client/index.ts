@@ -81,6 +81,8 @@ interface InitOptions {
  * Initialize calculator with all client-side functionality
  */
 export function initCalculator(options: InitOptions): void {
+  if (!IS_BROWSER) return;
+
   const { config, onStepChange, basePath } = options;
 
   // Initialize navigation
@@ -116,6 +118,8 @@ export function initCalculator(options: InitOptions): void {
  * Auto-initialize all step components on current page
  */
 export function initStepComponents(): void {
+  if (!IS_BROWSER) return;
+
   // Radio cards with auto-advance
   document.querySelectorAll<HTMLElement>('[data-auto-advance]').forEach((container) => {
     initRadioAutoAdvance(container);

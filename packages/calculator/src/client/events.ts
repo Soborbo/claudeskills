@@ -28,6 +28,7 @@ declare global {
  * Push event to GTM dataLayer
  */
 function pushEvent(event: CalculatorEvent): void {
+  if (!IS_BROWSER) return;
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push(event as unknown as Record<string, unknown>);
 }

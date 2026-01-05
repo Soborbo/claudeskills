@@ -30,6 +30,7 @@ function getStorageKey(calculatorId: string): string {
 }
 
 function safeGetItem(key: string): string | null {
+  if (!IS_BROWSER) return null;
   try {
     return localStorage.getItem(key);
   } catch {
@@ -38,6 +39,7 @@ function safeGetItem(key: string): string | null {
 }
 
 function safeSetItem(key: string, value: string): boolean {
+  if (!IS_BROWSER) return false;
   try {
     localStorage.setItem(key, value);
     return true;
@@ -47,6 +49,7 @@ function safeSetItem(key: string, value: string): boolean {
 }
 
 function safeRemoveItem(key: string): boolean {
+  if (!IS_BROWSER) return false;
   try {
     localStorage.removeItem(key);
     return true;

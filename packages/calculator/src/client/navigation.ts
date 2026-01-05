@@ -219,6 +219,8 @@ const AUTO_ADVANCE_DELAY = 200;
 export function initRadioAutoAdvance(container: HTMLElement): void {
   if (!config) return;
 
+  // Capture config reference at setup time
+  const calculatorId = config.calculatorId;
   const delay = parseInt(container.dataset.autoAdvance || '') || AUTO_ADVANCE_DELAY;
 
   container.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((radio) => {
@@ -226,10 +228,10 @@ export function initRadioAutoAdvance(container: HTMLElement): void {
       const target = e.target as HTMLInputElement;
 
       // Save answer
-      setAnswer(config!.calculatorId, target.name, target.value);
+      setAnswer(calculatorId, target.name, target.value);
 
       // Track selection
-      trackOptionSelect(config!.calculatorId, target.name, target.value);
+      trackOptionSelect(calculatorId, target.name, target.value);
 
       // Auto-advance after delay
       setTimeout(() => {
@@ -245,6 +247,8 @@ export function initRadioAutoAdvance(container: HTMLElement): void {
 export function initCheckboxHandler(container: HTMLElement): void {
   if (!config) return;
 
+  // Capture config reference at setup time
+  const calculatorId = config.calculatorId;
   const minSelect = parseInt(container.dataset.minSelect || '1');
   const checkboxes = container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
   const nextButton = container.querySelector<HTMLButtonElement>('[data-next-step]');
@@ -256,7 +260,7 @@ export function initCheckboxHandler(container: HTMLElement): void {
     // Get step name from first checkbox
     const name = checkboxes[0]?.name;
     if (name) {
-      setAnswer(config!.calculatorId, name, values);
+      setAnswer(calculatorId, name, values);
     }
 
     // Enable/disable next button
@@ -283,12 +287,15 @@ export function initCheckboxHandler(container: HTMLElement): void {
 export function initDropdownAutoAdvance(select: HTMLSelectElement): void {
   if (!config) return;
 
+  // Capture config reference at setup time
+  const calculatorId = config.calculatorId;
+
   select.addEventListener('change', (e) => {
     const target = e.target as HTMLSelectElement;
 
     if (target.value) {
-      setAnswer(config!.calculatorId, target.name, target.value);
-      trackOptionSelect(config!.calculatorId, target.name, target.value);
+      setAnswer(calculatorId, target.name, target.value);
+      trackOptionSelect(calculatorId, target.name, target.value);
 
       if (select.dataset.autoAdvance !== 'false') {
         navigateToNextStep();
@@ -302,6 +309,9 @@ export function initDropdownAutoAdvance(select: HTMLSelectElement): void {
  */
 export function initNumberInput(container: HTMLElement): void {
   if (!config) return;
+
+  // Capture config reference at setup time
+  const calculatorId = config.calculatorId;
 
   const input = container.querySelector<HTMLInputElement>('input[type="number"]');
   const minusBtn = container.querySelector<HTMLButtonElement>('[data-minus]');
@@ -317,7 +327,7 @@ export function initNumberInput(container: HTMLElement): void {
     const currentValue = parseFloat(input.value) || 0;
     const newValue = Math.max(min, Math.min(max, currentValue + delta));
     input.value = newValue.toString();
-    setAnswer(config!.calculatorId, input.name, newValue);
+    setAnswer(calculatorId, input.name, newValue);
 
     // Update button states
     if (minusBtn) minusBtn.disabled = newValue <= min;
@@ -329,7 +339,7 @@ export function initNumberInput(container: HTMLElement): void {
 
   input.addEventListener('change', () => {
     const value = parseFloat(input.value) || 0;
-    setAnswer(config!.calculatorId, input.name, value);
+    setAnswer(calculatorId, input.name, value);
   });
 }
 
