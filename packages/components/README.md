@@ -496,6 +496,32 @@ export const POST: APIRoute = async ({ request }) => {
 
 ---
 
+## Cloudflare Adapter Configuration
+
+**Critical:** If deploying to Cloudflare Pages/Workers, you MUST configure build-time image optimization. Sharp doesn't work at runtime on Cloudflare.
+
+```js
+// astro.config.mjs
+export default defineConfig({
+  output: 'static',  // NOT 'server'
+  adapter: cloudflare({
+    imageService: 'compile'  // Build-time optimization
+  }),
+  image: {
+    service: {
+      entrypoint: 'astro/assets/services/sharp'
+    }
+  }
+});
+```
+
+**Without this config:** No AVIF/WebP generated, only original images in output.
+
+**Verify after build:**
+```bash
+ls dist/_astro/*.avif | head -5  # Should show files
+```
+
 ## Source Requirements
 
 Components will warn if source images are too small:
