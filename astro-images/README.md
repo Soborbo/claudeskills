@@ -4,7 +4,7 @@ A complete, production-ready skill for responsive image implementation in Astro 
 
 ## Version
 
-**v1.1.0** — Production ready
+**v1.4.0** — Production ready
 
 > **Compatibility:** This skill is calibrated for Astro 4–5 and Sharp-based image services. Re-validate rules if Astro's image pipeline changes significantly.
 
@@ -98,6 +98,12 @@ Share `IMAGE_GUIDE.md` with clients to ensure they provide properly sized and fo
 8. Aspect ratio must remain constant across all variants
 
 ## Changelog
+
+### v1.4.0
+- Added Cloudflare adapter configuration documentation
+- Critical fix: `output: 'static'` + `imageService: 'compile'` required for Cloudflare deployments
+- Added adapter config validation rule
+- Added Cloudflare section to AUDIT_PROMPT.md checklist
 
 ### v1.1.0
 - Added single source of truth (`widthPresets` in `rules.json`)

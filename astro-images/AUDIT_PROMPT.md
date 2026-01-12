@@ -205,7 +205,52 @@ schema-16x9.jpg   (1200×675)
 
 ---
 
-## 12. Build Verification
+## 12. Cloudflare Adapter Configuration
+
+**Critical for Cloudflare deployments.** Sharp doesn't work at runtime on Cloudflare Workers/Pages.
+
+- [ ] `output: 'static'` in astro.config (not `'server'`)
+- [ ] `imageService: 'compile'` in adapter config
+- [ ] `image.service.entrypoint: 'astro/assets/services/sharp'` set
+
+```bash
+# Check astro.config.mjs for correct settings
+grep -E "output:|imageService|entrypoint" astro.config.mjs
+```
+
+**Expected output:**
+```
+output: 'static',
+imageService: 'compile'
+entrypoint: 'astro/assets/services/sharp'
+```
+
+**Wrong configuration (no AVIF/WebP generated):**
+```js
+export default defineConfig({
+  output: 'server',  // ❌ Wrong
+  adapter: cloudflare()
+});
+```
+
+**Correct configuration:**
+```js
+export default defineConfig({
+  output: 'static',  // ✅ Build-time generation
+  adapter: cloudflare({
+    imageService: 'compile'  // ✅ Build-time optimization
+  }),
+  image: {
+    service: {
+      entrypoint: 'astro/assets/services/sharp'  // ✅ Sharp at build
+    }
+  }
+});
+```
+
+---
+
+## 13. Build Verification
 
 ```bash
 # Build and check for errors
@@ -221,7 +266,7 @@ find dist/_astro -name "*.avif" -o -name "*.webp" | head -20
 
 ---
 
-## 13. Browser Verification
+## 14. Browser Verification
 
 Open DevTools → Network → Img filter:
 
@@ -232,7 +277,7 @@ Open DevTools → Network → Img filter:
 
 ---
 
-## 14. Lighthouse Check
+## 15. Lighthouse Check
 
 Run Lighthouse performance audit:
 
@@ -258,7 +303,8 @@ Run Lighthouse performance audit:
 | Alt text proper | ☐ |
 | FIXED pattern correct | ☐ |
 | Schema images present | ☐ |
-| Build passes | ☐ |
+| Cloudflare adapter config correct | ☐ |
+| Build passes (AVIF/WebP generated) | ☐ |
 | Browser loads single image | ☐ |
 | Lighthouse passes | ☐ |
 
@@ -274,7 +320,7 @@ Run Lighthouse performance audit:
 
 ---
 
-## 15. Undersized Images Report
+## 16. Undersized Images Report
 
 Run this script to generate a report of all images that need replacement:
 
