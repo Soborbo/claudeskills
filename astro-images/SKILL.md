@@ -1,7 +1,7 @@
 ---
 name: astro-images
 description: Width-based responsive image patterns for Astro. Aspect ratio independent.
-version: 1.3.1
+version: 1.4.0
 ---
 # Astro Images Skill
 
@@ -120,6 +120,46 @@ FULL: 2560px | TWO_THIRDS: 2048px | LARGE: 1920px | HALF: 1600px | SMALL/THIRD: 
 
 3 versions in `/src/assets/schema/`: 1:1 (1200×1200), 4:3 (1200×900), 16:9 (1200×675)
 Reference in schema AND `og:image`.
+
+## Cloudflare Adapter Configuration
+
+**Critical:** Cloudflare Workers/Pages does NOT support Sharp at runtime. Without proper config, no images will be optimized.
+
+**Wrong (no optimization):**
+```js
+export default defineConfig({
+  output: 'server',
+  adapter: cloudflare()
+});
+// ⚠️ [WARN] Cloudflare does not support sharp at runtime
+// Result: Only original JPGs in dist, no AVIF/WebP
+```
+
+**Correct (build-time optimization):**
+```js
+export default defineConfig({
+  output: 'static',
+  adapter: cloudflare({
+    imageService: 'compile'
+  }),
+  image: {
+    service: {
+      entrypoint: 'astro/assets/services/sharp'
+    }
+  }
+});
+```
+
+**Key settings:**
+- `output: 'static'` → Build-time generation (SSR pages use `prerender: false`)
+- `imageService: 'compile'` → Optimize at build, not runtime
+- `image.service.entrypoint` → Use Sharp for build-time processing
+
+**Verify after build:**
+```bash
+ls dist/_astro/*.avif | head -5  # Should show AVIF files
+ls dist/_astro/*.webp | head -5  # Should show WebP files
+```
 
 ## Validation
 

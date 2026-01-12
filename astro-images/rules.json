@@ -1,6 +1,6 @@
 {
   "name": "astro-images",
-  "version": "1.3.1",
+  "version": "1.4.0",
 
   "widthPresets": {
     "FULL": [640, 750, 828, 1080, 1200, 1920, 2048, 2560],
@@ -90,6 +90,16 @@
       "pattern": "FULL",
       "severity": "error",
       "message": "LCP/FULL image source is smaller than required. Must provide larger asset."
+    },
+    "cloudflare-adapter-config": {
+      "severity": "error",
+      "check": "astro.config",
+      "require": {
+        "output": "static",
+        "adapter.imageService": "compile",
+        "image.service.entrypoint": "astro/assets/services/sharp"
+      },
+      "message": "Cloudflare does not support Sharp at runtime. Use output:'static' + imageService:'compile' for build-time optimization."
     }
   },
 
