@@ -1,0 +1,88 @@
+---
+/**
+ * PhoneLink Component
+ *
+ * Tracked tel: link with click deduplication.
+ * Fires phone_click event once per session.
+ *
+ * Usage:
+ * <!-- Header/footer - no value -->
+ * <PhoneLink phone="+447123456789">Call us</PhoneLink>
+ *
+ * <!-- Calculator page - with quote value -->
+ * <PhoneLink phone="+447123456789" value={calculatedQuote}>
+ *   Call for this quote
+ * </PhoneLink>
+ *
+ * <!-- With custom class -->
+ * <PhoneLink phone="+447123456789" class="btn btn-primary">
+ *   Call Now
+ * </PhoneLink>
+ */
+
+interface Props {
+  phone: string;
+  value?: number;
+  currency?: string;
+  class?: string;
+}
+
+const { phone, value, currency, class: className } = Astro.props;
+
+// Format phone for display (remove + for href)
+const telHref = `tel:${phone}`;
+---
+
+<a
+  href={telHref}
+  class:list={['phone-link', className]}
+  data-phone={phone}
+  data-value={value}
+  data-currency={currency}
+>
+  <slot />
+</a>
+
+<script>
+  import { trackPhoneClick, getSiteCurrency } from '@/lib/tracking';
+
+  // Handle all phone links on the page
+  function initPhoneLinks() {
+    const links = document.querySelectorAll<HTMLAnchorElement>('a.phone-link');
+
+    links.forEach((link) => {
+      // Remove existing listener to avoid duplicates on View Transitions
+      link.removeEventListener('click', handlePhoneClick);
+      link.addEventListener('click', handlePhoneClick);
+    });
+  }
+
+  function handlePhoneClick(e: Event) {
+    const link = e.currentTarget as HTMLAnchorElement;
+    const value = link.dataset.value ? parseFloat(link.dataset.value) : undefined;
+    const currency = link.dataset.currency || getSiteCurrency();
+
+    // Track (handles deduplication internally)
+    const result = trackPhoneClick(value, currency);
+
+    if (result.duplicate) {
+      console.debug('[PhoneLink] Click already tracked this session');
+    }
+
+    // Allow default tel: behavior to proceed
+  }
+
+  // Init on load
+  initPhoneLinks();
+
+  // Re-init on View Transitions
+  document.addEventListener('astro:page-load', initPhoneLinks);
+</script>
+
+<style>
+  .phone-link {
+    /* Inherit styles from parent - add your own styling */
+    text-decoration: inherit;
+    color: inherit;
+  }
+</style>

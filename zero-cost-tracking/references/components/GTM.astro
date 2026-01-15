@@ -1,0 +1,58 @@
+---
+/**
+ * GTM Component
+ *
+ * Google Tag Manager snippet for head and body.
+ * Uses Cloudflare Google Tag Gateway when enabled.
+ *
+ * Usage:
+ * <head>
+ *   <GTM position="head" />
+ * </head>
+ * <body>
+ *   <GTM position="body" />
+ *   ...
+ * </body>
+ */
+
+interface Props {
+  position: 'head' | 'body';
+}
+
+const { position } = Astro.props;
+
+const GTM_ID = import.meta.env.GTM_ID;
+
+if (!GTM_ID) {
+  console.warn('[GTM] GTM_ID environment variable not set');
+}
+---
+
+{position === 'head' && GTM_ID && (
+  <>
+    {/* Initialize dataLayer before GTM */}
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+    </script>
+
+    {/* Google Tag Manager */}
+    <script is:inline define:vars={{ GTM_ID }}>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer',GTM_ID);
+    </script>
+  </>
+)}
+
+{position === 'body' && GTM_ID && (
+  <noscript>
+    <iframe
+      src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+      height="0"
+      width="0"
+      style="display:none;visibility:hidden"
+    ></iframe>
+  </noscript>
+)}

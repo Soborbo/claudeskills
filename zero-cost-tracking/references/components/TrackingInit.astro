@@ -1,0 +1,49 @@
+---
+/**
+ * TrackingInit Component
+ *
+ * Initializes tracking on page load and handles View Transitions.
+ * Place once in your layout, after GTM body snippet.
+ *
+ * Handles:
+ * - Attribution param capture (on consent)
+ * - Session management
+ * - Retry queued leads
+ * - View Transitions re-initialization
+ *
+ * Usage:
+ * <body>
+ *   <GTM position="body" />
+ *   <TrackingInit />
+ *   <slot />
+ * </body>
+ */
+---
+
+<script>
+  import {
+    initTracking,
+    captureAttributionParams,
+    hasMarketingConsent,
+    onConsentChange,
+  } from '@/lib/tracking';
+
+  // Initialize on first load
+  initTracking();
+
+  // Re-initialize on Astro View Transitions
+  document.addEventListener('astro:page-load', () => {
+    // Re-capture params (URL may have changed with new UTMs)
+    if (hasMarketingConsent()) {
+      captureAttributionParams();
+    }
+  });
+
+  // Also handle after-swap for immediate updates
+  document.addEventListener('astro:after-swap', () => {
+    // Re-check consent and capture if granted
+    if (hasMarketingConsent()) {
+      captureAttributionParams();
+    }
+  });
+</script>
