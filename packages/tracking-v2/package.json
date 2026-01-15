@@ -1,0 +1,45 @@
+{
+  "name": "@leadgen/tracking-v2",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Zero-cost conversion tracking for Astro.js lead gen sites. GTM + GA4 + Google Ads Enhanced Conversions + Meta CAPI via Zaraz. First/last touch attribution, Safari ITP bypass, consent-aware.",
+  "main": "./src/integration.ts",
+  "types": "./src/types.ts",
+  "exports": {
+    ".": "./src/integration.ts",
+    "./client": "./src/client/index.ts",
+    "./components": "./src/components/index.ts",
+    "./components/PhoneLink.astro": "./src/components/PhoneLink.astro",
+    "./init": "./src/scripts/init.ts",
+    "./types": "./src/types.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "astro": "^4.0.0 || ^5.0.0"
+  },
+  "devDependencies": {
+    "astro": "^5.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "astro",
+    "astro-integration",
+    "tracking",
+    "gtm",
+    "ga4",
+    "google-ads",
+    "meta-capi",
+    "zaraz",
+    "conversion-tracking",
+    "lead-generation",
+    "enhanced-conversions",
+    "first-touch",
+    "last-touch",
+    "attribution"
+  ]
+}

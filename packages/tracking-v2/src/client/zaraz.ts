@@ -1,0 +1,61 @@
+/**
+ * @leadgen/tracking-v2 - Zaraz (Meta CAPI)
+ *
+ * Access Token is in Zaraz dashboard - NEVER in code!
+ */
+
+import { getSiteCurrency, log } from './constants';
+
+export function isZarazAvailable(): boolean {
+  return typeof window !== 'undefined' && typeof window.zaraz?.track === 'function';
+}
+
+export interface MetaLeadParams {
+  email: string;
+  phone?: string;
+  value?: number;
+  currency?: string;
+  eventId?: string;
+}
+
+export function trackMetaLead(params: MetaLeadParams): boolean {
+  if (!isZarazAvailable()) {
+    log('Zaraz not available - skipping Meta track');
+    return false;
+  }
+
+  try {
+    window.zaraz!.track('Lead', {
+      em: params.email.trim().toLowerCase(),
+      ph: params.phone || undefined,
+      value: params.value || 0,
+      currency: params.currency || getSiteCurrency(),
+      event_id: params.eventId,
+    });
+    log('Zaraz Lead tracked');
+    return true;
+  } catch (error) {
+    console.error('[Tracking] Zaraz error:', error);
+    return false;
+  }
+}
+
+export function trackMetaContact(phone: string, eventId?: string): boolean {
+  if (!isZarazAvailable()) return false;
+
+  try {
+    window.zaraz!.track('Contact', { ph: phone, event_id: eventId });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function setZarazUserData(email?: string, phone?: string): void {
+  if (!isZarazAvailable()) return;
+
+  try {
+    if (email) window.zaraz!.set('em', email.trim().toLowerCase());
+    if (phone) window.zaraz!.set('ph', phone);
+  } catch {}
+}
