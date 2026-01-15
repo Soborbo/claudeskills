@@ -262,7 +262,7 @@ Create these in GTM:
 - GA4 Event tags for each event
 - Google Ads Conversion tags with Enhanced Conversions
 
-See [references/gtm/SETUP.md](references/gtm/SETUP.md) for detailed config.
+GTM variables should have "Data Layer Variable" type with auto-event variable name matching the event property.
 
 ## Cloudflare Setup
 
@@ -287,7 +287,7 @@ Triggers:
 - contact_form → Lead
 ```
 
-See [references/cloudflare/SETUP.md](references/cloudflare/SETUP.md) for details.
+For Zaraz trigger setup, match each event name to track a corresponding Meta Lead event.
 
 ## Key Behaviors
 

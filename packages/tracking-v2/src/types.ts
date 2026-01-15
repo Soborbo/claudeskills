@@ -133,22 +133,28 @@ export interface ConversionDataLayerEvent {
   user_phone?: string;
   value?: number;
   currency?: string;
-  // Attribution
+  // Attribution - first touch
   first_utm_source?: string;
   first_utm_medium?: string;
   first_utm_campaign?: string;
   first_utm_term?: string;
   first_utm_content?: string;
   first_gclid?: string;
+  first_gbraid?: string;
+  first_wbraid?: string;
   first_fbclid?: string;
   first_referrer?: string;
+  // Attribution - last touch
   last_utm_source?: string;
   last_utm_medium?: string;
   last_utm_campaign?: string;
   last_utm_term?: string;
   last_utm_content?: string;
   last_gclid?: string;
+  last_gbraid?: string;
+  last_wbraid?: string;
   last_fbclid?: string;
+  last_referrer?: string;
 }
 
 // =============================================================================
@@ -170,21 +176,28 @@ export interface SheetsPayload {
   currency: string;
   page_url: string;
   device: string;
+  // First touch attribution
   first_utm_source: string;
   first_utm_medium: string;
   first_utm_campaign: string;
   first_utm_term: string;
   first_utm_content: string;
   first_gclid: string;
+  first_gbraid: string;
+  first_wbraid: string;
   first_fbclid: string;
   first_referrer: string;
+  // Last touch attribution
   last_utm_source: string;
   last_utm_medium: string;
   last_utm_campaign: string;
   last_utm_term: string;
   last_utm_content: string;
   last_gclid: string;
+  last_gbraid: string;
+  last_wbraid: string;
   last_fbclid: string;
+  last_referrer: string;
   idempotency_key: string;
 }
 

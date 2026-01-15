@@ -41,6 +41,21 @@ export default defineConfig({
 });
 ```
 
+### 1b. Add GTM NoScript (Optional)
+
+Add to your layout right after `<body>`:
+
+```astro
+---
+import GTMNoScript from '@leadgen/tracking-v2/components/GTMNoScript.astro';
+---
+
+<body>
+  <GTMNoScript gtmId="GTM-XXXXXXX" />
+  ...
+</body>
+```
+
 ### 2. Track Conversions
 
 ```typescript
@@ -149,9 +164,17 @@ trackConversion('quote_request', {
 });
 ```
 
-### trackPhoneClick(value?, currency?)
+### trackPhoneClick(params?)
 
 Track phone link click (deduplicated per session).
+
+```typescript
+trackPhoneClick({
+  phone: '+447123456789', // optional, for Meta CAPI
+  value: 450,             // optional
+  currency: 'GBP',        // optional
+});
+```
 
 ### pushCalculatorStart/Step/Option
 

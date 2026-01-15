@@ -127,7 +127,13 @@ export function trackConversion(
 // trackPhoneClick
 // =============================================================================
 
-export function trackPhoneClick(value?: number, currency?: string): TrackPhoneClickResult {
+export interface TrackPhoneClickParams {
+  phone?: string;
+  value?: number;
+  currency?: string;
+}
+
+export function trackPhoneClick(params: TrackPhoneClickParams = {}): TrackPhoneClickResult {
   const sessionId = getOrCreateSessionId();
   const eventId = `phone_${sessionId}`;
 
@@ -136,8 +142,12 @@ export function trackPhoneClick(value?: number, currency?: string): TrackPhoneCl
     return { success: false, duplicate: true, eventId };
   }
 
-  pushPhoneClickEvent(value, currency);
-  trackMetaContact('phone', eventId);
+  pushPhoneClickEvent(params.value, params.currency);
+
+  // Track via Zaraz (Meta CAPI) if phone provided
+  if (params.phone) {
+    trackMetaContact(params.phone, eventId);
+  }
 
   return { success: true, duplicate: false, eventId };
 }
@@ -176,21 +186,28 @@ export function buildSheetsPayload(input: SheetsPayloadInput): SheetsPayload {
     currency: input.currency || getSiteCurrency(),
     page_url: typeof window !== 'undefined' ? window.location.pathname : '',
     device: getDeviceType(),
+    // First touch
     first_utm_source: first?.utm_source || '',
     first_utm_medium: first?.utm_medium || '',
     first_utm_campaign: first?.utm_campaign || '',
     first_utm_term: first?.utm_term || '',
     first_utm_content: first?.utm_content || '',
     first_gclid: first?.gclid || '',
+    first_gbraid: first?.gbraid || '',
+    first_wbraid: first?.wbraid || '',
     first_fbclid: first?.fbclid || '',
     first_referrer: first?.referrer || '',
+    // Last touch
     last_utm_source: last?.utm_source || '',
     last_utm_medium: last?.utm_medium || '',
     last_utm_campaign: last?.utm_campaign || '',
     last_utm_term: last?.utm_term || '',
     last_utm_content: last?.utm_content || '',
     last_gclid: last?.gclid || '',
+    last_gbraid: last?.gbraid || '',
+    last_wbraid: last?.wbraid || '',
     last_fbclid: last?.fbclid || '',
+    last_referrer: last?.referrer || '',
     idempotency_key: generateIdempotencyKey(input.email, input.eventType),
   };
 }

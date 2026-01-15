@@ -125,6 +125,8 @@ export function buildAttributionForDataLayer(): Record<string, string | undefine
     first_utm_term: first?.utm_term,
     first_utm_content: first?.utm_content,
     first_gclid: first?.gclid,
+    first_gbraid: first?.gbraid,
+    first_wbraid: first?.wbraid,
     first_fbclid: first?.fbclid,
     first_referrer: first?.referrer,
     last_utm_source: last?.utm_source,
@@ -133,7 +135,10 @@ export function buildAttributionForDataLayer(): Record<string, string | undefine
     last_utm_term: last?.utm_term,
     last_utm_content: last?.utm_content,
     last_gclid: last?.gclid,
+    last_gbraid: last?.gbraid,
+    last_wbraid: last?.wbraid,
     last_fbclid: last?.fbclid,
+    last_referrer: last?.referrer,
   };
 }
 

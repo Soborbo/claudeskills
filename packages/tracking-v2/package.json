@@ -10,6 +10,7 @@
     "./client": "./src/client/index.ts",
     "./components": "./src/components/index.ts",
     "./components/PhoneLink.astro": "./src/components/PhoneLink.astro",
+    "./components/GTMNoScript.astro": "./src/components/GTMNoScript.astro",
     "./init": "./src/scripts/init.ts",
     "./types": "./src/types.ts"
   },

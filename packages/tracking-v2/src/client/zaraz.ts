@@ -10,6 +10,16 @@ export function isZarazAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window.zaraz?.track === 'function';
 }
 
+/**
+ * Normalize phone for Meta CAPI
+ * Meta requires E.164 format: +[country][number] with only digits
+ */
+function normalizePhone(phone: string): string {
+  const hasPlus = phone.startsWith('+');
+  const digits = phone.replace(/\D/g, '');
+  return hasPlus ? `+${digits}` : digits;
+}
+
 export interface MetaLeadParams {
   email: string;
   phone?: string;
@@ -27,7 +37,7 @@ export function trackMetaLead(params: MetaLeadParams): boolean {
   try {
     window.zaraz!.track('Lead', {
       em: params.email.trim().toLowerCase(),
-      ph: params.phone || undefined,
+      ph: params.phone ? normalizePhone(params.phone) : undefined,
       value: params.value || 0,
       currency: params.currency || getSiteCurrency(),
       event_id: params.eventId,
@@ -44,7 +54,7 @@ export function trackMetaContact(phone: string, eventId?: string): boolean {
   if (!isZarazAvailable()) return false;
 
   try {
-    window.zaraz!.track('Contact', { ph: phone, event_id: eventId });
+    window.zaraz!.track('Contact', { ph: normalizePhone(phone), event_id: eventId });
     return true;
   } catch {
     return false;
@@ -56,6 +66,6 @@ export function setZarazUserData(email?: string, phone?: string): void {
 
   try {
     if (email) window.zaraz!.set('em', email.trim().toLowerCase());
-    if (phone) window.zaraz!.set('ph', phone);
+    if (phone) window.zaraz!.set('ph', normalizePhone(phone));
   } catch {}
 }

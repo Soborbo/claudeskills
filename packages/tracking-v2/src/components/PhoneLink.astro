@@ -44,10 +44,11 @@ const telHref = `tel:${phone}`;
 
   function handleClick(e: Event) {
     const link = e.currentTarget as HTMLAnchorElement;
+    const phone = link.dataset.phone;
     const value = link.dataset.value ? parseFloat(link.dataset.value) : undefined;
     const currency = link.dataset.currency || getSiteCurrency();
 
-    trackPhoneClick(value, currency);
+    trackPhoneClick({ phone, value, currency });
   }
 
   initPhoneLinks();
