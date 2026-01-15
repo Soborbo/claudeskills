@@ -1,0 +1,980 @@
+{
+  "exportFormatVersion": 2,
+  "exportTime": "2025-01-15 12:00:00",
+  "containerVersion": {
+    "path": "accounts/0/containers/0/versions/0",
+    "accountId": "0",
+    "containerId": "0",
+    "containerVersionId": "0",
+    "container": {
+      "path": "accounts/0/containers/0",
+      "accountId": "0",
+      "containerId": "0",
+      "name": "Leadgen Tracking v2",
+      "publicId": "GTM-XXXXXXX",
+      "usageContext": ["WEB"]
+    },
+    "builtInVariable": [
+      { "type": "PAGE_URL" },
+      { "type": "PAGE_HOSTNAME" },
+      { "type": "PAGE_PATH" },
+      { "type": "REFERRER" },
+      { "type": "EVENT" }
+    ],
+    "variable": [
+      {
+        "name": "DLV - lead_id",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "lead_id" }
+        ]
+      },
+      {
+        "name": "DLV - tracking_version",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "tracking_version" }
+        ]
+      },
+      {
+        "name": "DLV - session_id",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "session_id" }
+        ]
+      },
+      {
+        "name": "DLV - page_url",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "page_url" }
+        ]
+      },
+      {
+        "name": "DLV - device",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "device" }
+        ]
+      },
+      {
+        "name": "DLV - user_email",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "user_email" }
+        ]
+      },
+      {
+        "name": "DLV - user_phone",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "user_phone" }
+        ]
+      },
+      {
+        "name": "DLV - value",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "true" },
+          { "type": "TEMPLATE", "key": "defaultValue", "value": "0" },
+          { "type": "TEMPLATE", "key": "name", "value": "value" }
+        ]
+      },
+      {
+        "name": "DLV - currency",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "true" },
+          { "type": "TEMPLATE", "key": "defaultValue", "value": "GBP" },
+          { "type": "TEMPLATE", "key": "name", "value": "currency" }
+        ]
+      },
+      {
+        "name": "DLV - step",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "step" }
+        ]
+      },
+      {
+        "name": "DLV - field",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "field" }
+        ]
+      },
+      {
+        "name": "DLV - form_id",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "form_id" }
+        ]
+      },
+      {
+        "name": "DLV - last_field",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "last_field" }
+        ]
+      },
+      {
+        "name": "DLV - first_utm_source",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "first_utm_source" }
+        ]
+      },
+      {
+        "name": "DLV - first_utm_medium",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "first_utm_medium" }
+        ]
+      },
+      {
+        "name": "DLV - first_utm_campaign",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "first_utm_campaign" }
+        ]
+      },
+      {
+        "name": "DLV - first_gclid",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "first_gclid" }
+        ]
+      },
+      {
+        "name": "DLV - first_fbclid",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "first_fbclid" }
+        ]
+      },
+      {
+        "name": "DLV - last_utm_source",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "last_utm_source" }
+        ]
+      },
+      {
+        "name": "DLV - last_utm_medium",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "last_utm_medium" }
+        ]
+      },
+      {
+        "name": "DLV - last_utm_campaign",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "last_utm_campaign" }
+        ]
+      },
+      {
+        "name": "DLV - last_gclid",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "last_gclid" }
+        ]
+      },
+      {
+        "name": "DLV - last_fbclid",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "last_fbclid" }
+        ]
+      },
+      {
+        "name": "CONST - GA4 Measurement ID",
+        "type": "c",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "value", "value": "G-XXXXXXXXXX" }
+        ]
+      },
+      {
+        "name": "CONST - GAds Conversion ID",
+        "type": "c",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "value", "value": "AW-XXXXXXXXXX" }
+        ]
+      },
+      {
+        "name": "CONST - GAds Quote Label",
+        "type": "c",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "value", "value": "XXXXXXXXXXX" }
+        ]
+      },
+      {
+        "name": "CONST - GAds Callback Label",
+        "type": "c",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "value", "value": "XXXXXXXXXXX" }
+        ]
+      },
+      {
+        "name": "CONST - GAds Contact Label",
+        "type": "c",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "value", "value": "XXXXXXXXXXX" }
+        ]
+      },
+      {
+        "name": "CONST - GAds Phone Label",
+        "type": "c",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "value", "value": "XXXXXXXXXXX" }
+        ]
+      },
+      {
+        "name": "User Provided Data - Email",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "user_email" }
+        ]
+      },
+      {
+        "name": "User Provided Data - Phone",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "user_phone" }
+        ]
+      }
+    ],
+    "trigger": [
+      {
+        "name": "CE - phone_click",
+        "type": "customEvent",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "phone_click" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "CE - quote_request",
+        "type": "customEvent",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "quote_request" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "CE - callback_request",
+        "type": "customEvent",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "callback_request" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "CE - contact_form",
+        "type": "customEvent",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "contact_form" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "CE - calculator_start",
+        "type": "customEvent",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "calculator_start" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "CE - calculator_step",
+        "type": "customEvent",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "calculator_step" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "CE - calculator_option",
+        "type": "customEvent",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "calculator_option" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "CE - form_abandon",
+        "type": "customEvent",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "form_abandon" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "CE - All Conversions",
+        "type": "customEvent",
+        "customEventFilter": [
+          {
+            "type": "MATCH_REGEX",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "^(quote_request|callback_request|contact_form|phone_click)$" }
+            ]
+          }
+        ]
+      }
+    ],
+    "tag": [
+      {
+        "name": "Google Tag - GA4 Config",
+        "type": "googtag",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "tagId", "value": "{{CONST - GA4 Measurement ID}}" }
+        ],
+        "firingTriggerId": ["2147479553"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "analytics_storage" }
+            ]
+          }
+        },
+        "tagFiringOption": "ONCE_PER_EVENT"
+      },
+      {
+        "name": "Conversion Linker",
+        "type": "gclidw",
+        "parameter": [
+          { "type": "BOOLEAN", "key": "enableCrossDomain", "value": "false" },
+          { "type": "BOOLEAN", "key": "enableUrlPassthrough", "value": "false" }
+        ],
+        "firingTriggerId": ["2147479553"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "ad_storage" }
+            ]
+          }
+        },
+        "tagFiringOption": "ONCE_PER_EVENT"
+      },
+      {
+        "name": "GA4 Event - phone_click",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "phone_click" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "lead_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - lead_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "session_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - session_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "value" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - value}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "currency" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - currency}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "device" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - device}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["phone_click_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "analytics_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GA4 Event - quote_request",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "generate_lead" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "lead_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - lead_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "session_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - session_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "value" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - value}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "currency" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - currency}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "conversion_type" },
+                  { "type": "TEMPLATE", "key": "value", "value": "quote_request" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "device" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - device}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "first_utm_source" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - first_utm_source}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "first_utm_medium" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - first_utm_medium}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "last_utm_source" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - last_utm_source}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "last_utm_medium" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - last_utm_medium}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["quote_request_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "analytics_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GA4 Event - callback_request",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "generate_lead" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "lead_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - lead_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "session_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - session_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "value" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - value}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "currency" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - currency}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "conversion_type" },
+                  { "type": "TEMPLATE", "key": "value", "value": "callback_request" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "device" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - device}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["callback_request_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "analytics_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GA4 Event - contact_form",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "generate_lead" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "lead_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - lead_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "session_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - session_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "value" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - value}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "currency" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - currency}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "conversion_type" },
+                  { "type": "TEMPLATE", "key": "value", "value": "contact_form" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "device" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - device}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["contact_form_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "analytics_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GA4 Event - calculator_start",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "calculator_start" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "session_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - session_id}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["calculator_start_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "analytics_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GA4 Event - calculator_step",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "calculator_step" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "session_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - session_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "step" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - step}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["calculator_step_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "analytics_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GA4 Event - calculator_option",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "calculator_option" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "session_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - session_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "field" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - field}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "value" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - value}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["calculator_option_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "analytics_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GA4 Event - form_abandon",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "form_abandon" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "session_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - session_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "form_id" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - form_id}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "last_field" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - last_field}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["form_abandon_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "analytics_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GAds Conversion - Quote Request",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "{{CONST - GAds Conversion ID}}" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "{{CONST - GAds Quote Label}}" },
+          { "type": "TEMPLATE", "key": "conversionValue", "value": "{{DLV - value}}" },
+          { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
+          { "type": "TEMPLATE", "key": "orderId", "value": "{{DLV - lead_id}}" },
+          { "type": "BOOLEAN", "key": "enableNewCustomerReporting", "value": "false" },
+          { "type": "BOOLEAN", "key": "enableEnhancedConversions", "value": "true" },
+          { "type": "TEMPLATE", "key": "cssProvidedEnhancedConversionValue", "value": "{{User Provided Data - Email}}" },
+          { "type": "TEMPLATE", "key": "phoneNumber", "value": "{{User Provided Data - Phone}}" }
+        ],
+        "firingTriggerId": ["quote_request_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "ad_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GAds Conversion - Callback Request",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "{{CONST - GAds Conversion ID}}" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "{{CONST - GAds Callback Label}}" },
+          { "type": "TEMPLATE", "key": "conversionValue", "value": "{{DLV - value}}" },
+          { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
+          { "type": "TEMPLATE", "key": "orderId", "value": "{{DLV - lead_id}}" },
+          { "type": "BOOLEAN", "key": "enableNewCustomerReporting", "value": "false" },
+          { "type": "BOOLEAN", "key": "enableEnhancedConversions", "value": "true" },
+          { "type": "TEMPLATE", "key": "cssProvidedEnhancedConversionValue", "value": "{{User Provided Data - Email}}" },
+          { "type": "TEMPLATE", "key": "phoneNumber", "value": "{{User Provided Data - Phone}}" }
+        ],
+        "firingTriggerId": ["callback_request_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "ad_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GAds Conversion - Contact Form",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "{{CONST - GAds Conversion ID}}" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "{{CONST - GAds Contact Label}}" },
+          { "type": "TEMPLATE", "key": "conversionValue", "value": "{{DLV - value}}" },
+          { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
+          { "type": "TEMPLATE", "key": "orderId", "value": "{{DLV - lead_id}}" },
+          { "type": "BOOLEAN", "key": "enableNewCustomerReporting", "value": "false" },
+          { "type": "BOOLEAN", "key": "enableEnhancedConversions", "value": "true" },
+          { "type": "TEMPLATE", "key": "cssProvidedEnhancedConversionValue", "value": "{{User Provided Data - Email}}" },
+          { "type": "TEMPLATE", "key": "phoneNumber", "value": "{{User Provided Data - Phone}}" }
+        ],
+        "firingTriggerId": ["contact_form_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "ad_storage" }
+            ]
+          }
+        }
+      },
+      {
+        "name": "GAds Conversion - Phone Click",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "{{CONST - GAds Conversion ID}}" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "{{CONST - GAds Phone Label}}" },
+          { "type": "TEMPLATE", "key": "conversionValue", "value": "{{DLV - value}}" },
+          { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
+          { "type": "BOOLEAN", "key": "enableNewCustomerReporting", "value": "false" }
+        ],
+        "firingTriggerId": ["phone_click_trigger"],
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "list": [
+              { "type": "TEMPLATE", "key": "consentType", "value": "ad_storage" }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

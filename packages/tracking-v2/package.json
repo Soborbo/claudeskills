@@ -15,7 +15,8 @@
     "./types": "./src/types.ts"
   },
   "files": [
-    "src"
+    "src",
+    "gtm-container.json"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit"
