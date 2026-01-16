@@ -334,6 +334,7 @@ export function initRemarketing(): void {
     let maxScroll = 0;
     window.addEventListener('scroll', () => {
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollHeight <= 0) return; // Prevent division by zero
       const currentScroll = Math.round((window.scrollY / scrollHeight) * 100);
       if (currentScroll > maxScroll) {
         maxScroll = currentScroll;

@@ -6,7 +6,7 @@
 
 import { getOrCreateSessionId } from './session';
 import { getFirstTouch, getLastTouch, captureAttributionParams } from './params';
-import { log } from './constants';
+import { log, STORAGE_KEYS } from './constants';
 import type { AttributionParams } from '../types';
 
 const CROSS_DOMAIN_PARAM = '_lg_xd';
@@ -142,7 +142,7 @@ export function applyCrossDomainData(): boolean {
   // Store session ID (will be picked up by session module)
   try {
     const sessionData = { id: data.sessionId, lastActivity: Date.now() };
-    localStorage.setItem('lg_session', JSON.stringify(sessionData));
+    localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
   } catch {
     // localStorage not available
   }
@@ -150,9 +150,9 @@ export function applyCrossDomainData(): boolean {
   // Store attribution if we don't have it yet
   if (data.firstTouch) {
     try {
-      const existing = localStorage.getItem('lg_first_touch');
+      const existing = localStorage.getItem(STORAGE_KEYS.FIRST_TOUCH);
       if (!existing) {
-        localStorage.setItem('lg_first_touch', JSON.stringify(data.firstTouch));
+        localStorage.setItem(STORAGE_KEYS.FIRST_TOUCH, JSON.stringify(data.firstTouch));
         log('Applied cross-domain first touch');
       }
     } catch {
@@ -162,7 +162,7 @@ export function applyCrossDomainData(): boolean {
 
   if (data.lastTouch) {
     try {
-      localStorage.setItem('lg_last_touch', JSON.stringify(data.lastTouch));
+      localStorage.setItem(STORAGE_KEYS.LAST_TOUCH, JSON.stringify(data.lastTouch));
       log('Applied cross-domain last touch');
     } catch {
       // localStorage not available

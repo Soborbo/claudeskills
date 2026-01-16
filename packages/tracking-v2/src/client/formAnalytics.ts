@@ -383,3 +383,21 @@ export function autoTrackForms(options: FormFieldOptions = {}): void {
 
   log(`Auto-tracking ${trackedForms.size} forms`);
 }
+
+/**
+ * Stop tracking all forms (call before View Transitions)
+ */
+export function stopAllFormTracking(): void {
+  trackedForms.forEach((tracker) => {
+    tracker.destroy();
+  });
+  trackedForms.clear();
+  log('All form tracking stopped');
+}
+
+// Auto-cleanup on Astro View Transitions
+if (typeof document !== 'undefined') {
+  document.addEventListener('astro:before-swap', () => {
+    stopAllFormTracking();
+  });
+}

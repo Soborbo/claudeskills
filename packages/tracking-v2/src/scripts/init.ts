@@ -19,13 +19,24 @@ import {
   notifyPageView,
   initIdentityTracking,
   initRemarketing,
+  trackPageView,
+  hasActiveSession,
+  trackNewSession,
 } from '../client/index';
 
 // Get config from window
 const config = window.__TRACKING_CONFIG__;
 
+// Check if this is a new session BEFORE creating it
+const isNewSession = !hasActiveSession();
+
 // Initialize core tracking
 initTracking();
+
+// Track new session for remarketing
+if (isNewSession) {
+  trackNewSession();
+}
 
 // Initialize plugins
 initPlugins();
@@ -60,6 +71,8 @@ document.addEventListener('astro:page-load', () => {
   if (hasMarketingConsent()) {
     captureAttributionParams();
   }
+  // Track page view for remarketing
+  trackPageView();
   // Notify plugins
   notifyPageView(window.location.pathname);
 });

@@ -157,6 +157,7 @@ export {
   getFormMetrics,
   getTrackedForms,
   autoTrackForms,
+  stopAllFormTracking,
 } from './formAnalytics';
 export type { FormFieldOptions, FieldMetrics, FormMetrics } from './formAnalytics';
 
