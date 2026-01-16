@@ -51,6 +51,7 @@ export default function trackingIntegration(userConfig: TrackingConfig): AstroIn
           window.dataLayer = window.dataLayer || [];
 
           // @leadgen/conversion-tracking - config
+          // Escape </script> to prevent script injection attacks
           window.__TRACKING_CONFIG__ = ${JSON.stringify({
             gtmId: config.gtmId,
             currency: config.currency,
@@ -58,7 +59,7 @@ export default function trackingIntegration(userConfig: TrackingConfig): AstroIn
             debug: config.debug,
             linkedDomains: config.linkedDomains,
             enableOfflineQueue: config.enableOfflineQueue,
-          })};
+          }).replace(/</g, '\\u003c')};
 
           // @leadgen/conversion-tracking - GTM
           (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

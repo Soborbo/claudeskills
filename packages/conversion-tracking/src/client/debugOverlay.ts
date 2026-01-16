@@ -24,6 +24,19 @@ let overlayElement: HTMLElement | null = null;
 let isVisible = false;
 
 // =============================================================================
+// Security: HTML Escaping
+// =============================================================================
+
+/**
+ * Escape HTML to prevent XSS attacks in debug overlay
+ */
+function escapeHtml(str: string): string {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// =============================================================================
 // Event Logging
 // =============================================================================
 
@@ -256,10 +269,10 @@ function renderEventsTab(): string {
       const dataStr = event.data ? JSON.stringify(event.data, null, 0).slice(0, 100) : '';
 
       return `
-        <div class="lg-debug-event ${event.type}">
-          <div class="lg-debug-event-name">${event.name}</div>
-          <div class="lg-debug-event-time">${time}</div>
-          ${dataStr ? `<div class="lg-debug-event-data">${dataStr}${dataStr.length >= 100 ? '...' : ''}</div>` : ''}
+        <div class="lg-debug-event ${escapeHtml(event.type)}">
+          <div class="lg-debug-event-name">${escapeHtml(event.name)}</div>
+          <div class="lg-debug-event-time">${escapeHtml(time)}</div>
+          ${dataStr ? `<div class="lg-debug-event-data">${escapeHtml(dataStr)}${dataStr.length >= 100 ? '...' : ''}</div>` : ''}
         </div>
       `;
     })
@@ -334,14 +347,14 @@ function renderAttributionTab(): string {
 
     return `
       <div class="lg-debug-section">
-        <div class="lg-debug-section-title">${label}</div>
-        ${data.utm_source ? `<div class="lg-debug-row"><span class="lg-debug-key">Source</span><span class="lg-debug-value">${data.utm_source}</span></div>` : ''}
-        ${data.utm_medium ? `<div class="lg-debug-row"><span class="lg-debug-key">Medium</span><span class="lg-debug-value">${data.utm_medium}</span></div>` : ''}
-        ${data.utm_campaign ? `<div class="lg-debug-row"><span class="lg-debug-key">Campaign</span><span class="lg-debug-value">${data.utm_campaign}</span></div>` : ''}
-        ${data.gclid ? `<div class="lg-debug-row"><span class="lg-debug-key">GCLID</span><span class="lg-debug-value">${data.gclid.slice(0, 20)}...</span></div>` : ''}
-        ${data.fbclid ? `<div class="lg-debug-row"><span class="lg-debug-key">FBCLID</span><span class="lg-debug-value">${data.fbclid.slice(0, 20)}...</span></div>` : ''}
-        ${data.referrer ? `<div class="lg-debug-row"><span class="lg-debug-key">Referrer</span><span class="lg-debug-value">${data.referrer}</span></div>` : ''}
-        ${data.landingPage ? `<div class="lg-debug-row"><span class="lg-debug-key">Landing</span><span class="lg-debug-value">${data.landingPage}</span></div>` : ''}
+        <div class="lg-debug-section-title">${escapeHtml(label)}</div>
+        ${data.utm_source ? `<div class="lg-debug-row"><span class="lg-debug-key">Source</span><span class="lg-debug-value">${escapeHtml(data.utm_source)}</span></div>` : ''}
+        ${data.utm_medium ? `<div class="lg-debug-row"><span class="lg-debug-key">Medium</span><span class="lg-debug-value">${escapeHtml(data.utm_medium)}</span></div>` : ''}
+        ${data.utm_campaign ? `<div class="lg-debug-row"><span class="lg-debug-key">Campaign</span><span class="lg-debug-value">${escapeHtml(data.utm_campaign)}</span></div>` : ''}
+        ${data.gclid ? `<div class="lg-debug-row"><span class="lg-debug-key">GCLID</span><span class="lg-debug-value">${escapeHtml(data.gclid.slice(0, 20))}...</span></div>` : ''}
+        ${data.fbclid ? `<div class="lg-debug-row"><span class="lg-debug-key">FBCLID</span><span class="lg-debug-value">${escapeHtml(data.fbclid.slice(0, 20))}...</span></div>` : ''}
+        ${data.referrer ? `<div class="lg-debug-row"><span class="lg-debug-key">Referrer</span><span class="lg-debug-value">${escapeHtml(data.referrer)}</span></div>` : ''}
+        ${data.landingPage ? `<div class="lg-debug-row"><span class="lg-debug-key">Landing</span><span class="lg-debug-value">${escapeHtml(data.landingPage)}</span></div>` : ''}
       </div>
     `;
   };
