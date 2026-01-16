@@ -1,6 +1,6 @@
 {
   "exportFormatVersion": 2,
-  "exportTime": "2025-01-15 12:00:00",
+  "exportTime": "2026-01-16T12:00:00.000Z",
   "containerVersion": {
     "path": "accounts/0/containers/0/versions/0",
     "accountId": "0",
@@ -15,14 +15,17 @@
       "usageContext": ["WEB"]
     },
     "builtInVariable": [
-      { "type": "PAGE_URL" },
-      { "type": "PAGE_HOSTNAME" },
-      { "type": "PAGE_PATH" },
-      { "type": "REFERRER" },
-      { "type": "EVENT" }
+      { "accountId": "0", "containerId": "0", "type": "PAGE_URL", "name": "Page URL" },
+      { "accountId": "0", "containerId": "0", "type": "PAGE_HOSTNAME", "name": "Page Hostname" },
+      { "accountId": "0", "containerId": "0", "type": "PAGE_PATH", "name": "Page Path" },
+      { "accountId": "0", "containerId": "0", "type": "REFERRER", "name": "Referrer" },
+      { "accountId": "0", "containerId": "0", "type": "EVENT", "name": "Event" }
     ],
     "variable": [
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "100",
         "name": "DLV - lead_id",
         "type": "v",
         "parameter": [
@@ -32,6 +35,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "101",
         "name": "DLV - tracking_version",
         "type": "v",
         "parameter": [
@@ -41,6 +47,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "102",
         "name": "DLV - session_id",
         "type": "v",
         "parameter": [
@@ -50,6 +59,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "103",
         "name": "DLV - page_url",
         "type": "v",
         "parameter": [
@@ -59,6 +71,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "104",
         "name": "DLV - device",
         "type": "v",
         "parameter": [
@@ -68,6 +83,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "105",
         "name": "DLV - user_email",
         "type": "v",
         "parameter": [
@@ -77,6 +95,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "106",
         "name": "DLV - user_phone",
         "type": "v",
         "parameter": [
@@ -86,6 +107,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "107",
         "name": "DLV - value",
         "type": "v",
         "parameter": [
@@ -96,6 +120,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "108",
         "name": "DLV - currency",
         "type": "v",
         "parameter": [
@@ -106,6 +133,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "109",
         "name": "DLV - step",
         "type": "v",
         "parameter": [
@@ -115,6 +145,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "110",
         "name": "DLV - field",
         "type": "v",
         "parameter": [
@@ -124,6 +157,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "111",
         "name": "DLV - form_id",
         "type": "v",
         "parameter": [
@@ -133,6 +169,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "112",
         "name": "DLV - last_field",
         "type": "v",
         "parameter": [
@@ -142,6 +181,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "113",
         "name": "DLV - first_utm_source",
         "type": "v",
         "parameter": [
@@ -151,6 +193,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "114",
         "name": "DLV - first_utm_medium",
         "type": "v",
         "parameter": [
@@ -160,6 +205,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "115",
         "name": "DLV - first_utm_campaign",
         "type": "v",
         "parameter": [
@@ -169,6 +217,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "116",
         "name": "DLV - first_gclid",
         "type": "v",
         "parameter": [
@@ -178,6 +229,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "117",
         "name": "DLV - first_fbclid",
         "type": "v",
         "parameter": [
@@ -187,6 +241,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "118",
         "name": "DLV - last_utm_source",
         "type": "v",
         "parameter": [
@@ -196,6 +253,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "119",
         "name": "DLV - last_utm_medium",
         "type": "v",
         "parameter": [
@@ -205,6 +265,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "120",
         "name": "DLV - last_utm_campaign",
         "type": "v",
         "parameter": [
@@ -214,6 +277,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "121",
         "name": "DLV - last_gclid",
         "type": "v",
         "parameter": [
@@ -223,6 +289,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "122",
         "name": "DLV - last_fbclid",
         "type": "v",
         "parameter": [
@@ -232,6 +301,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "130",
         "name": "CONST - GA4 Measurement ID",
         "type": "c",
         "parameter": [
@@ -239,6 +311,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "131",
         "name": "CONST - GAds Conversion ID",
         "type": "c",
         "parameter": [
@@ -246,6 +321,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "132",
         "name": "CONST - GAds Quote Label",
         "type": "c",
         "parameter": [
@@ -253,6 +331,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "133",
         "name": "CONST - GAds Callback Label",
         "type": "c",
         "parameter": [
@@ -260,6 +341,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "134",
         "name": "CONST - GAds Contact Label",
         "type": "c",
         "parameter": [
@@ -267,33 +351,21 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "135",
         "name": "CONST - GAds Phone Label",
         "type": "c",
         "parameter": [
           { "type": "TEMPLATE", "key": "value", "value": "XXXXXXXXXXX" }
         ]
-      },
-      {
-        "name": "User Provided Data - Email",
-        "type": "v",
-        "parameter": [
-          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
-          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
-          { "type": "TEMPLATE", "key": "name", "value": "user_email" }
-        ]
-      },
-      {
-        "name": "User Provided Data - Phone",
-        "type": "v",
-        "parameter": [
-          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
-          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
-          { "type": "TEMPLATE", "key": "name", "value": "user_phone" }
-        ]
       }
     ],
     "trigger": [
       {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "10",
         "name": "CE - phone_click",
         "type": "customEvent",
         "customEventFilter": [
@@ -307,6 +379,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "11",
         "name": "CE - quote_request",
         "type": "customEvent",
         "customEventFilter": [
@@ -320,6 +395,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "12",
         "name": "CE - callback_request",
         "type": "customEvent",
         "customEventFilter": [
@@ -333,6 +411,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "13",
         "name": "CE - contact_form",
         "type": "customEvent",
         "customEventFilter": [
@@ -346,6 +427,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "14",
         "name": "CE - calculator_start",
         "type": "customEvent",
         "customEventFilter": [
@@ -359,6 +443,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "15",
         "name": "CE - calculator_step",
         "type": "customEvent",
         "customEventFilter": [
@@ -372,6 +459,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "16",
         "name": "CE - calculator_option",
         "type": "customEvent",
         "customEventFilter": [
@@ -385,6 +475,9 @@
         ]
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "17",
         "name": "CE - form_abandon",
         "type": "customEvent",
         "customEventFilter": [
@@ -396,27 +489,18 @@
             ]
           }
         ]
-      },
-      {
-        "name": "CE - All Conversions",
-        "type": "customEvent",
-        "customEventFilter": [
-          {
-            "type": "MATCH_REGEX",
-            "parameter": [
-              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
-              { "type": "TEMPLATE", "key": "arg1", "value": "^(quote_request|callback_request|contact_form|phone_click)$" }
-            ]
-          }
-        ]
       }
     ],
     "tag": [
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "200",
         "name": "Google Tag - GA4 Config",
         "type": "googtag",
         "parameter": [
-          { "type": "TEMPLATE", "key": "tagId", "value": "{{CONST - GA4 Measurement ID}}" }
+          { "type": "TEMPLATE", "key": "tagId", "value": "{{CONST - GA4 Measurement ID}}" },
+          { "type": "BOOLEAN", "key": "sendPageView", "value": "true" }
         ],
         "firingTriggerId": ["2147479553"],
         "consentSettings": {
@@ -430,6 +514,9 @@
         "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "201",
         "name": "Conversion Linker",
         "type": "gclidw",
         "parameter": [
@@ -448,6 +535,9 @@
         "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "210",
         "name": "GA4 Event - phone_click",
         "type": "gaawe",
         "parameter": [
@@ -495,7 +585,7 @@
             ]
           }
         ],
-        "firingTriggerId": ["phone_click_trigger"],
+        "firingTriggerId": ["10"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -506,6 +596,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "211",
         "name": "GA4 Event - quote_request",
         "type": "gaawe",
         "parameter": [
@@ -588,7 +681,7 @@
             ]
           }
         ],
-        "firingTriggerId": ["quote_request_trigger"],
+        "firingTriggerId": ["11"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -599,6 +692,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "212",
         "name": "GA4 Event - callback_request",
         "type": "gaawe",
         "parameter": [
@@ -653,7 +749,7 @@
             ]
           }
         ],
-        "firingTriggerId": ["callback_request_trigger"],
+        "firingTriggerId": ["12"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -664,6 +760,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "213",
         "name": "GA4 Event - contact_form",
         "type": "gaawe",
         "parameter": [
@@ -718,7 +817,7 @@
             ]
           }
         ],
-        "firingTriggerId": ["contact_form_trigger"],
+        "firingTriggerId": ["13"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -729,6 +828,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "214",
         "name": "GA4 Event - calculator_start",
         "type": "gaawe",
         "parameter": [
@@ -748,7 +850,7 @@
             ]
           }
         ],
-        "firingTriggerId": ["calculator_start_trigger"],
+        "firingTriggerId": ["14"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -759,6 +861,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "215",
         "name": "GA4 Event - calculator_step",
         "type": "gaawe",
         "parameter": [
@@ -785,7 +890,7 @@
             ]
           }
         ],
-        "firingTriggerId": ["calculator_step_trigger"],
+        "firingTriggerId": ["15"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -796,6 +901,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "216",
         "name": "GA4 Event - calculator_option",
         "type": "gaawe",
         "parameter": [
@@ -829,7 +937,7 @@
             ]
           }
         ],
-        "firingTriggerId": ["calculator_option_trigger"],
+        "firingTriggerId": ["16"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -840,6 +948,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "217",
         "name": "GA4 Event - form_abandon",
         "type": "gaawe",
         "parameter": [
@@ -873,7 +984,7 @@
             ]
           }
         ],
-        "firingTriggerId": ["form_abandon_trigger"],
+        "firingTriggerId": ["17"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -884,6 +995,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "220",
         "name": "GAds Conversion - Quote Request",
         "type": "awct",
         "parameter": [
@@ -894,10 +1008,28 @@
           { "type": "TEMPLATE", "key": "orderId", "value": "{{DLV - lead_id}}" },
           { "type": "BOOLEAN", "key": "enableNewCustomerReporting", "value": "false" },
           { "type": "BOOLEAN", "key": "enableEnhancedConversions", "value": "true" },
-          { "type": "TEMPLATE", "key": "cssProvidedEnhancedConversionValue", "value": "{{User Provided Data - Email}}" },
-          { "type": "TEMPLATE", "key": "phoneNumber", "value": "{{User Provided Data - Phone}}" }
+          {
+            "type": "LIST",
+            "key": "enhancedConversionsData",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "type", "value": "email" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - user_email}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "type", "value": "phone_number" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - user_phone}}" }
+                ]
+              }
+            ]
+          }
         ],
-        "firingTriggerId": ["quote_request_trigger"],
+        "firingTriggerId": ["11"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -908,6 +1040,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "221",
         "name": "GAds Conversion - Callback Request",
         "type": "awct",
         "parameter": [
@@ -918,10 +1053,28 @@
           { "type": "TEMPLATE", "key": "orderId", "value": "{{DLV - lead_id}}" },
           { "type": "BOOLEAN", "key": "enableNewCustomerReporting", "value": "false" },
           { "type": "BOOLEAN", "key": "enableEnhancedConversions", "value": "true" },
-          { "type": "TEMPLATE", "key": "cssProvidedEnhancedConversionValue", "value": "{{User Provided Data - Email}}" },
-          { "type": "TEMPLATE", "key": "phoneNumber", "value": "{{User Provided Data - Phone}}" }
+          {
+            "type": "LIST",
+            "key": "enhancedConversionsData",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "type", "value": "email" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - user_email}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "type", "value": "phone_number" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - user_phone}}" }
+                ]
+              }
+            ]
+          }
         ],
-        "firingTriggerId": ["callback_request_trigger"],
+        "firingTriggerId": ["12"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -932,6 +1085,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "222",
         "name": "GAds Conversion - Contact Form",
         "type": "awct",
         "parameter": [
@@ -942,10 +1098,28 @@
           { "type": "TEMPLATE", "key": "orderId", "value": "{{DLV - lead_id}}" },
           { "type": "BOOLEAN", "key": "enableNewCustomerReporting", "value": "false" },
           { "type": "BOOLEAN", "key": "enableEnhancedConversions", "value": "true" },
-          { "type": "TEMPLATE", "key": "cssProvidedEnhancedConversionValue", "value": "{{User Provided Data - Email}}" },
-          { "type": "TEMPLATE", "key": "phoneNumber", "value": "{{User Provided Data - Phone}}" }
+          {
+            "type": "LIST",
+            "key": "enhancedConversionsData",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "type", "value": "email" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - user_email}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "type", "value": "phone_number" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - user_phone}}" }
+                ]
+              }
+            ]
+          }
         ],
-        "firingTriggerId": ["contact_form_trigger"],
+        "firingTriggerId": ["13"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
@@ -956,6 +1130,9 @@
         }
       },
       {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "223",
         "name": "GAds Conversion - Phone Click",
         "type": "awct",
         "parameter": [
@@ -965,7 +1142,7 @@
           { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
           { "type": "BOOLEAN", "key": "enableNewCustomerReporting", "value": "false" }
         ],
-        "firingTriggerId": ["phone_click_trigger"],
+        "firingTriggerId": ["10"],
         "consentSettings": {
           "consentStatus": "NEEDED",
           "consentType": {
