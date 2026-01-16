@@ -53,8 +53,8 @@ STOP and reassess if any of these occur:
 | PageSpeed (mobile) | ≥ 95 | < 90 |
 | PageSpeed (desktop) | ≥ 95 | < 90 |
 | Load time (desktop) | < 0.8s | > 1.5s |
-| Load time (mobile) | < 1.4s | > 2.5s |
-| LCP | < 2.5s | > 4s |
+| Load time (mobile) | < 1.4s | > 1.9s |
+| LCP | < 1.5s | > 3s |
 | CLS | < 0.1 | > 0.25 |
 | Total JS | < 50KB | > 100KB |
 
