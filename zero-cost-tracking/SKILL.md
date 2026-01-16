@@ -1,11 +1,11 @@
 ---
 name: zero-cost-tracking
-description: Zero-cost conversion tracking for Astro.js lead gen sites. Uses @leadgen/tracking-v2 package. GTM + GA4 + Google Ads Enhanced Conversions + Meta CAPI (via Zaraz). First/last touch attribution, Safari ITP bypass, consent-aware. Replaces Stape ($100/mo) with Cloudflare free tier.
+description: Zero-cost conversion tracking for Astro.js lead gen sites. Uses @leadgen/conversion-tracking package. GTM + GA4 + Google Ads Enhanced Conversions + Meta CAPI (via Zaraz). First/last touch attribution, Safari ITP bypass, consent-aware. Replaces Stape ($100/mo) with Cloudflare free tier.
 ---
 
 # Zero-Cost Tracking
 
-Conversion tracking for lead gen sites using `@leadgen/tracking-v2` package.
+Conversion tracking for lead gen sites using `@leadgen/conversion-tracking` package.
 
 ## When To Use
 
@@ -38,7 +38,7 @@ Browser:
 ## Installation
 
 ```bash
-npm install @leadgen/tracking-v2
+npm install @leadgen/conversion-tracking
 ```
 
 ## Setup
@@ -47,7 +47,7 @@ npm install @leadgen/tracking-v2
 
 ```javascript
 import { defineConfig } from 'astro/config';
-import tracking from '@leadgen/tracking-v2';
+import tracking from '@leadgen/conversion-tracking';
 
 export default defineConfig({
   integrations: [
@@ -66,7 +66,7 @@ This auto-injects GTM and initializes tracking on every page.
 ### 2. Track Form Conversions
 
 ```typescript
-import { trackConversion, buildSheetsPayload } from '@leadgen/tracking-v2/client';
+import { trackConversion, buildSheetsPayload } from '@leadgen/conversion-tracking/client';
 
 async function handleSubmit(e: SubmitEvent) {
   const form = e.target as HTMLFormElement;
@@ -113,7 +113,7 @@ async function handleSubmit(e: SubmitEvent) {
 
 ```astro
 ---
-import PhoneLink from '@leadgen/tracking-v2/components/PhoneLink.astro';
+import PhoneLink from '@leadgen/conversion-tracking/components/PhoneLink.astro';
 ---
 
 <!-- Header/footer - no value -->
@@ -132,7 +132,7 @@ import {
   pushCalculatorStart,
   pushCalculatorStep,
   pushCalculatorOption
-} from '@leadgen/tracking-v2/client';
+} from '@leadgen/conversion-tracking/client';
 
 // When calculator loads
 pushCalculatorStart();
@@ -147,7 +147,7 @@ pushCalculatorOption('bedrooms', '3');
 ### 5. Form Abandonment
 
 ```typescript
-import { pushFormAbandon } from '@leadgen/tracking-v2/client';
+import { pushFormAbandon } from '@leadgen/conversion-tracking/client';
 
 let lastField = '';
 let formStarted = false;
