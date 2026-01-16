@@ -17,6 +17,8 @@ import {
   initDebugMode,
   initPlugins,
   notifyPageView,
+  initIdentityTracking,
+  initRemarketing,
 } from '../client/index';
 
 // Get config from window
@@ -42,6 +44,12 @@ if (config?.enableOfflineQueue !== false) {
 if (config?.debug) {
   initDebugMode();
 }
+
+// Initialize identity tracking (anonymous session tracking)
+initIdentityTracking();
+
+// Initialize remarketing (engagement tracking, audience segmentation)
+initRemarketing();
 
 // Notify plugins of initial page view
 notifyPageView(window.location.pathname);

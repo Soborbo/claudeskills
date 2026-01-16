@@ -148,6 +148,58 @@ export {
 export type { Funnel, FunnelStep, FunnelProgress, FunnelStats } from './funnel';
 
 // =============================================================================
+// Re-exports - Form Analytics
+// =============================================================================
+
+export {
+  trackFormFields,
+  stopTrackingForm,
+  getFormMetrics,
+  getTrackedForms,
+  autoTrackForms,
+} from './formAnalytics';
+export type { FormFieldOptions, FieldMetrics, FormMetrics } from './formAnalytics';
+
+// =============================================================================
+// Re-exports - User Identity
+// =============================================================================
+
+export {
+  identifyUser,
+  isIdentified,
+  getUserIdentity,
+  getUserEmailHash,
+  mergeIdentity,
+  clearIdentity,
+  trackAnonymousSession,
+  pushUserDataForConversions,
+  getUserJourney,
+  initIdentityTracking,
+} from './identity';
+export type { UserIdentity, IdentifyParams } from './identity';
+
+// =============================================================================
+// Re-exports - Remarketing
+// =============================================================================
+
+export {
+  initRemarketing,
+  stopRemarketing,
+  updateEngagement,
+  trackPageView,
+  trackNewSession,
+  trackScrollDepth,
+  trackTimeOnSite,
+  getAudienceSegment,
+  getEngagement,
+  trackContentView,
+  trackServiceView,
+  trackCalculatorForRemarketing,
+  getRemarketingData,
+} from './remarketing';
+export type { AudienceSegment, EngagementSignals, RemarketingContent } from './remarketing';
+
+// =============================================================================
 // High-Level API
 // =============================================================================
 
