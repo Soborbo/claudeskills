@@ -13,8 +13,12 @@ export interface TrackingConfig {
   currency?: string;
   /** Session timeout in minutes (default: 30) */
   sessionTimeoutMinutes?: number;
-  /** Enable debug logging (default: false) */
+  /** Enable debug logging and overlay (default: false) */
   debug?: boolean;
+  /** Domains to share tracking data with (cross-domain tracking) */
+  linkedDomains?: string[];
+  /** Enable offline queue for failed requests (default: true) */
+  enableOfflineQueue?: boolean;
 }
 
 export interface ResolvedTrackingConfig {
@@ -22,6 +26,8 @@ export interface ResolvedTrackingConfig {
   currency: string;
   sessionTimeoutMinutes: number;
   debug: boolean;
+  linkedDomains: string[];
+  enableOfflineQueue: boolean;
 }
 
 // =============================================================================

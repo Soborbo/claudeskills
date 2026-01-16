@@ -8,10 +8,43 @@ if (typeof window === 'undefined') {
   throw new Error('@leadgen/tracking-v2/init can only be used in browser');
 }
 
-import { initTracking, captureAttributionParams, hasMarketingConsent } from '../client/index';
+import {
+  initTracking,
+  captureAttributionParams,
+  hasMarketingConsent,
+  initCrossDomain,
+  initOfflineQueue,
+  initDebugMode,
+  initPlugins,
+  notifyPageView,
+} from '../client/index';
 
-// Initialize on first load
+// Get config from window
+const config = window.__TRACKING_CONFIG__;
+
+// Initialize core tracking
 initTracking();
+
+// Initialize plugins
+initPlugins();
+
+// Initialize cross-domain tracking if configured
+if (config?.linkedDomains && config.linkedDomains.length > 0) {
+  initCrossDomain(config.linkedDomains);
+}
+
+// Initialize offline queue if enabled
+if (config?.enableOfflineQueue !== false) {
+  initOfflineQueue();
+}
+
+// Initialize debug mode if enabled
+if (config?.debug) {
+  initDebugMode();
+}
+
+// Notify plugins of initial page view
+notifyPageView(window.location.pathname);
 
 // Re-initialize on Astro View Transitions
 document.addEventListener('astro:page-load', () => {
@@ -19,6 +52,8 @@ document.addEventListener('astro:page-load', () => {
   if (hasMarketingConsent()) {
     captureAttributionParams();
   }
+  // Notify plugins
+  notifyPageView(window.location.pathname);
 });
 
 document.addEventListener('astro:after-swap', () => {

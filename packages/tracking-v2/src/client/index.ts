@@ -10,7 +10,7 @@ if (typeof window === 'undefined') {
 }
 
 // =============================================================================
-// Re-exports
+// Re-exports - Core
 // =============================================================================
 
 export { TRACKING_VERSION, EVENT_NAMES, getSiteCurrency, log } from './constants';
@@ -50,6 +50,102 @@ export {
 } from './dataLayer';
 export { isZarazAvailable, trackMetaLead, trackMetaContact, setZarazUserData } from './zaraz';
 export { generateLeadId, generateIdempotencyKey, shouldFirePhoneClick } from './idempotency';
+
+// =============================================================================
+// Re-exports - Custom Events
+// =============================================================================
+
+export { trackEvent, trackEvents } from './customEvents';
+export type { CustomEventParams, TrackEventResult } from './customEvents';
+
+// =============================================================================
+// Re-exports - Offline Queue
+// =============================================================================
+
+export {
+  initOfflineQueue,
+  queueRequest,
+  processQueue,
+  fetchWithQueue,
+  getQueueStats,
+  clearQueue,
+} from './offlineQueue';
+
+// =============================================================================
+// Re-exports - Plugins
+// =============================================================================
+
+export {
+  registerPlugin,
+  unregisterPlugin,
+  getPlugin,
+  getPlugins,
+  initPlugins,
+  notifyPageView,
+  notifyEvent,
+  notifyConversion,
+  notifyPhoneClick,
+  notifyConsentChange,
+  notifyError,
+  createConsoleLoggerPlugin,
+  createErrorReporterPlugin,
+} from './plugins';
+export type { TrackingPlugin, PluginContext } from './plugins';
+
+// =============================================================================
+// Re-exports - Cross-Domain
+// =============================================================================
+
+export {
+  getCrossDomainData,
+  encodeCrossDomainData,
+  decorateUrl,
+  decorateLinksTodomains,
+  decodeCrossDomainData,
+  applyCrossDomainData,
+  initCrossDomain,
+} from './crossDomain';
+
+// =============================================================================
+// Re-exports - Debug Overlay
+// =============================================================================
+
+export {
+  logDebugEvent,
+  showDebugOverlay,
+  hideDebugOverlay,
+  toggleDebugOverlay,
+  isDebugOverlayVisible,
+  initDebugMode,
+} from './debugOverlay';
+
+// =============================================================================
+// Re-exports - Validation
+// =============================================================================
+
+export {
+  validateEvent,
+  validateAndWarn,
+  registerSchema,
+  getSchema,
+  unregisterSchema,
+  listSchemas,
+} from './validation';
+export type { ValidationError, ValidationResult } from './validation';
+
+// =============================================================================
+// Re-exports - Funnel Analytics
+// =============================================================================
+
+export {
+  createFunnel,
+  getFunnel,
+  getAllFunnels,
+  enableAutoTracking,
+  getConversionRate,
+  getDropoffAnalysis,
+} from './funnel';
+export type { Funnel, FunnelStep, FunnelProgress, FunnelStats } from './funnel';
 
 // =============================================================================
 // High-Level API

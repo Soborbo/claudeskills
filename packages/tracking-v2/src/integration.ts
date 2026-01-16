@@ -11,6 +11,8 @@ const DEFAULT_CONFIG: Omit<ResolvedTrackingConfig, 'gtmId'> = {
   currency: 'GBP',
   sessionTimeoutMinutes: 30,
   debug: false,
+  linkedDomains: [],
+  enableOfflineQueue: true,
 };
 
 function validateConfig(config: TrackingConfig): void {
@@ -54,6 +56,8 @@ export default function trackingIntegration(userConfig: TrackingConfig): AstroIn
             currency: config.currency,
             sessionTimeoutMinutes: config.sessionTimeoutMinutes,
             debug: config.debug,
+            linkedDomains: config.linkedDomains,
+            enableOfflineQueue: config.enableOfflineQueue,
           })};
 
           // @leadgen/tracking-v2 - GTM
