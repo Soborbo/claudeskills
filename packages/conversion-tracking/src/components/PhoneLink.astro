@@ -1,0 +1,63 @@
+---
+/**
+ * PhoneLink - Tracked tel: link with deduplication
+ *
+ * Usage:
+ * import PhoneLink from '@leadgen/conversion-tracking/components/PhoneLink.astro';
+ *
+ * <PhoneLink phone="+447123456789">Call us</PhoneLink>
+ * <PhoneLink phone="+447123456789" value={450} currency="GBP">Call for quote</PhoneLink>
+ */
+
+interface Props {
+  phone: string;
+  value?: number;
+  currency?: string;
+  class?: string;
+}
+
+const { phone, value, currency, class: className } = Astro.props;
+const telHref = `tel:${phone}`;
+---
+
+<a
+  href={telHref}
+  class:list={['lg-phone-link', className]}
+  data-phone={phone}
+  data-value={value}
+  data-currency={currency}
+>
+  <slot />
+</a>
+
+<script>
+  import { trackPhoneClick, getSiteCurrency } from '@leadgen/conversion-tracking/client';
+
+  function initPhoneLinks() {
+    const links = document.querySelectorAll<HTMLAnchorElement>('a.lg-phone-link');
+
+    links.forEach((link) => {
+      link.removeEventListener('click', handleClick);
+      link.addEventListener('click', handleClick);
+    });
+  }
+
+  function handleClick(e: Event) {
+    const link = e.currentTarget as HTMLAnchorElement;
+    const phone = link.dataset.phone;
+    const value = link.dataset.value ? parseFloat(link.dataset.value) : undefined;
+    const currency = link.dataset.currency || getSiteCurrency();
+
+    trackPhoneClick({ phone, value, currency });
+  }
+
+  initPhoneLinks();
+  document.addEventListener('astro:page-load', initPhoneLinks);
+</script>
+
+<style>
+  .lg-phone-link {
+    text-decoration: inherit;
+    color: inherit;
+  }
+</style>
