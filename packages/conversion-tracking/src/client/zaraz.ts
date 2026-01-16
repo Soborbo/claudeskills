@@ -5,6 +5,7 @@
  */
 
 import { getSiteCurrency, log } from './constants';
+import { hasMarketingConsent } from './consent';
 
 export function isZarazAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window.zaraz?.track === 'function';
@@ -29,6 +30,12 @@ export interface MetaLeadParams {
 }
 
 export function trackMetaLead(params: MetaLeadParams): boolean {
+  // Enforce consent at the sending layer (GDPR)
+  if (!hasMarketingConsent()) {
+    log('No marketing consent - Meta Lead tracking blocked');
+    return false;
+  }
+
   if (!isZarazAvailable()) {
     log('Zaraz not available - skipping Meta track');
     return false;
@@ -51,6 +58,12 @@ export function trackMetaLead(params: MetaLeadParams): boolean {
 }
 
 export function trackMetaContact(phone: string, eventId?: string): boolean {
+  // Enforce consent at the sending layer (GDPR)
+  if (!hasMarketingConsent()) {
+    log('No marketing consent - Meta Contact tracking blocked');
+    return false;
+  }
+
   if (!isZarazAvailable()) return false;
 
   try {
