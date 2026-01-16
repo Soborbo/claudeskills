@@ -181,6 +181,7 @@ export interface SheetsPayload {
   value: number;
   currency: string;
   page_url: string;
+  referrer: string;
   device: string;
   // First touch attribution
   first_utm_source: string;

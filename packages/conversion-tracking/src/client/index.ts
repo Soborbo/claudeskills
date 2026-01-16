@@ -5,8 +5,12 @@
  * Import: import { trackConversion, ... } from '@leadgen/conversion-tracking/client';
  */
 
+// Soft warning instead of throw - allows SSR imports without breaking build
 if (typeof window === 'undefined') {
-  throw new Error('@leadgen/conversion-tracking/client can only be used in browser');
+  console.warn(
+    '[@leadgen/conversion-tracking/client] Browser-only module imported on server. ' +
+    'Functions will be no-ops until client-side hydration.'
+  );
 }
 
 // =============================================================================
@@ -333,7 +337,8 @@ export function buildSheetsPayload(input: SheetsPayloadInput): SheetsPayload {
     phone: input.phone || '',
     value: input.value || 0,
     currency: input.currency || getSiteCurrency(),
-    page_url: typeof window !== 'undefined' ? window.location.pathname : '',
+    page_url: typeof window !== 'undefined' ? window.location.href : '',
+    referrer: typeof document !== 'undefined' ? document.referrer : '',
     device: getDeviceType(),
     // First touch
     first_utm_source: first?.utm_source || '',
