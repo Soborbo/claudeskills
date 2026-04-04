@@ -1,0 +1,214 @@
+---
+/**
+ * BaseLayout
+ *
+ * Foundation layout with SEO meta, Open Graph, Schema.org, and analytics.
+ * Derives all site-wide defaults from siteConfig — only page-specific
+ * values (title, description, preloadImage, schema) need to be passed as props.
+ *
+ * @example
+ * <BaseLayout
+ *   title="House Removals Bristol"
+ *   description="Professional house removals..."
+ *   canonicalUrl="https://painlessremovals.co.uk/house-removals/"
+ *   preloadImage="/img/hero-480w.avif"
+ * >
+ *   <main>Content here</main>
+ * </BaseLayout>
+ */
+import { config } from '@/config/siteConfig.example';
+
+export interface Props {
+  /** Page title (appears in browser tab and search results) */
+  title: string;
+
+  /** Meta description (max ~160 chars for search) */
+  description?: string;
+
+  /** Canonical URL (for duplicate content) */
+  canonicalUrl?: string;
+
+  /** Open Graph image URL (default: config.assets.ogImage) */
+  ogImage?: string;
+
+  /** Open Graph image alt text */
+  ogImageAlt?: string;
+
+  /** Robots meta (default: config.seo.defaultRobots) */
+  robots?: string;
+
+  /** Additional schema.org JSON-LD */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+
+  /**
+   * Defer GTM loading by N milliseconds to reduce TBT/LCP impact.
+   * Recommended: 2000-3000ms for non-critical tracking.
+   * Set to 0 or omit for immediate loading (legacy behavior).
+   */
+  deferGtmMs?: number;
+
+  /**
+   * LCP image preload URL (page-specific hero image path)
+   * Each page should pass its own hero image for optimal LCP.
+   * Supports AVIF with automatic type detection.
+   * @example preloadImage="/img/hero-750w.avif"
+   */
+  preloadImage?: string;
+
+  /**
+   * Preload image MIME type. Default: auto-detected from extension.
+   * Override only if the extension doesn't match the actual format.
+   */
+  preloadImageType?: string;
+
+  /** Additional class on <html> */
+  class?: string;
+
+  /** Body class */
+  bodyClass?: string;
+}
+
+const {
+  title,
+  description,
+  canonicalUrl,
+  ogImage = config.assets.ogImage,
+  ogImageAlt,
+  robots = config.seo.defaultRobots,
+  schema,
+  deferGtmMs,
+  class: className,
+  bodyClass,
+  preloadImage,
+  preloadImageType,
+} = Astro.props;
+
+// ── Derive from siteConfig ──────────────────────
+const locale = config.locale.replace('-', '_');     // BCP 47 → OG format: en-GB → en_GB
+const lang = config.locale.split('-')[0];           // en-GB → en
+const siteName = config.name;
+const twitterCard = config.seo.twitterCard;
+const themeColor = config.brand.primary;
+const favicon = config.assets.favicon ?? '/favicon.ico';
+const gtmId = config.tracking.gtmId;
+
+// Auto-detect preload image MIME type from extension
+const resolvedPreloadType = preloadImageType ?? (
+  preloadImage?.endsWith('.avif') ? 'image/avif' :
+  preloadImage?.endsWith('.webp') ? 'image/webp' :
+  preloadImage?.endsWith('.jpg') || preloadImage?.endsWith('.jpeg') ? 'image/jpeg' :
+  preloadImage?.endsWith('.png') ? 'image/png' :
+  undefined
+);
+
+// Build schema array
+const schemas: Record<string, unknown>[] = [];
+if (schema) {
+  if (Array.isArray(schema)) {
+    schemas.push(...schema);
+  } else {
+    schemas.push(schema);
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang={lang} class={className}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta -->
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <meta name="robots" content={robots} />
+
+    <!-- Canonical -->
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={locale} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImageAlt && <meta property="og:image:alt" content={ogImageAlt} />}
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content={twitterCard} />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    <!-- Theme & Icons -->
+    <meta name="theme-color" content={themeColor} />
+    <link rel="icon" href={favicon} />
+
+    <!-- Preconnect for performance -->
+    {gtmId && <link rel="preconnect" href="https://www.googletagmanager.com" />}
+
+    <!-- Google Tag Manager -->
+    {gtmId && !deferGtmMs && (
+      <script is:inline define:vars={{ gtmId }}>
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer',gtmId);
+      </script>
+    )}
+    {gtmId && deferGtmMs && (
+      <script is:inline define:vars={{ gtmId, deferGtmMs }}>
+        window.dataLayer = window.dataLayer || [];
+        setTimeout(function(){
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer',gtmId);
+        }, deferGtmMs);
+      </script>
+    )}
+
+    <!-- Schema.org JSON-LD -->
+    {schemas.length > 0 && schemas.map((s) => (
+      <script type="application/ld+json" set:html={JSON.stringify(s, null, 2)} />
+    ))}
+
+    <!-- LCP Image Preload (page-specific) -->
+    {preloadImage && (
+      <link
+        rel="preload"
+        as="image"
+        href={preloadImage}
+        type={resolvedPreloadType}
+        fetchpriority="high"
+      />
+    )}
+
+    <!-- Head Slot -->
+    <slot name="head" />
+  </head>
+
+  <body class={bodyClass}>
+    <!-- GTM noscript -->
+    {gtmId && (
+      <noscript>
+        <iframe
+          src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+          height="0"
+          width="0"
+          style="display:none;visibility:hidden"
+        ></iframe>
+      </noscript>
+    )}
+
+    <!-- Main Content -->
+    <slot />
+
+    <!-- Body End Slot (for scripts) -->
+    <slot name="body-end" />
+  </body>
+</html>
