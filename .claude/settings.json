@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"/Users/laszlo/Desktop/skills/skills-final-v3/siteconfig-schema \"*/)"
+    ]
+  }
+}
