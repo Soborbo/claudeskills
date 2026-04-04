@@ -1,14 +1,27 @@
 # Wrangler Configuration Template — Astro v6 + Cloudflare Workers
 
-## Basic wrangler.jsonc
+## Minimal wrangler.jsonc
 
 ```jsonc
 {
   // CRITICAL: must match Worker name in Cloudflare Dashboard exactly
   "name": "project-name",
   "compatibility_date": "2026-03-01",
+  "compatibility_flags": ["nodejs_compat"]
+  // Note: Astro adapter auto-generates `main` and `assets` fields at build time.
+  // You only need to specify them if overriding defaults.
+}
+```
+
+This is all you need for most lead-gen sites. The adapter handles entry point and asset directory configuration.
+
+## Explicit config (if auto-generation fails)
+
+```jsonc
+{
+  "name": "project-name",
+  "compatibility_date": "2026-03-01",
   "compatibility_flags": ["nodejs_compat"],
-  // Astro adapter generates the entry point:
   "main": "dist/_worker.js/index.js",
   "assets": {
     "directory": "./dist/client"
@@ -23,10 +36,6 @@
   "name": "project-name",
   "compatibility_date": "2026-03-01",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "dist/_worker.js/index.js",
-  "assets": {
-    "directory": "./dist/client"
-  },
   "kv_namespaces": [
     {
       "binding": "SESSION",
@@ -36,13 +45,37 @@
 }
 ```
 
-Note: Astro's Cloudflare adapter auto-provisions a SESSION KV namespace on deploy if you use Astro Sessions.
+Note: Astro Sessions auto-provision a KV namespace if you use `Astro.session` and the adapter detects the Cloudflare environment. You may not need to configure this manually.
+
+## With D1 Database
+
+```jsonc
+{
+  "name": "project-name",
+  "compatibility_date": "2026-03-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "your-d1-database-id",
+      "database_name": "your-database-name"
+    }
+  ]
+}
+```
 
 ## Creating KV Namespace
 
 ```bash
 npx wrangler kv:namespace create "RATE_LIMIT"
 # Output gives you the ID for wrangler config
+```
+
+## Creating D1 Database
+
+```bash
+npx wrangler d1 create your-database-name
+# Output gives you the database_id for wrangler config
 ```
 
 ## The `name` Field — WHY IT MATTERS
@@ -67,7 +100,7 @@ The `name` field controls which Worker gets updated on `npx wrangler deploy`.
 | `PUBLIC_*` vars | wrangler config `vars` or Dashboard | Non-sensitive |
 | API keys / secrets | Dashboard only | Encrypted |
 | KV/D1/R2 bindings | wrangler config | Infrastructure |
-| `NODE_VERSION` | Dashboard build settings | Build environment |
+| `NODE_VERSION` | Dashboard build settings (Workers Builds) | Build environment |
 
 ## Forbidden in wrangler config
 
@@ -102,3 +135,12 @@ export async function POST({ request }) {
 const key = process.env.RESEND_API_KEY;           // no process global
 const { env } = context.locals.runtime;            // removed in Astro v6
 ```
+
+## Pages-specific fields to REMOVE if migrating
+
+If you're converting a Pages wrangler config to Workers, **delete** these fields:
+- `pages_build_output_dir`
+- Any reference to `functions/` directory
+- The `fix-wrangler.mjs` postbuild script
+
+These are Pages-only concepts that don't apply to Workers.

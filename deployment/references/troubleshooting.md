@@ -1,5 +1,11 @@
 # Deployment Troubleshooting — Astro v6 + Cloudflare Workers
 
+## First Step: Local Reproduction
+
+Astro v6 `astro dev` runs on the real `workerd` runtime. If the bug reproduces locally, it's a code issue. If it works locally but fails on CF, it's almost always env vars/secrets or `nodejs_compat`.
+
+---
+
 ## 🔴 Astro v6 Specific Issues (Check These First)
 
 ### 500 Error After Deploy — `context.locals.runtime.env`
@@ -38,7 +44,17 @@
 ls dist/_worker.js/    # Server entry
 ls dist/client/        # Static assets
 ```
-Check that wrangler config `main` and `assets.directory` point to these.
+Check that wrangler config `assets.directory` points to `./dist/client`.
+
+### Missing `nodejs_compat` — Server Endpoints Crash
+
+**Symptom:** Works locally in `astro dev`, but SSR endpoints return 500 on CF.
+**Cause:** Missing `nodejs_compat` compatibility flag. Some Node.js APIs used by Resend, Brevo, or other libraries aren't available without it.
+**Fix:** Add to wrangler config:
+```jsonc
+"compatibility_flags": ["nodejs_compat"]
+```
+Redeploy after adding.
 
 ---
 
@@ -51,7 +67,7 @@ npm run build
 
 | Issue | Fix |
 |-------|-----|
-| Node version mismatch | Astro v6 needs Node 22+. Set `NODE_VERSION=22` in CF |
+| Node version mismatch | Astro v6 needs Node 22+. Set `NODE_VERSION=22` in Workers Builds |
 | Missing dependencies | `rm -rf node_modules && npm ci` |
 | TypeScript errors | `npx astro check` and fix |
 | Import case sensitivity | Linux is strict about file name casing |
@@ -73,6 +89,7 @@ npm run build
 | DNS not propagated | Wait up to 24h, check with `dig domain.com` |
 | Not configured | Worker → Settings → Domains & Routes |
 | SSL pending | Wait ~15 min for certificate provisioning |
+| Still pointing to old Pages project | Update DNS to point to Worker |
 
 ## Forms Not Sending
 
@@ -82,6 +99,25 @@ npm run build
 | CORS error | Check `PUBLIC_SITE_URL` matches domain |
 | Email API error | Verify `RESEND_API_KEY` in dashboard |
 | Resend version issue | Check https://github.com/resend/resend-node/issues?q=cloudflare |
+| Missing nodejs_compat | Add flag to wrangler config, redeploy |
+
+## Workers Builds Issues
+
+| Issue | Fix |
+|-------|-----|
+| Build not triggering | Check GitHub App permissions, verify watch paths |
+| Build succeeds, deploy fails | Check wrangler config `name` matches dashboard |
+| Preview URL not posting to PR | Verify Workers Builds GitHub integration is connected |
+| Wrong Node version in build | Set `NODE_VERSION=22` in build environment variables |
+
+## Pages → Workers Migration Issues
+
+| Issue | Fix |
+|-------|-----|
+| `fix-wrangler.mjs` still running | Delete script + remove `postbuild` from package.json |
+| Old `_headers` / `_redirects` not working | Move to wrangler config or middleware — `_headers` is supported by Workers static assets, `_redirects` may need middleware |
+| Env vars missing after migration | Re-add all vars in Worker settings (not carried over from Pages) |
+| Custom domain still on Pages | Update DNS: remove Pages CNAME, add Worker route |
 
 ## Dependency Issues
 

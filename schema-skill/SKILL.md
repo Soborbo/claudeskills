@@ -90,17 +90,22 @@ The `id()` helper handles all @id generation:
 
 | Schema field             | Derived from                              |
 |--------------------------|-------------------------------------------|
+| slogan                   | `tagline`                                 |
 | sameAs (business)        | `googleMapsCid` + `social.*` + `reviews[Trustpilot/Yell].url` + `legal.companyNumber` |
 | AggregateRating          | Weighted average across all `reviews[]`   |
-| areaServed (homepage)    | `areas[].featured === true` + UK country  |
+| areaServed (homepage)    | `areas[].featured === true` + country from `address.country` + `serviceArea` GeoCircle if set |
 | hasOfferCatalog          | `services[]` with @id per service         |
 | knowsAbout               | `services[].serviceType \|\| name`        |
 | knowsLanguage            | `locale.split('-')[0]`                    |
 | openingHoursSpecification| `hours[]` (full day names)                |
 | address / geo            | `address.*` direct mapping                |
+| photo                    | `assets.heroImage` (if set)               |
+| potentialAction          | `contact.bookingUrl` → ReserveAction (if set) |
 | founder                  | First `people[].featured === true`        |
+| Person.hasOccupation     | `people[].jobTitle` + `people[].role` as description |
 | Person.sameAs            | `people[].sameAs[]`                       |
 | Person.knowsAbout        | Same as business (from services)          |
+| canonical URLs           | `seo.canonicalBase` (if set, otherwise `url`) |
 
 ### 4. Page → Generator map
 

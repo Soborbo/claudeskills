@@ -1,18 +1,29 @@
 ---
 name: deployment
-description: Deployment workflow for Astro v6 sites on Cloudflare Workers + GitHub. Use before first deploy, when debugging 500 errors, build failures, wrangler config issues, or dependency compatibility problems. Triggers on deploy, deployment, Cloudflare Workers, wrangler, staging, production, 500 error on CF, build output, dist folder problems, worker errors, resend cloudflare, vite version conflict. Also use when pushing to GitHub, checking deploy status, or managing Cloudflare Workers via MCP.
+description: Deployment workflow for Astro v6 sites on Cloudflare Workers + GitHub. Use before first deploy, when debugging 500 errors, build failures, wrangler config issues, or dependency compatibility problems. Triggers on deploy, deployment, Cloudflare Workers, wrangler, staging, production, 500 error on CF, build output, dist folder problems, worker errors, resend cloudflare, vite version conflict. Also use when pushing to GitHub, checking deploy status, managing Cloudflare Workers via MCP, setting up Workers Builds, or configuring preview deployments.
 ---
 
 # Deployment Skill — Astro v6 + Cloudflare Workers
 
 This skill covers the full deploy pipeline for Astro v6 + Cloudflare Workers projects. Use it when:
 - Setting up a new project for deployment
-- Deploying to staging or production
+- Connecting GitHub repo via Workers Builds (push-to-deploy)
+- Deploying to preview or production
 - Debugging 500 errors, build failures, or wrangler issues after deploy
 - Updating dependencies and checking compatibility
 - A deploy that previously worked starts failing
 
-The skill checks for Astro v6-specific pitfalls (removed APIs, Vite version conflicts, Node requirements), verifies dependency compatibility via living sources and GitHub/Cloudflare MCP, and defines the staging → production flow.
+## Key Facts
+
+- Astro v6 + `@astrojs/cloudflare` v13 targets **Workers only** (Pages support was removed from the adapter)
+- `astro dev` runs on the real `workerd` runtime — if it works locally, it works in production
+- Static assets served by Workers are **free and unlimited** — only SSR requests count against quota
+- Astro v6 includes **Zod 4 built-in** (`import { z } from 'astro/zod'`) — no separate Zod dependency needed
+- Astro Sessions auto-configure with **Workers KV** for multi-step form state persistence
+- Use **Astro Actions** for type-safe form handling with built-in validation
+- The `fix-wrangler.mjs` hack from Pages deployments is **no longer needed** — delete it
+
+---
 
 ## ⚠ Critical Checks (run before every deploy)
 
@@ -49,11 +60,51 @@ npm ls vite | head -20
 
 ### 5. Node.js 22+
 
-Astro v6 dropped Node 18/20. Set `NODE_VERSION=22` in Cloudflare build settings.
+Astro v6 dropped Node 18/20. Set `NODE_VERSION=22` in Workers Builds settings.
 
-### 6. Build output
+### 6. `nodejs_compat` flag
+
+Required in wrangler config for Resend/Brevo fetch calls and any Node.js API usage in server code. Without it, server endpoints that use Node APIs will 500.
+
+### 7. Build output
 
 After `npm run build`, verify `dist/_worker.js/` (server) and `dist/client/` (static) exist.
+
+---
+
+## Deploy Flow — Workers Builds (primary)
+
+Workers Builds is the recommended CI/CD. It provides GitHub push-to-deploy with automatic preview URLs — the same experience Pages had, but native to Workers.
+
+### First-time setup
+
+1. Cloudflare Dashboard → Workers & Pages → Create → Import from GitHub
+2. Select repository and branch (`main` for production)
+3. Build settings: command `npm run build`, deploy command `npx wrangler deploy`
+4. Set `NODE_VERSION=22` in environment variables
+
+### Day-to-day workflow
+
+```
+feature branch → push → Workers Builds → preview URL on PR comment
+                                        → share with client for review
+main branch    → push → Workers Builds → production deploy
+```
+
+Every pull request gets an automatic preview deployment with a unique URL. Build status shows as a GitHub check run. No need for a separate `staging` branch.
+
+### Monorepo support
+
+If multiple client sites live in one repo, configure watch paths in Workers Builds settings so only the relevant site rebuilds on push.
+
+### CLI fallback (when Workers Builds isn't set up)
+
+```bash
+npx wrangler deploy --dry-run     # test without deploying
+npx wrangler deploy               # deploy
+npx wrangler tail                 # live logs
+npx wrangler rollback             # undo last deploy
+```
 
 ---
 
@@ -70,6 +121,7 @@ After `npm run build`, verify `dist/_worker.js/` (server) and `dist/client/` (st
 | TypeScript errors | `npx astro check` |
 | Missing build output | `ls dist/_worker.js/ dist/client/` |
 | Secret leak detected | Run secret leak detection checks below |
+| Missing `nodejs_compat` flag | Check wrangler config `compatibility_flags` |
 
 **Tier 2 — runtime crash (deploys but 500s):**
 
@@ -86,7 +138,7 @@ After `npm run build`, verify `dist/_worker.js/` (server) and `dist/client/` (st
 |-----------|-------|
 | Lighthouse < 90 | All categories |
 | Forms broken | Test submission |
-| Staging indexable | noindex meta when `MODE !== 'production'` |
+| Preview indexable | noindex meta when `MODE !== 'production'` |
 | No client approval | Written confirmation required |
 
 Fix in order: Tier 1 → 2 → 3. Don't move to the next tier until the current one is clear.
@@ -95,14 +147,15 @@ Fix in order: Tier 1 → 2 → 3. Don't move to the next tier until the current 
 
 ## 500 Error Debug (post-deploy)
 
-If the site deploys but returns 500, start with `npx wrangler tail` — always the first step.
+`astro dev` runs on the real `workerd` runtime in Astro v6. If the site works locally, the 500 is almost certainly an env var / secret issue, not a code issue. Start with `npx wrangler tail`.
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
 | 500 on all SSR pages | `locals.runtime` or `process.env` usage | grep + fix, redeploy |
 | 500 on specific API route | Missing env var / secret for that route | Check dashboard bindings |
-| 500 only on production (staging OK) | Env var difference between environments | Compare prod vs preview vars |
+| 500 only on production (preview OK) | Env var difference between environments | Compare prod vs preview vars |
 | Build succeeds, instant 500 | Worker entry point broken / wrangler config wrong | Check `dist/_worker.js/`, verify `main` field |
+| Works locally, 500 on CF | Missing `nodejs_compat` flag or env var | Check wrangler config + dashboard |
 
 ---
 
@@ -136,6 +189,70 @@ If any `FAIL` → **deployment BLOCKED**. Fix the leak before pushing.
 
 ---
 
+## Astro v6 Server Patterns
+
+### Env vars in server code
+
+```ts
+// ✅ Correct
+import { env } from "cloudflare:workers";
+const key = env.RESEND_API_KEY;
+
+// ❌ Wrong — both throw
+const key = process.env.RESEND_API_KEY;
+const { env } = context.locals.runtime;
+```
+
+### Astro Actions (form handling)
+
+Use Astro Actions for type-safe server endpoints with built-in Zod validation:
+
+```ts
+// src/actions/index.ts
+import { defineAction } from 'astro:actions';
+import { z } from 'astro/zod';  // built-in, no install needed
+
+export const server = {
+  submitLead: defineAction({
+    input: z.object({
+      name: z.string().min(1),
+      email: z.string().email(),
+      phone: z.string().optional(),
+    }),
+    handler: async (input) => {
+      // Resend email, Google Sheets, etc.
+      return { success: true };
+    },
+  }),
+};
+```
+
+### SSR endpoints (selective)
+
+Keep pages static by default. Only opt into SSR where needed:
+
+```ts
+// src/pages/api/calculate.ts
+export const prerender = false;  // this endpoint runs on Workers
+
+export async function POST({ request }) {
+  // calculator logic
+}
+```
+
+### Sessions (multi-step form state)
+
+Astro Sessions auto-configure with Workers KV:
+
+```ts
+// In any server endpoint
+const session = await Astro.session;
+session.set('step1Data', formData);
+// Persists across requests via Workers KV
+```
+
+---
+
 ## Dependency Compatibility Check (before first deploy)
 
 **Do NOT hardcode version pins.** Check living sources, pin only if needed (with comment + issue link). Re-check every 2 months.
@@ -153,25 +270,19 @@ If any `FAIL` → **deployment BLOCKED**. Fix the leak before pushing.
 
 **Vite:** https://github.com/vitejs/vite/releases — check if Astro still pins Vite 7.
 
-**Resend (or other email SDK):**
+**Resend (email):**
 - Open issues: https://github.com/resend/resend-node/issues?q=is%3Aissue+cloudflare
-- Releases: https://github.com/resend/resend-node/releases
+- Prefer direct `fetch()` to Resend REST API over the npm package to avoid bundling issues in Workers.
 
-**Brevo (transactional email):**
+**Brevo (fallback email):**
 - Open issues: https://github.com/getbrevo/brevo-node/issues?q=is%3Aissue+cloudflare+OR+workers
-- Releases: https://github.com/getbrevo/brevo-node/releases
 
-**Sharp (image processing):**
-- Open issues: https://github.com/lovell/sharp/issues?q=is%3Aissue+cloudflare+OR+workers+OR+wasm
-- Note: Sharp uses native binaries — check if current version works in workerd or needs `@cloudflare/images` instead.
+**Image processing:**
+- Astro v6 defaults to Cloudflare Images binding — prefer over Sharp.
+- Sharp uses native binaries that may not work in `workerd`.
 
 **@astrojs/sitemap:**
 - Changelog: https://github.com/withastro/astro/blob/main/packages/integrations/sitemap/CHANGELOG.md
-- Check compatibility with current Astro major version.
-
-**astro-robots-txt:**
-- Open issues: https://github.com/alextim/astro-lib/issues
-- Releases: https://www.npmjs.com/package/astro-robots-txt?activeTab=versions
 
 ### Quick CLI check
 
@@ -192,38 +303,46 @@ If GitHub or Cloudflare MCP is connected, prefer over CLI/manual checks.
 
 **Dependency compat check:**
 - Search open issues in `resend/resend-node` for "cloudflare"
-- Search open issues in `getbrevo/brevo-node` for "cloudflare" or "workers"
-- Search open issues in `lovell/sharp` for "cloudflare" or "wasm" or "workers"
 - Search open issues in `withastro/astro` for "cloudflare adapter"
 - Search open issues in `cloudflare/workers-sdk` for "astro"
 - Read adapter CHANGELOG.md in `withastro/astro`
 
-**Deploy flow:** Push to `staging` → check CI → share staging URL → after approval, PR to `main` → merge deploys.
-
 ### Cloudflare MCP — use for:
 
-**Pre-deploy:** Confirm Worker exists with correct name, check env vars/secrets, verify DNS.
-**Post-deploy:** Check deployment status, tail logs for errors.
+**Pre-deploy:** Confirm Worker exists with correct name, check env vars/secrets, verify DNS, check Workers Builds status.
+**Post-deploy:** Check deployment status, tail logs for errors, verify preview URLs.
 
-### CLI fallback
-
-```bash
-npx wrangler deploy --dry-run     # test without deploying
-npx wrangler deploy               # deploy
-npx wrangler tail                 # live logs
-npx wrangler rollback             # undo
-```
+The Cloudflare MCP server exposes the full Cloudflare API (2,500+ endpoints) via `search()` and `execute()` tools. It can create, configure, and deploy Workers directly.
 
 ---
 
 ## Pre-Production (first deploy only)
 
-Beyond blocking conditions, also verify: Lighthouse > 90, forms sending, GTM firing, no broken links, mobile tested on real device, 404 page exists, legal pages present, contact info correct, client approved staging, sitemap submitted to Search Console.
+Beyond blocking conditions, also verify: Lighthouse > 90, forms sending, GTM firing, no broken links, mobile tested on real device, 404 page exists, legal pages present, contact info correct, client approved preview, sitemap submitted to Search Console.
+
+---
+
+## Migration from Pages (existing sites)
+
+For sites currently on Cloudflare Pages with the `fix-wrangler.mjs` hack:
+
+1. Delete `fix-wrangler.mjs` and any `scripts/` related to it
+2. Remove the `postbuild` script from `package.json` that called it
+3. Update `@astrojs/cloudflare` to v13+
+4. Replace wrangler config with the minimal Workers template (see references/wrangler-template.md)
+5. Add `"nodejs_compat"` to `compatibility_flags`
+6. Create a new Worker in CF Dashboard (or connect via Workers Builds)
+7. Move env vars/secrets from Pages project to Worker settings
+8. Update DNS: custom domain → Worker instead of Pages project
+9. Test with `astro dev` (runs on real `workerd`)
+10. Deploy and verify
+
+Estimated time per site: 15–30 minutes. Code, components, routing, and Tailwind don't change.
 
 ---
 
 ## References
 
-- [cloudflare-setup.md](references/cloudflare-setup.md) — Initial CF Workers setup
+- [cloudflare-setup.md](references/cloudflare-setup.md) — Initial CF Workers setup + Workers Builds
 - [troubleshooting.md](references/troubleshooting.md) — Common issues and fixes
-- [wrangler-template.md](references/wrangler-template.md) — Config template
+- [wrangler-template.md](references/wrangler-template.md) — Config templates (basic, KV, D1)

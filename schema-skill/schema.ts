@@ -24,9 +24,9 @@ function id(config: SiteConfig, path: string, fragment: string): string {
   return `${base}${cleanPath}#${fragment}`;
 }
 
-/** Full URL from path */
+/** Full URL from path — uses canonicalBase if set, otherwise url */
 function fullUrl(config: SiteConfig, path: string): string {
-  const base = config.url.replace(/\/$/, '');
+  const base = (config.seo?.canonicalBase || config.url).replace(/\/$/, '');
   return `${base}${path}`;
 }
 
@@ -66,6 +66,7 @@ function buildSameAs(config: SiteConfig): string[] {
 /** Aggregate rating — weighted average across all review platforms */
 function buildAggregateRating(config: SiteConfig) {
   const totalCount = config.reviews.reduce((sum, r) => sum + r.count, 0);
+  if (totalCount === 0) return undefined;
   const weightedSum = config.reviews.reduce((sum, r) => sum + r.rating * r.count, 0);
   const avgRating = Math.round((weightedSum / totalCount) * 10) / 10;
 
@@ -133,6 +134,13 @@ function buildKnowsAbout(config: SiteConfig): string[] {
   return config.services.map(s => s.serviceType || s.name);
 }
 
+/** Map country code to country name for schema.org */
+const COUNTRY_NAMES: Record<string, string> = {
+  GB: 'United Kingdom', US: 'United States', HU: 'Hungary',
+  DE: 'Germany', FR: 'France', IE: 'Ireland', AU: 'Australia',
+  CA: 'Canada', NZ: 'New Zealand', NL: 'Netherlands',
+};
+
 /**
  * areaServed for homepage: featured cities + country only.
  * Area pages handle local specificity.
@@ -149,7 +157,27 @@ function buildAreaServed(config: SiteConfig) {
       });
     });
 
-  areas.push({ '@type': 'Country', name: 'United Kingdom' });
+  const countryCode = config.address.country;
+  const countryName = COUNTRY_NAMES[countryCode] || countryCode;
+  areas.push({ '@type': 'Country', name: countryName });
+
+  // GeoCircle from serviceArea config (radius-based coverage)
+  if (config.serviceArea && config.address.geo) {
+    const unitMap = { mi: 'https://schema.org/Mile', km: 'https://schema.org/Kilometer' };
+    areas.push({
+      '@type': 'GeoCircle',
+      geoMidpoint: {
+        '@type': 'GeoCoordinates',
+        latitude: config.address.geo.lat,
+        longitude: config.address.geo.lng,
+      },
+      geoRadius: {
+        '@type': 'Distance',
+        value: config.serviceArea.radius.toString(),
+        unitCode: unitMap[config.serviceArea.unit] || unitMap.mi,
+      },
+    });
+  }
 
   return areas;
 }
@@ -180,6 +208,7 @@ export function homepageSchema(config: SiteConfig) {
   const businessId = id(config, '/', 'business');
   const websiteId = id(config, '/', 'website');
   const geo = buildGeo(config);
+  const aggregateRating = buildAggregateRating(config);
   const featuredPerson = config.people.find(p => p.featured);
 
   return {
@@ -191,6 +220,7 @@ export function homepageSchema(config: SiteConfig) {
         name: config.name,
         legalName: config.legalName,
         description: config.description,
+        slogan: config.tagline,
         url: config.url,
         telephone: config.contact.phone,
         email: config.contact.email,
@@ -203,13 +233,23 @@ export function homepageSchema(config: SiteConfig) {
         ...(config.googleMapsCid && { hasMap: config.googleMapsCid }),
         logo: buildLogo(config),
         image: buildImage(config),
+        ...(config.assets.heroImage && {
+          photo: { '@type': 'ImageObject', url: fullUrl(config, config.assets.heroImage) },
+        }),
         openingHoursSpecification: buildHours(config),
-        aggregateRating: buildAggregateRating(config),
+        ...(aggregateRating && { aggregateRating }),
         sameAs: buildSameAs(config),
         areaServed: buildAreaServed(config),
         hasOfferCatalog: buildOfferCatalog(config),
         knowsAbout: buildKnowsAbout(config),
         knowsLanguage: [config.locale.split('-')[0]],
+        ...(config.contact.bookingUrl && {
+          potentialAction: {
+            '@type': 'ReserveAction',
+            target: config.contact.bookingUrl,
+            name: 'Book Online',
+          },
+        }),
         ...(featuredPerson && {
           founder: { '@id': id(config, `/about/${featuredPerson.slug}/`, 'person') },
         }),
@@ -263,6 +303,7 @@ export function personSchema(config: SiteConfig, personSlug: string) {
           hasOccupation: {
             '@type': 'Occupation',
             name: person.jobTitle,
+            ...(person.role && { description: person.role }),
           },
         }),
         knowsAbout: buildKnowsAbout(config),
@@ -293,7 +334,7 @@ export function serviceSchema(config: SiteConfig, serviceSlug: string) {
         description: service.shortDescription,
         url: fullUrl(config, `/${service.slug}/`),
         provider: { '@id': businessId },
-        areaServed: { '@type': 'Country', name: 'United Kingdom' },
+        areaServed: { '@type': 'Country', name: COUNTRY_NAMES[config.address.country] || config.address.country },
       },
       breadcrumbSchema(config, [
         { name: 'Home', path: '/' },
