@@ -1,0 +1,161 @@
+---
+/**
+ * <TrackedForm /> — Form wrapper with conversion tracking.
+ *
+ * Handles: validate → track → hidden fields → wait → submit.
+ * Uses form.submit() (not requestSubmit) to avoid recursion.
+ * Preserves submitter button name/value for multi-button forms.
+ *
+ * Field mapping: override with props if your form uses non-standard names.
+ *
+ * IMPORTANT: This component assumes classic HTML form submission.
+ * If your form uses fetch/XHR submit, use trackLeadSubmit() directly.
+ * If you have multiple submit buttons with name/value pairs,
+ * the clicked button's name/value is preserved via a hidden field.
+ */
+
+interface Props {
+  action?: string;
+  method?: 'POST' | 'GET';
+  eventType?: 'lead' | 'contact';
+  contentName?: string;
+  currency?: string;
+  emailField?: string;
+  phoneField?: string;
+  firstNameField?: string;
+  lastNameField?: string;
+  valueField?: string;
+  formId?: string;
+  abandonTimeout?: number;
+  class?: string;
+  [key: string]: unknown;
+}
+
+let formIdCounter = 0;
+const {
+  action, method = 'POST', eventType = 'lead', contentName,
+  currency = 'GBP',
+  emailField = 'email', phoneField = 'phone',
+  firstNameField = 'firstName', lastNameField = 'lastName',
+  valueField = 'price', formId = `tracked-form-${++formIdCounter}`,
+  abandonTimeout = 60_000, class: className, ...rest
+} = Astro.props;
+---
+
+<form
+  action={action} method={method} class={className}
+  data-tracked-form
+  data-event-type={eventType}
+  data-content-name={contentName || ''}
+  data-currency={currency}
+  data-form-id={formId}
+  data-abandon-timeout={abandonTimeout.toString()}
+  data-f-email={emailField}
+  data-f-phone={phoneField}
+  data-f-fname={firstNameField}
+  data-f-lname={lastNameField}
+  data-f-value={valueField}
+  {...rest}
+>
+  <slot />
+  <input type="hidden" name="gclid" />
+  <input type="hidden" name="fbclid" />
+  <input type="hidden" name="event_id" />
+  <input type="hidden" name="utm_source" />
+  <input type="hidden" name="utm_medium" />
+  <input type="hidden" name="utm_campaign" />
+  <input type="hidden" name="utm_content" />
+  <input type="hidden" name="utm_term" />
+</form>
+
+<script>
+  import {
+    trackLeadSubmit, trackContactSubmit,
+    populateHiddenFields, waitForTracking,
+    initFormAbandonTracking,
+  } from '@/lib/tracking';
+
+  function setupTrackedForms() {
+    document.querySelectorAll<HTMLFormElement>('[data-tracked-form]').forEach((form) => {
+      if (form.dataset.trackBound) return;
+      form.dataset.trackBound = '1';
+
+      const cfg = {
+        eventType: form.dataset.eventType || 'lead',
+        contentName: form.dataset.contentName || document.title,
+        currency: form.dataset.currency || 'GBP',
+        email: form.dataset.fEmail || 'email',
+        phone: form.dataset.fPhone || 'phone',
+        firstName: form.dataset.fFname || 'firstName',
+        lastName: form.dataset.fLname || 'lastName',
+        value: form.dataset.fValue || 'price',
+      };
+
+      // Abandon tracking — get cleanup function
+      const cleanupAbandon = initFormAbandonTracking(
+        form,
+        form.dataset.formId || 'tracked-form',
+        parseInt(form.dataset.abandonTimeout || '60000', 10),
+      );
+
+      // Track which submit button was clicked (for multi-button forms)
+      let lastSubmitter: HTMLButtonElement | HTMLInputElement | null = null;
+      form.addEventListener('click', (e) => {
+        const t = e.target as HTMLElement;
+        if (t.matches('[type="submit"], button:not([type])')) {
+          lastSubmitter = t as HTMLButtonElement;
+        }
+      });
+
+      // Submit guard
+      let isSubmitting = false;
+
+      form.addEventListener('submit', async (e) => {
+        if (isSubmitting) return; // programmatic re-entry → let through
+
+        if (!form.reportValidity()) return;
+        e.preventDefault();
+        isSubmitting = true;
+
+        const fd = new FormData(form);
+
+        let result;
+        if (cfg.eventType === 'contact') {
+          result = trackContactSubmit({
+            email: (fd.get(cfg.email) as string) || '',
+            phone: (fd.get(cfg.phone) as string) || '',
+          });
+        } else {
+          result = trackLeadSubmit({
+            email: (fd.get(cfg.email) as string) || '',
+            phone: (fd.get(cfg.phone) as string) || '',
+            firstName: (fd.get(cfg.firstName) as string) || undefined,
+            lastName: (fd.get(cfg.lastName) as string) || undefined,
+            value: parseFloat(fd.get(cfg.value) as string) || undefined,
+            currency: cfg.currency,
+            contentName: cfg.contentName,
+          });
+        }
+
+        populateHiddenFields(form, result);
+        await waitForTracking(600);
+
+        // Preserve submitter name/value (for multi-button forms)
+        if (lastSubmitter?.name) {
+          const h = document.createElement('input');
+          h.type = 'hidden'; h.name = lastSubmitter.name; h.value = lastSubmitter.value || '';
+          form.appendChild(h);
+        }
+
+        // Native submit — does NOT fire a new submit event
+        form.submit();
+      });
+
+      // Cleanup abandon tracking on Astro route change
+      document.addEventListener('astro:before-swap', cleanupAbandon, { once: true });
+    });
+  }
+
+  document.addEventListener('astro:page-load', setupTrackedForms);
+  if (document.readyState !== 'loading') setupTrackedForms();
+</script>

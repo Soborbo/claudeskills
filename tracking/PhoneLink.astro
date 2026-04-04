@@ -1,0 +1,17 @@
+---
+/**
+ * <PhoneLink /> — tel: link. Click tracking auto-bound by <Tracking />.
+ * Usage: <PhoneLink phone="+447123456789">Call us</PhoneLink>
+ */
+interface Props { phone: string; class?: string; [key: string]: unknown; }
+const { phone, class: cls, ...rest } = Astro.props;
+
+function fmt(raw: string): string {
+  const d = raw.replace(/\D/g, '');
+  if (d.startsWith('44') && d.length === 12) return `+44 ${d.slice(2, 6)} ${d.slice(6)}`;
+  if (d.startsWith('36') && d.length === 11) return `+36 ${d.slice(2, 4)} ${d.slice(4, 7)} ${d.slice(7)}`;
+  return raw;
+}
+const hasSlot = Astro.slots.has('default');
+---
+<a href={`tel:${phone}`} class={cls} {...rest}>{hasSlot ? <slot /> : fmt(phone)}</a>

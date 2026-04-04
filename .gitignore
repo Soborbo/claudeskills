@@ -9,5 +9,11 @@
 *.swp
 *.swo
 
+# Claude Code
+.claude/
+
+# Archives
+*.zip
+
 # Node (if any tooling added)
 node_modules/

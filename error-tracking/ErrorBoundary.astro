@@ -1,0 +1,78 @@
+---
+// src/components/ErrorBoundary.astro
+// User-facing hibaüzenet UI
+// Használat: hibakezeléskor cseréld le a broken UI-t erre
+//
+// Props:
+//   code - hibakód (small print-ben jelenik meg, support-nak hasznos)
+//   phone - telefon gomb megjelenítése (true/false)
+//   phonenumber - tel: link (pl. '+441234567890')
+//   phonelabel - kijelzett szám (pl. '01onal 234 5678')
+//   locale - 'en' | 'hu' (default: 'en')
+
+interface Props {
+  code?: string;
+  phone?: boolean;
+  phonenumber?: string;
+  phonelabel?: string;
+  locale?: 'en' | 'hu';
+}
+
+const {
+  code = '',
+  phone = false,
+  phonenumber = '',
+  phonelabel = '',
+  locale = 'en',
+} = Astro.props;
+
+const t = {
+  en: {
+    title: 'Something went wrong',
+    message: 'Please try again, or contact us directly.',
+    retry: 'Try again',
+    call: 'Call us',
+  },
+  hu: {
+    title: 'Sajnos hiba történt',
+    message: 'Kérjük próbálja újra, vagy hívjon minket közvetlenül.',
+    retry: 'Újrapróbálás',
+    call: 'Hívjon minket',
+  },
+}[locale];
+---
+
+<div
+  class="error-boundary"
+  role="alert"
+  aria-live="assertive"
+  style="max-width:28rem;margin:2rem auto;padding:2rem;border-radius:0.75rem;background:#fef2f2;border:1px solid #fecaca;text-align:center;"
+>
+  <div style="font-size:2rem;margin-bottom:0.75rem;" aria-hidden="true">⚠️</div>
+  <h2 style="font-size:1.25rem;font-weight:700;color:#991b1b;margin:0 0 0.5rem;">{t.title}</h2>
+  <p style="color:#7f1d1d;margin:0 0 1.5rem;font-size:0.95rem;">{t.message}</p>
+
+  <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
+    <button
+      onclick="location.reload()"
+      style="padding:0.625rem 1.5rem;border-radius:0.5rem;border:none;background:#dc2626;color:white;font-weight:600;cursor:pointer;font-size:0.9rem;"
+    >
+      {t.retry}
+    </button>
+
+    {phone && phonenumber && (
+      <a
+        href={`tel:${phonenumber}`}
+        style="padding:0.625rem 1.5rem;border-radius:0.5rem;border:2px solid #dc2626;color:#dc2626;font-weight:600;text-decoration:none;font-size:0.9rem;display:inline-flex;align-items:center;gap:0.375rem;"
+      >
+        📞 {phonelabel || t.call}
+      </a>
+    )}
+  </div>
+
+  {code && (
+    <p style="margin-top:1.25rem;font-size:0.7rem;color:#9ca3af;font-family:monospace;">
+      Ref: {code}
+    </p>
+  )}
+</div>
