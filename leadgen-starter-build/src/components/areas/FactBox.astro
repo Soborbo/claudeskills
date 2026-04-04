@@ -1,0 +1,36 @@
+---
+import { t } from '../../i18n/utils';
+
+interface FactSection {
+  section: string;
+  rows: Array<{ label: string; value: string }>;
+}
+
+interface Props {
+  facts: FactSection[];
+}
+
+const { facts } = Astro.props;
+---
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+  <div class="bg-[var(--color-primary-600)] text-white px-5 py-3">
+    <h3 class="font-semibold text-sm">{t('areas.factBoxHeading')}</h3>
+  </div>
+
+  <div class="divide-y divide-gray-100">
+    {facts.map(section => (
+      <div class="px-5 py-3">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{section.section}</p>
+        <dl class="space-y-1.5">
+          {section.rows.map(row => (
+            <div class="flex justify-between text-sm">
+              <dt class="text-gray-500">{row.label}</dt>
+              <dd class="font-medium text-[var(--color-dark)] text-right">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    ))}
+  </div>
+</div>

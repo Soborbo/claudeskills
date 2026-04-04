@@ -1,0 +1,107 @@
+---
+/**
+ * Picture component — pattern-based responsive images
+ * AVIF → WebP → JPG fallback, quality 60
+ * Never PNG.
+ *
+ * Patterns: FULL (100vw), TWO_THIRDS (66vw), LARGE (60vw),
+ * HALF (50vw), HALF_CARD (50vw), SMALL (40vw), THIRD (33vw),
+ * QUARTER (25vw), FIFTH (20vw), SIXTH (16vw)
+ */
+import { getImage } from 'astro:assets';
+
+type Pattern = 'FULL' | 'TWO_THIRDS' | 'LARGE' | 'HALF' | 'HALF_CARD' | 'SMALL' | 'THIRD' | 'QUARTER' | 'FIFTH' | 'SIXTH';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  pattern: Pattern;
+  lcp?: boolean;
+  class?: string;
+  objectPosition?: string;
+  aspectRatio?: string;
+}
+
+const PATTERN_WIDTHS: Record<Pattern, number[]> = {
+  FULL:       [480, 768, 1024, 1280, 1536, 1920],
+  TWO_THIRDS: [480, 640, 768, 1024, 1280],
+  LARGE:      [480, 640, 768, 1024, 1200],
+  HALF:       [480, 640, 768, 1024],
+  HALF_CARD:  [480, 640, 768, 1024],
+  SMALL:      [480, 640, 768],
+  THIRD:      [480, 640, 768],
+  QUARTER:    [320, 480, 640],
+  FIFTH:      [240, 480],
+  SIXTH:      [200, 400],
+};
+
+const PATTERN_SIZES: Record<Pattern, string> = {
+  FULL:       '100vw',
+  TWO_THIRDS: '(min-width: 1024px) 66vw, 100vw',
+  LARGE:      '(min-width: 1024px) 60vw, 100vw',
+  HALF:       '(min-width: 1024px) 50vw, 100vw',
+  HALF_CARD:  '(min-width: 1024px) 50vw, (min-width: 640px) 50vw, 100vw',
+  SMALL:      '(min-width: 1024px) 40vw, 100vw',
+  THIRD:      '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
+  QUARTER:    '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw',
+  FIFTH:      '(min-width: 1024px) 20vw, 50vw',
+  SIXTH:      '(min-width: 1024px) 16vw, 33vw',
+};
+
+const {
+  src,
+  alt,
+  pattern,
+  lcp = false,
+  class: className = '',
+  objectPosition,
+  aspectRatio,
+} = Astro.props;
+
+const widths = PATTERN_WIDTHS[pattern];
+const sizes = PATTERN_SIZES[pattern];
+
+// Generate sources for AVIF, WebP, and JPG
+const formats: Array<{ format: 'avif' | 'webp' | 'jpg'; mime: string }> = [
+  { format: 'avif', mime: 'image/avif' },
+  { format: 'webp', mime: 'image/webp' },
+  { format: 'jpg', mime: 'image/jpeg' },
+];
+
+type GeneratedSource = { srcset: string; type: string };
+const sources: GeneratedSource[] = [];
+
+for (const { format, mime } of formats) {
+  const srcsetParts: string[] = [];
+  for (const w of widths) {
+    const img = await getImage({ src, width: w, format, quality: 60 });
+    srcsetParts.push(`${img.src} ${w}w`);
+  }
+  sources.push({ srcset: srcsetParts.join(', '), type: mime });
+}
+
+// Fallback img (largest JPG)
+const fallback = await getImage({ src, width: widths[widths.length - 1], format: 'jpg', quality: 60 });
+
+const imgStyle = [
+  objectPosition ? `object-position: ${objectPosition}` : '',
+  aspectRatio ? `aspect-ratio: ${aspectRatio}` : '',
+].filter(Boolean).join('; ');
+---
+
+<picture>
+  {sources.map(s => (
+    <source srcset={s.srcset} sizes={sizes} type={s.type} />
+  ))}
+  <img
+    src={fallback.src}
+    alt={alt}
+    width={fallback.attributes.width}
+    height={fallback.attributes.height}
+    loading={lcp ? 'eager' : 'lazy'}
+    fetchpriority={lcp ? 'high' : undefined}
+    decoding={lcp ? 'sync' : 'async'}
+    class:list={['w-full h-auto object-cover', className]}
+    style={imgStyle || undefined}
+  />
+</picture>

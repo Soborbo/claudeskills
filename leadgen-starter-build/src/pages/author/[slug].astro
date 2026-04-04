@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/navigation/Header.astro';
+import Footer from '../../components/navigation/Footer.astro';
+import StickyHeaderCTA from '../../components/cta/StickyHeaderCTA.astro';
+import StickyMobileCTA from '../../components/cta/StickyMobileCTA.astro';
+import SectionWrapper from '../../components/ui/SectionWrapper.astro';
+import Button from '../../components/ui/Button.astro';
+import FinalCTA from '../../components/sections/FinalCTA.astro';
+import { config } from '../../config/siteConfig.example';
+import { personSchema, breadcrumbSchema } from '../../config/schema';
+import { t } from '../../i18n/utils';
+
+export function getStaticPaths() {
+  return config.people.map(person => ({
+    params: { slug: person.slug },
+    props: { person },
+  }));
+}
+
+const { person } = Astro.props;
+const schema = personSchema(config, person.slug);
+
+const expertiseAreas = config.services.map(s => s.name);
+---
+
+<BaseLayout
+  title={`${person.name} — ${person.jobTitle || person.role}`}
+  description={person.bio || `${person.name} is the ${person.role} at ${config.name}.`}
+  canonicalPath={`/author/${person.slug}/`}
+  schema={schema}
+>
+  <Header slot="header" />
+
+  <SectionWrapper id="author-header" background="white" padding="lg">
+    <div class="max-w-3xl mx-auto text-center">
+      {person.image && (
+        <img
+          src={person.image}
+          alt={person.name}
+          class="w-32 h-32 rounded-full object-cover mx-auto mb-6"
+          loading="eager"
+        />
+      )}
+      <h1 class="text-3xl font-extrabold text-[var(--color-dark)] mb-2">{person.name}</h1>
+      <p class="text-lg text-[var(--color-primary-600)] font-medium mb-4">{person.jobTitle || person.role}</p>
+      {person.bio && <p class="text-gray-600 max-w-xl mx-auto">{person.bio}</p>}
+
+      {person.sameAs.length > 0 && (
+        <div class="flex justify-center gap-4 mt-4">
+          {person.sameAs.map(url => (
+            <a href={url} target="_blank" rel="noopener noreferrer" class="text-sm text-[var(--color-primary-600)] hover:underline">
+              {url.includes('linkedin') ? 'LinkedIn' : url.includes('company-information') ? 'Companies House' : 'Profile'}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </SectionWrapper>
+
+  <SectionWrapper id="expertise" background="light">
+    <h2 class="text-2xl font-bold text-[var(--color-dark)] text-center mb-8">{t('author.expertiseHeading')}</h2>
+    <div class="flex flex-wrap justify-center gap-3 max-w-2xl mx-auto">
+      {expertiseAreas.map(area => (
+        <span class="bg-white px-4 py-2 rounded-full text-sm font-medium text-[var(--color-dark)] border border-gray-200">
+          {area}
+        </span>
+      ))}
+    </div>
+  </SectionWrapper>
+
+  <SectionWrapper id="published" background="white">
+    <h2 class="text-2xl font-bold text-[var(--color-dark)] text-center mb-8">{t('author.articlesHeading')}</h2>
+    <div class="max-w-2xl mx-auto">
+      <p class="text-center text-gray-500">Blog posts by {person.name} will appear here.</p>
+    </div>
+  </SectionWrapper>
+
+  <FinalCTA heading="Questions? Get in Touch" description="We are always happy to help. Request a callback and we will get back to you." />
+
+  <Footer slot="footer" />
+
+  <Fragment slot="cta-overlays">
+    <StickyHeaderCTA />
+    <StickyMobileCTA />
+  </Fragment>
+</BaseLayout>

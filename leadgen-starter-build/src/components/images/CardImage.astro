@@ -1,0 +1,25 @@
+---
+/**
+ * CardImage — 33vw (grid cards), lazy loaded
+ */
+import Picture from './Picture.astro';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  class?: string;
+  objectPosition?: string;
+  aspectRatio?: string;
+}
+
+const { src, alt, class: className, objectPosition, aspectRatio } = Astro.props;
+---
+
+<Picture
+  src={src}
+  alt={alt}
+  pattern="THIRD"
+  class={className}
+  objectPosition={objectPosition}
+  aspectRatio={aspectRatio}
+/>

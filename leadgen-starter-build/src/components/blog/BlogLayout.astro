@@ -1,0 +1,160 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+import UspStrip from '../sections/UspStrip.astro';
+import Button from '../ui/Button.astro';
+import AuthorBox from '../sections/AuthorBox.astro';
+import ReadingProgressBar from '../sections/ReadingProgressBar.astro';
+import FAQ from '../sections/FAQ.astro';
+
+interface FAQItem { question: string; answer: string; }
+interface CrossLink { title: string; href: string; description: string; }
+
+interface Props {
+  title: string;
+  visualTitle: string;
+  description: string;
+  heroImage: string;
+  heroAlt: string;
+  authorSlug: string;
+  publishDate: string;
+  lastModified?: string;
+  readingTime: number;
+  faqs?: FAQItem[];
+  crossLinks?: CrossLink[];
+}
+
+const {
+  title, visualTitle, description, heroImage, heroAlt,
+  authorSlug, publishDate, lastModified, readingTime,
+  faqs = [], crossLinks = [],
+} = Astro.props;
+
+const formattedDate = new Date(publishDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const formattedModified = lastModified ? new Date(lastModified).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+---
+
+<ReadingProgressBar />
+
+<!-- Hero -->
+<section class="relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-8 items-center py-8 lg:py-12">
+      <div>
+        <p class="text-sm font-normal text-gray-500 mb-2 lowercase">{title}</p>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-[var(--color-dark)] mb-4">{visualTitle}</h1>
+        <p class="text-lg text-gray-600 mb-6">{description}</p>
+        <Button href="/contact/" variant="primary" size="lg" dataCta="blog-hero-cta">{config.cta.primary}</Button>
+      </div>
+      <div>
+        <img src={heroImage} alt={heroAlt} loading="eager" fetchpriority="high" class="w-full rounded-2xl object-cover aspect-[16/10]" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<UspStrip />
+
+<!-- 2-column blog layout -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid lg:grid-cols-[1fr_280px] gap-12">
+    <!-- Article -->
+    <article>
+      <!-- Byline -->
+      <div class="flex items-center gap-4 mb-8 pb-4 border-b border-gray-200">
+        <AuthorBox authorSlug={authorSlug} variant="inline" />
+        <div class="text-sm text-gray-500">
+          <span>{t('blog.publishedOn')} {formattedDate}</span>
+          {formattedModified && <span> · {t('blog.lastUpdated')} {formattedModified}</span>}
+          <span> · {readingTime} {t('blog.minRead')}</span>
+        </div>
+      </div>
+
+      <div class="prose">
+        <slot />
+      </div>
+
+      <!-- Author box (full) -->
+      <div class="mt-12">
+        <AuthorBox authorSlug={authorSlug} variant="full" />
+      </div>
+    </article>
+
+    <!-- TOC Sidebar -->
+    <aside class="hidden lg:block">
+      <div class="sticky top-[calc(var(--header-h)+15px)] space-y-6" style="max-height: calc(100dvh - var(--header-h) - 30px); overflow-y: auto;">
+        <nav class="bg-[var(--color-light)] rounded-xl p-5" aria-label="Table of contents" data-toc>
+          <h3 class="font-semibold text-sm text-[var(--color-dark)] mb-3">{t('toc.heading')}</h3>
+          <ul class="space-y-2 text-sm" id="toc-list"></ul>
+        </nav>
+
+        <Button href="/contact/" variant="primary" size="md" fullWidth dataCta="blog-sidebar-cta">{config.cta.primary}</Button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- FAQ -->
+{faqs.length > 0 && (
+  <FAQ heading={t('faq.heading')} faqs={faqs} id="blog-faq" />
+)}
+
+<!-- Cross-links -->
+{crossLinks.length > 0 && (
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h2 class="text-xl font-bold text-[var(--color-dark)] mb-6">{t('blog.crossLinksHeading')}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {crossLinks.map(link => (
+        <a href={link.href} class="block bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <h3 class="font-semibold text-[var(--color-dark)] mb-1">{link.title}</h3>
+          <p class="text-sm text-gray-600">{link.description}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+)}
+
+<!-- Final CTA -->
+<section class="bg-[var(--color-primary-600)] text-white py-12">
+  <div class="max-w-2xl mx-auto px-4 text-center">
+    <h2 class="text-2xl font-bold mb-3">{t('sidebar.needHelp')}</h2>
+    <Button href="/contact/" variant="secondary" size="lg" dataCta="blog-final-cta" class="bg-white text-[var(--color-primary-600)]">{config.cta.primary}</Button>
+    <p class="text-sm text-white/70 mt-3">{config.cta.riskReversal}</p>
+  </div>
+</section>
+
+<script>
+  // Auto-generate TOC from headings
+  const tocList = document.getElementById('toc-list');
+  const article = document.querySelector('article .prose');
+  if (tocList && article) {
+    const headings = article.querySelectorAll('h2');
+    headings.forEach((h, i) => {
+      if (!h.id) h.id = `section-${i}`;
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = `#${h.id}`;
+      a.textContent = h.textContent || '';
+      a.className = 'text-gray-600 hover:text-[var(--color-primary-600)] transition-colors block py-1';
+      a.dataset.tocLink = h.id;
+      li.appendChild(a);
+      tocList.appendChild(li);
+    });
+
+    // IntersectionObserver for active highlighting
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          const link = tocList.querySelector(`[data-toc-link="${entry.target.id}"]`);
+          if (entry.isIntersecting) {
+            tocList.querySelectorAll('a').forEach(a => a.classList.remove('text-[var(--color-primary-600)]', 'font-semibold'));
+            link?.classList.add('text-[var(--color-primary-600)]', 'font-semibold');
+          }
+        });
+      },
+      { rootMargin: '-80px 0px -70% 0px' },
+    );
+
+    headings.forEach(h => observer.observe(h));
+  }
+</script>

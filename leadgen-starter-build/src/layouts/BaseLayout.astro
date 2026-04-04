@@ -1,0 +1,134 @@
+---
+import { config } from '../config/siteConfig.example';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonicalPath?: string;
+  ogImage?: string;
+  ogWidth?: number;
+  ogHeight?: number;
+  robots?: string;
+  schema?: object;
+  heroImage?: string;
+  isContactPage?: boolean;
+}
+
+const {
+  title,
+  description = config.description,
+  canonicalPath = Astro.url.pathname,
+  ogImage = config.assets.ogImage,
+  ogWidth = config.assets.ogWidth,
+  ogHeight = config.assets.ogHeight,
+  robots = config.seo.defaultRobots,
+  schema,
+  heroImage,
+  isContactPage = false,
+} = Astro.props;
+
+const pageTitle = config.seo.titleTemplate.replace('%s', title);
+const canonicalUrl = `${config.url.replace(/\/$/, '')}${canonicalPath}`;
+const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${config.url.replace(/\/$/, '')}${ogImage}`;
+---
+
+<!doctype html>
+<html lang={config.locale.split('-')[0]} dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Title & Meta -->
+  <title>{pageTitle}</title>
+  <meta name="description" content={description} />
+  <meta name="robots" content={robots} />
+  <link rel="canonical" href={canonicalUrl} />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:image" content={ogImageUrl} />
+  <meta property="og:image:width" content={String(ogWidth)} />
+  <meta property="og:image:height" content={String(ogHeight)} />
+  <meta property="og:locale" content={config.locale.replace('-', '_')} />
+  <meta property="og:site_name" content={config.name} />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content={config.seo.twitterCard} />
+  <meta name="twitter:title" content={pageTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImageUrl} />
+
+  <!-- Favicon -->
+  {config.assets.favicon && <link rel="icon" href={config.assets.favicon} type="image/svg+xml" />}
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- Fonts — non-blocking load -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href={`https://fonts.googleapis.com/css2?family=${config.fonts.heading.replace(/ /g, '+')}:wght@500;600;700;800&family=${config.fonts.body.replace(/ /g, '+')}:wght@400;500;600&display=swap`}
+    media="print"
+    onload="this.media='all'"
+  />
+  <noscript>
+    <link
+      rel="stylesheet"
+      href={`https://fonts.googleapis.com/css2?family=${config.fonts.heading.replace(/ /g, '+')}:wght@500;600;700;800&family=${config.fonts.body.replace(/ /g, '+')}:wght@400;500;600&display=swap`}
+    />
+  </noscript>
+
+  <!-- DNS Prefetch for third-party -->
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+
+  <!-- Hero image preload (LCP optimization) -->
+  {heroImage && (
+    <link
+      rel="preload"
+      as="image"
+      href={heroImage}
+    />
+  )}
+
+  <!-- Tracking (GTM + CookieYes consent) -->
+  <slot name="head-tracking" />
+
+  <!-- Schema.org JSON-LD -->
+  {schema && (
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  )}
+
+  <slot name="head-extra" />
+</head>
+<body data-contact-page={isContactPage ? 'true' : undefined}>
+  <!-- Skip to main content -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:text-[var(--color-primary-600)] focus:font-semibold">
+    Skip to main content
+  </a>
+
+  <!-- GTM noscript -->
+  <slot name="body-tracking" />
+
+  <!-- Header -->
+  <slot name="header" />
+
+  <!-- Main content -->
+  <main id="main-content">
+    <slot />
+  </main>
+
+  <!-- Footer -->
+  <slot name="footer" />
+
+  <!-- CTA overlays (hidden on contact/form pages) -->
+  {!isContactPage && (
+    <slot name="cta-overlays" />
+  )}
+</body>
+</html>

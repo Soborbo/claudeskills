@@ -1,0 +1,234 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<form
+  id="contact-form"
+  class:list={['space-y-4', className]}
+  method="POST"
+  action="/api/contact"
+  data-tracked-form
+  data-form-id="contact"
+>
+  <h3 class="text-xl font-bold text-[var(--color-dark)] mb-2">{t('form.submit')}</h3>
+
+  <!-- Form-level error/success messages -->
+  <div class="hidden rounded-lg p-3 text-sm" data-form-status aria-live="polite"></div>
+
+  <!-- Honeypot -->
+  <div class="hidden" aria-hidden="true">
+    <input type="text" name="website" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <!-- Hidden tracking fields -->
+  <input type="hidden" name="event_id" />
+  <input type="hidden" name="source_page" value="" />
+  <input type="hidden" name="utm_source" />
+  <input type="hidden" name="utm_medium" />
+  <input type="hidden" name="utm_campaign" />
+
+  <div>
+    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">{t('form.name')}</label>
+    <input
+      type="text"
+      id="name"
+      name="name"
+      required
+      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-transparent outline-none transition"
+      placeholder={t('form.name')}
+    />
+    <p class="text-sm text-red-600 mt-1 hidden" data-error="name">{t('form.errors.nameRequired')}</p>
+  </div>
+
+  <div>
+    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">{t('form.email')}</label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      required
+      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-transparent outline-none transition"
+      placeholder={t('form.email')}
+    />
+    <p class="text-sm text-red-600 mt-1 hidden" data-error="email">{t('form.errors.emailInvalid')}</p>
+  </div>
+
+  <div>
+    <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">{t('form.phone')}</label>
+    <input
+      type="tel"
+      id="phone"
+      name="phone"
+      required
+      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-transparent outline-none transition"
+      placeholder={t('form.phone')}
+    />
+    <p class="text-sm text-red-600 mt-1 hidden" data-error="phone">{t('form.errors.phoneInvalid')}</p>
+  </div>
+
+  <div>
+    <label for="postcode" class="block text-sm font-medium text-gray-700 mb-1">{t('form.postcode')}</label>
+    <input
+      type="text"
+      id="postcode"
+      name="postcode"
+      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-transparent outline-none transition"
+      placeholder={t('form.postcode')}
+    />
+  </div>
+
+  <div>
+    <label for="message" class="block text-sm font-medium text-gray-700 mb-1">{t('form.message')}</label>
+    <textarea
+      id="message"
+      name="message"
+      rows="3"
+      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-transparent outline-none transition resize-none"
+      placeholder={t('form.message')}
+    ></textarea>
+  </div>
+
+  <!-- Consent -->
+  <div class="flex items-start gap-2">
+    <input
+      type="checkbox"
+      id="consent"
+      name="consent"
+      required
+      class="mt-1 h-4 w-4 rounded border-gray-300 text-[var(--color-primary-600)] focus:ring-[var(--color-primary-500)]"
+    />
+    <label for="consent" class="text-sm text-gray-600">
+      {config.forms.consentText}
+    </label>
+  </div>
+
+  <!-- Turnstile widget -->
+  {config.forms.turnstileSiteKey && (
+    <div class="cf-turnstile" data-sitekey={config.forms.turnstileSiteKey}></div>
+  )}
+  {!config.forms.turnstileSiteKey && (
+    <noscript><p class="text-sm text-gray-500">JavaScript is required for form submission.</p></noscript>
+  )}
+
+  <button
+    type="submit"
+    class="w-full py-3 bg-[var(--color-primary-600)] text-white font-semibold rounded-lg hover:bg-[var(--color-primary-700)] hover:scale-[1.02] hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+    data-cta="form-submit"
+  >
+    {config.cta.callbackButton}
+  </button>
+
+  <p class="text-sm text-gray-500 text-center">{config.cta.riskReversal}</p>
+</form>
+
+{config.forms.turnstileSiteKey && (
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+)}
+
+<script>
+  import { populateHiddenFields, generateEventId, pushContactConversion, initFormAbandonTracking } from '../../lib/tracking/index';
+
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  if (form) {
+    // Populate hidden tracking fields on load
+    populateHiddenFields(form);
+
+    // Track form abandonment
+    const cleanupAbandon = initFormAbandonTracking(form);
+
+    const submitBtn = form.querySelector('[data-cta="form-submit"]') as HTMLButtonElement;
+    const statusEl = form.querySelector('[data-form-status]') as HTMLElement;
+
+    function showStatus(message: string, isError: boolean) {
+      statusEl.textContent = message;
+      statusEl.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'bg-green-50', 'text-green-700');
+      statusEl.classList.add(
+        isError ? 'bg-red-50' : 'bg-green-50',
+        isError ? 'text-red-700' : 'text-green-700',
+      );
+    }
+
+    function showFieldError(name: string, show: boolean) {
+      const el = form!.querySelector(`[data-error="${name}"]`) as HTMLElement;
+      if (el) el.classList.toggle('hidden', !show);
+    }
+
+    // Client-side validation
+    function validateField(input: HTMLInputElement): boolean {
+      const name = input.name;
+      let valid = true;
+
+      if (name === 'name') valid = input.value.trim().length >= 2;
+      else if (name === 'email') valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
+      else if (name === 'phone') valid = /^(\+44|0)\d{10}$/.test(input.value.replace(/[\s\-()]/g, ''));
+
+      showFieldError(name, !valid);
+      return valid;
+    }
+
+    // Validate on blur
+    form.querySelectorAll<HTMLInputElement>('input[required]').forEach(input => {
+      input.addEventListener('blur', () => validateField(input));
+    });
+
+    // AJAX form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.classList.add('hidden');
+
+      // Validate all required fields
+      let allValid = true;
+      form.querySelectorAll<HTMLInputElement>('input[required]').forEach(input => {
+        if (!validateField(input)) allValid = false;
+      });
+      if (!allValid) return;
+
+      // Refresh event_id for this submission
+      const eventIdField = form.querySelector<HTMLInputElement>('[name="event_id"]');
+      if (eventIdField) eventIdField.value = generateEventId();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          redirect: 'manual',
+        });
+
+        if (response.type === 'opaqueredirect' || response.status === 302) {
+          // Push tracking conversion
+          const email = formData.get('email') as string;
+          const phone = formData.get('phone') as string;
+          pushContactConversion({
+            email,
+            phone,
+            eventId: eventIdField?.value || '',
+            formId: 'contact',
+          });
+          // Redirect to thank-you page
+          const location = response.headers.get('Location');
+          window.location.href = location || '/thank-you';
+          return;
+        }
+
+        const result = await response.json().catch(() => ({ error: 'Something went wrong. Please call us directly.' }));
+        showStatus(result.error || 'Something went wrong. Please call us directly.', true);
+      } catch {
+        showStatus('Network error. Please check your connection and try again.', true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = form.dataset.submitText || 'Request a Callback';
+      }
+    });
+  }
+</script>

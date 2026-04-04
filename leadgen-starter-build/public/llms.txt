@@ -1,0 +1,35 @@
+# Painless Removals — Bristol's Most Trusted Removal Company
+
+> Professional house removals in Bristol & South West. Fully insured, fixed prices, no hidden fees.
+
+## About
+Painless Removals is a family-run removal company based in Bristol, serving the South West since 1978. We specialise in house removals, office removals, packing services, storage, man and van, and piano removals.
+
+## Services
+- House Removals: /services/house-removals/
+- Office Removals: /services/office-removals/
+- Packing Service: /services/packing-service/
+- Storage: /services/storage/
+- Man & Van: /services/man-and-van/
+- Piano Removals: /services/piano-removals/
+
+## Areas
+- Bristol: /areas/bristol/
+- Bath: /areas/bath/
+- Weston-super-Mare: /areas/weston-super-mare/
+- Clevedon: /areas/clevedon/
+- Keynsham: /areas/keynsham/
+
+## Contact
+- Phone: 0117 123 4567
+- Email: hello@painlessremovals.co.uk
+- Address: 42 Southmead Road, Bristol, BS10 5DL
+- Get a quote: /contact/
+
+## Key Pages
+- Homepage: /
+- About: /about/
+- Services: /services/
+- Areas: /areas/
+- Blog: /blog/
+- Contact: /contact/

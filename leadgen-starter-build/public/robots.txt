@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /thank-you
+Disallow: /api/
+
+Sitemap: https://painlessremovals.co.uk/sitemap-index.xml

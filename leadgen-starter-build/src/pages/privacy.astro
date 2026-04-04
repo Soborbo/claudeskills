@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/navigation/Header.astro';
+import Footer from '../components/navigation/Footer.astro';
+import { config } from '../config/siteConfig.example';
+---
+
+<BaseLayout
+  title="Privacy Policy"
+  description={`Privacy policy for ${config.name}.`}
+  canonicalPath="/privacy/"
+  robots="noindex,follow"
+>
+  <Header slot="header" />
+
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-extrabold text-[var(--color-dark)] mb-8">Privacy Policy</h1>
+
+    <div class="prose text-gray-600">
+      <p>Last updated: January 2024</p>
+
+      <h2>Who we are</h2>
+      <p>{config.legalName} ({config.legal.companyNumber ? `Company number: ${config.legal.companyNumber}` : ''}) operates the website {config.url}.</p>
+
+      <h2>What data we collect</h2>
+      <p>When you use our contact form, we collect your name, email address, phone number, postcode, and any message you provide. We use this information solely to respond to your enquiry.</p>
+
+      <h2>How we use your data</h2>
+      <ul>
+        <li>To respond to your quote request or enquiry</li>
+        <li>To provide the services you have requested</li>
+        <li>To improve our website and services</li>
+      </ul>
+
+      <h2>Cookies</h2>
+      <p>We use cookies for analytics (Google Analytics via GTM) and marketing (Meta Pixel via GTM). You can manage your cookie preferences at any time using the cookie consent banner.</p>
+
+      <h2>Your rights</h2>
+      <p>Under GDPR, you have the right to access, correct, or delete your personal data. Contact us at <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a> to exercise these rights.</p>
+
+      <h2>Contact</h2>
+      <p>For privacy-related queries, contact us at <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a> or write to {config.address.street}, {config.address.city}, {config.address.postcode}.</p>
+      {config.legal.icoNumber && <p>ICO Registration Number: {config.legal.icoNumber}</p>}
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>

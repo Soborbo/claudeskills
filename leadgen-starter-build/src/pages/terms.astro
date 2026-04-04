@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/navigation/Header.astro';
+import Footer from '../components/navigation/Footer.astro';
+import { config } from '../config/siteConfig.example';
+---
+
+<BaseLayout
+  title="Terms & Conditions"
+  description={`Terms and conditions for ${config.name}.`}
+  canonicalPath="/terms/"
+  robots="noindex,follow"
+>
+  <Header slot="header" />
+
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-extrabold text-[var(--color-dark)] mb-8">Terms & Conditions</h1>
+
+    <div class="prose text-gray-600">
+      <p>Last updated: January 2024</p>
+
+      <h2>Company Information</h2>
+      <p>{config.legalName}{config.legal.companyNumber ? `, registered in England and Wales (Company number: ${config.legal.companyNumber})` : ''}.</p>
+      <p>Registered address: {config.address.street}, {config.address.city}, {config.address.postcode}.</p>
+      {config.legal.vatNumber && <p>VAT Registration: {config.legal.vatNumber}</p>}
+
+      <h2>Services</h2>
+      <p>All quotes provided are fixed prices unless otherwise stated. Additional services requested on the day of the move may incur extra charges, which will be agreed before work begins.</p>
+
+      <h2>Insurance</h2>
+      <p>We carry goods-in-transit and public liability insurance{config.legal.insuranceProvider ? ` through ${config.legal.insuranceProvider}` : ''}. Details available on request.</p>
+
+      <h2>Cancellation</h2>
+      <p>Cancellations made more than 48 hours before the scheduled move date will receive a full refund of any deposit paid.</p>
+
+      <h2>Liability</h2>
+      <p>We take every care with your belongings. In the unlikely event of damage, please notify us within 7 days. Claims are handled in accordance with our insurance policy.</p>
+
+      <h2>Contact</h2>
+      <p>For any queries regarding these terms, contact us at <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a>.</p>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>

@@ -1,0 +1,47 @@
+---
+import { t } from '../../i18n/utils';
+import SectionWrapper from '../ui/SectionWrapper.astro';
+
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  heading?: string;
+  faqs: FAQItem[];
+  id?: string;
+}
+
+const {
+  heading = t('faq.heading'),
+  faqs,
+  id = 'faq',
+} = Astro.props;
+---
+
+<SectionWrapper id={id} background="white">
+  <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-dark)] text-center mb-12">{heading}</h2>
+
+  <div class="max-w-3xl mx-auto space-y-3">
+    {faqs.map(faq => (
+      <details class="group bg-white border border-gray-200 rounded-lg shadow-sm">
+        <summary class="flex items-center justify-between cursor-pointer p-5 font-medium text-[var(--color-dark)] hover:text-[var(--color-primary-600)] transition-colors">
+          <span>{faq.question}</span>
+          <svg
+            class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform duration-200 flex-shrink-0 ml-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <div class="px-5 pb-5 text-gray-600 leading-relaxed">
+          <p>{faq.answer}</p>
+        </div>
+      </details>
+    ))}
+  </div>
+</SectionWrapper>

@@ -1,0 +1,84 @@
+---
+interface Props {
+  targetNumber: number;
+  duration?: number;
+  platform?: string;
+  class?: string;
+}
+
+const {
+  targetNumber,
+  duration = 2000,
+  platform = 'Google',
+  class: className = '',
+} = Astro.props;
+---
+
+<span
+  class:list={['review-counter inline-block tabular-nums', className]}
+  data-target={targetNumber}
+  data-duration={duration}
+  aria-label={String(targetNumber)}
+>
+  {targetNumber}
+</span>
+
+<script>
+  class ReviewCounterElement {
+    private el: HTMLElement;
+    private target: number;
+    private duration: number;
+    private animated = false;
+
+    constructor(el: HTMLElement) {
+      this.el = el;
+      this.target = parseFloat(el.dataset.target || '0');
+      this.duration = parseInt(el.dataset.duration || '2000', 10);
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      this.el.textContent = '0';
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && !this.animated) {
+            this.animated = true;
+            this.animate();
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.5 },
+      );
+      observer.observe(this.el);
+    }
+
+    private animate() {
+      const start = performance.now();
+      const from = 0.1;
+
+      const tick = (now: number) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / this.duration, 1);
+        // easeOutExpo
+        const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const current = from + (this.target - from) * eased;
+
+        this.el.textContent = current.toFixed(1);
+
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          this.el.textContent = this.target.toString();
+        }
+      };
+
+      requestAnimationFrame(tick);
+    }
+  }
+
+  document.querySelectorAll<HTMLElement>('.review-counter').forEach((el) => {
+    new ReviewCounterElement(el);
+  });
+</script>

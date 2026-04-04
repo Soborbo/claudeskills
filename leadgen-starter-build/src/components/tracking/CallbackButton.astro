@@ -1,0 +1,28 @@
+---
+import { config } from '../../config/siteConfig.example';
+
+interface Props {
+  href?: string;
+  class?: string;
+  label?: string;
+}
+
+const { href = '/contact/', class: className = '', label = config.cta.callbackButton } = Astro.props;
+---
+
+<a href={href} class={className} data-tracking-callback>
+  {label}
+</a>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tracking-callback]').forEach(el => {
+    el.addEventListener('click', () => {
+      if (typeof window !== 'undefined' && (window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          event: 'callback_click',
+          click_url: el.getAttribute('href'),
+        });
+      }
+    });
+  });
+</script>

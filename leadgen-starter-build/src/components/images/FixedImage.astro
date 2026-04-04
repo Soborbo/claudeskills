@@ -1,0 +1,67 @@
+---
+/**
+ * FixedImage — for logos, avatars, icons (fixed pixel size)
+ * Generates 1x, 2x, 3x with AVIF → WebP → JPG fallback
+ */
+import { getImage } from 'astro:assets';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  width: number;
+  height: number;
+  class?: string;
+  loading?: 'eager' | 'lazy';
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  class: className = '',
+  loading = 'lazy',
+} = Astro.props;
+
+const scales = [1, 2, 3];
+const formats: Array<{ format: 'avif' | 'webp' | 'jpg'; mime: string }> = [
+  { format: 'avif', mime: 'image/avif' },
+  { format: 'webp', mime: 'image/webp' },
+  { format: 'jpg', mime: 'image/jpeg' },
+];
+
+type GeneratedSource = { srcset: string; type: string };
+const sources: GeneratedSource[] = [];
+
+for (const { format, mime } of formats) {
+  const parts: string[] = [];
+  for (const scale of scales) {
+    const img = await getImage({
+      src,
+      width: width * scale,
+      height: height * scale,
+      format,
+      quality: 60,
+    });
+    parts.push(`${img.src} ${scale}x`);
+  }
+  sources.push({ srcset: parts.join(', '), type: mime });
+}
+
+const fallback = await getImage({ src, width, height, format: 'jpg', quality: 60 });
+---
+
+<picture>
+  {sources.map(s => (
+    <source srcset={s.srcset} type={s.type} />
+  ))}
+  <img
+    src={fallback.src}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loading}
+    decoding="async"
+    class={className}
+  />
+</picture>

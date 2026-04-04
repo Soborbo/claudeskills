@@ -1,0 +1,63 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+import SectionWrapper from '../ui/SectionWrapper.astro';
+
+interface Props {
+  heading?: string;
+  problem?: string;
+  solution?: string;
+  howWeDoIt?: string;
+}
+
+const {
+  heading = t('problemSolution.heading'),
+  problem = t('problemSolution.problem'),
+  solution = t('problemSolution.solution'),
+  howWeDoIt = t('problemSolution.howWeDoIt'),
+} = Astro.props;
+
+const featuredPerson = config.people.find(p => p.featured);
+---
+
+<SectionWrapper id="problem-solution" background="white">
+  <div class="grid lg:grid-cols-2 gap-12 items-center">
+
+    <!-- Left: featured person photo -->
+    <div class="relative">
+      {featuredPerson?.image && (
+        <div class="relative">
+          <img
+            src={featuredPerson.image}
+            alt={`${featuredPerson.name}, ${featuredPerson.role} at ${config.name}`}
+            loading="lazy"
+            class="rounded-2xl shadow-xl w-full object-cover aspect-[3/4] max-h-[600px]"
+          />
+          <div class="mt-4 text-center">
+            <p class="font-semibold text-[var(--color-dark)]">{featuredPerson.name}</p>
+            <p class="text-sm text-gray-500">{featuredPerson.role}</p>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <!-- Right: problem/solution text -->
+    <div>
+      <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-dark)] mb-8">{heading}</h2>
+
+      <div class="space-y-6 text-gray-600">
+        <p>
+          {(() => {
+            const firstSentenceEnd = problem.search(/(?<=[^A-Z])\.\s/);
+            if (firstSentenceEnd === -1) return problem;
+            const first = problem.slice(0, firstSentenceEnd + 1);
+            const rest = problem.slice(firstSentenceEnd + 1);
+            return <><span class="text-[calc(1em+2px)]">{first}</span>{rest}</>;
+          })()}
+        </p>
+        <p>{solution}</p>
+        <p>{howWeDoIt}</p>
+      </div>
+    </div>
+  </div>
+</SectionWrapper>

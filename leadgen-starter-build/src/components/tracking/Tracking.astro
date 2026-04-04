@@ -1,0 +1,64 @@
+---
+/**
+ * Tracking component — goes in <head>
+ * CookieYes consent banner + Consent Mode v2 defaults + GTM
+ */
+import { config } from '../../config/siteConfig.example';
+
+interface Props {
+  cookieYesId?: string;
+  deferGtmMs?: number;
+}
+
+const {
+  cookieYesId,
+  deferGtmMs = 0,
+} = Astro.props;
+
+const gtmId = config.tracking.gtmId;
+---
+
+{/* CookieYes consent banner */}
+{cookieYesId && (
+  <script
+    id="cookieyes"
+    type="text/javascript"
+    src={`https://cdn-cookieyes.com/client_data/${cookieYesId}/script.js`}
+  ></script>
+)}
+
+{/* Consent Mode v2 defaults — BEFORE GTM */}
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(..._args: any[]) { window.dataLayer.push(arguments as unknown as Record<string, unknown>); }
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    functionality_storage: 'denied',
+    personalization_storage: 'denied',
+    security_storage: 'granted',
+    wait_for_update: 500,
+  });
+  gtag('set', 'ads_data_redaction', true);
+  gtag('set', 'url_passthrough', true);
+</script>
+
+{/* GTM */}
+{gtmId && (
+  <script define:vars={{ gtmId, deferGtmMs }}>
+    function loadGTM() {
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer',gtmId);
+    }
+    if (deferGtmMs > 0) {
+      setTimeout(loadGTM, deferGtmMs);
+    } else {
+      loadGTM();
+    }
+  </script>
+)}

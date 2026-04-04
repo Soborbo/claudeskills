@@ -1,0 +1,42 @@
+---
+interface Props {
+  id: string;
+  background?: 'white' | 'light' | 'dark' | 'primary';
+  padding?: 'sm' | 'md' | 'lg';
+  maxWidth?: 'narrow' | 'default' | 'wide';
+  class?: string;
+}
+
+const {
+  id,
+  background = 'white',
+  padding = 'md',
+  maxWidth = 'default',
+  class: className = '',
+} = Astro.props;
+
+const bgClasses = {
+  white: 'bg-white',
+  light: 'bg-[var(--color-light)]',
+  dark: 'bg-[var(--color-dark)] text-white',
+  primary: 'bg-[var(--color-primary-600)] text-white',
+};
+
+const paddingClasses = {
+  sm: 'py-8 md:py-12',
+  md: 'py-12 md:py-16 lg:py-20',
+  lg: 'py-16 md:py-24 lg:py-32',
+};
+
+const maxWidthClasses = {
+  narrow: 'max-w-3xl',
+  default: 'max-w-7xl',
+  wide: 'max-w-[90rem]',
+};
+---
+
+<section id={id} class:list={[bgClasses[background], paddingClasses[padding], className]}>
+  <div class:list={['mx-auto px-4 sm:px-6 lg:px-8', maxWidthClasses[maxWidth]]}>
+    <slot />
+  </div>
+</section>

@@ -1,0 +1,21 @@
+---
+import SectionWrapper from '../ui/SectionWrapper.astro';
+import { t } from '../../i18n/utils';
+
+interface Props {
+  heading?: string;
+  content: string;
+}
+
+const {
+  heading = t('about.originHeading'),
+  content,
+} = Astro.props;
+---
+
+<SectionWrapper id="origin-story" background="white">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-dark)] mb-8">{heading}</h2>
+    <div class="prose text-gray-600" set:html={content} />
+  </div>
+</SectionWrapper>

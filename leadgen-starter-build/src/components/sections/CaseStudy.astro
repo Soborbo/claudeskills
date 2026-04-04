@@ -1,0 +1,42 @@
+---
+import SectionWrapper from '../ui/SectionWrapper.astro';
+
+interface Props {
+  heading?: string;
+  title: string;
+  description: string;
+  results: string[];
+  image?: string;
+  imageAlt?: string;
+}
+
+const { heading = 'Case Study', title, description, results, image, imageAlt } = Astro.props;
+---
+
+<SectionWrapper id="case-study" background="white">
+  <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-dark)] text-center mb-12">{heading}</h2>
+
+  <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+    {image && (
+      <div>
+        <img src={image} alt={imageAlt || title} loading="lazy" class="w-full rounded-xl object-cover aspect-[4/3]" />
+      </div>
+    )}
+
+    <div class:list={[!image && 'md:col-span-2']}>
+      <h3 class="text-xl font-bold text-[var(--color-dark)] mb-4">{title}</h3>
+      <p class="text-gray-600 mb-6">{description}</p>
+
+      <ul class="space-y-2">
+        {results.map(result => (
+          <li class="flex items-start gap-2">
+            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span class="text-gray-700">{result}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</SectionWrapper>

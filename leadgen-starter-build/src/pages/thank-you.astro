@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/navigation/Header.astro';
+import Footer from '../components/navigation/Footer.astro';
+import Button from '../components/ui/Button.astro';
+import { config } from '../config/siteConfig.example';
+import { t } from '../i18n/utils';
+---
+
+<BaseLayout
+  title="Thank You"
+  description="Your quote request has been received."
+  canonicalPath="/thank-you/"
+  robots="noindex,follow"
+  isContactPage={true}
+>
+  <Header slot="header" />
+
+  <section class="max-w-2xl mx-auto px-4 py-20 text-center">
+    <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+      <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
+
+    <h1 class="text-3xl font-extrabold text-[var(--color-dark)] mb-4">{t('thankYou.heading')}</h1>
+    <p class="text-lg text-gray-600 mb-2">{t('thankYou.message')}</p>
+    <p class="text-gray-500 mb-8">{t('thankYou.responseTime')}</p>
+
+    <div class="space-y-4">
+      <Button href="/services/" variant="primary" size="lg">{t('thankYou.nextSteps')}</Button>
+      <p class="text-sm text-gray-500">
+        Or call us directly: <a href={`tel:${config.contact.phone}`} class="text-[var(--color-primary-600)] hover:underline">{config.contact.phoneDisplay}</a>
+      </p>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+
+  <!-- Conversion tracking -->
+  <Fragment slot="head-extra">
+    <script is:inline>
+      if (typeof window !== 'undefined') {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'form_submit',
+          form_id: 'contact',
+          conversion_type: 'lead',
+        });
+      }
+    </script>
+  </Fragment>
+</BaseLayout>

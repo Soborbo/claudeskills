@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+.dev.vars
+.env
+.DS_Store
+*.log
+.wrangler/
+.image-cache.json

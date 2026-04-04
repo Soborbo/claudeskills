@@ -1,0 +1,167 @@
+{
+  "hero": {
+    "headline": "affordable house removals in bristol",
+    "title": "We Move Your Home, Not Just Your Stuff",
+    "description": "Professional, insured removals with a personal touch. Fixed prices, no hidden fees, same-week availability."
+  },
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "areas": "Areas",
+    "about": "About",
+    "contact": "Contact",
+    "blog": "Blog"
+  },
+  "cta": {
+    "primary": "Get Your Free Quote",
+    "secondary": "Call Us Today",
+    "callback": "Request a Callback",
+    "riskReversal": "Free, no-obligation \u2022 Takes 30 seconds"
+  },
+  "usp": {
+    "heading": "Why Choose Us"
+  },
+  "problemSolution": {
+    "heading": "Moving House Shouldn't Be This Stressful",
+    "problem": "You've got a move coming up and the thought of it keeps you awake. Who's going to handle the fragile stuff? What if they scratch the floors? And those quotes you've been getting — they seem to double by the time the van arrives.",
+    "solution": "It doesn't have to be like that. A removal company that turns up on time, treats your things like their own, and charges what they quoted — that's not too much to ask.",
+    "howWeDoIt": "We've been doing this since 1978. Three generations of our family, the same crew you'll see on the day, and a price that won't change between the quote and the invoice. That's it. No gimmicks."
+  },
+  "howItWorks": {
+    "heading": "How It Works",
+    "steps": [
+      {
+        "title": "Get a Quote",
+        "description": "Tell us where you're moving from and to. We'll come back with a fixed price — usually within the hour."
+      },
+      {
+        "title": "We Plan Everything",
+        "description": "Our team sorts the logistics so you don't have to. Parking, access, timing — we've done this before."
+      },
+      {
+        "title": "Moving Day",
+        "description": "Our crew arrives on time, wraps everything properly, and gets you settled into your new place."
+      },
+      {
+        "title": "You're Home",
+        "description": "Furniture placed where you want it, boxes stacked neatly, and not a scratch in sight."
+      }
+    ]
+  },
+  "testimonials": {
+    "heading": "What Our Customers Say"
+  },
+  "servicesRoster": {
+    "heading": "Our Services",
+    "learnMore": "Learn more"
+  },
+  "faq": {
+    "heading": "Frequently Asked Questions"
+  },
+  "finalCta": {
+    "heading": "Ready to Move Without the Stress?",
+    "description": "Get a fixed-price quote in under a minute. No surprises, no hidden fees."
+  },
+  "about": {
+    "heading": "About Us",
+    "originHeading": "How It All Started",
+    "timelineHeading": "Our Journey",
+    "missionHeading": "What We Stand For",
+    "teamHeading": "Meet the Team",
+    "credentialsHeading": "Our Credentials"
+  },
+  "contact": {
+    "heading": "Get in Touch",
+    "subtitle": "We typically respond within 2 hours during working hours.",
+    "infoHeading": "Contact Information",
+    "hoursHeading": "Opening Hours"
+  },
+  "form": {
+    "name": "Your name",
+    "email": "Email address",
+    "phone": "Phone number",
+    "postcode": "Postcode",
+    "message": "Message (optional)",
+    "submit": "Request a Callback",
+    "consent": "I agree to the privacy policy and consent to being contacted about my enquiry.",
+    "errors": {
+      "nameRequired": "Please enter your name",
+      "emailInvalid": "Please enter a valid email",
+      "phoneInvalid": "Please enter a valid UK phone number",
+      "postcodeInvalid": "Please enter a valid postcode"
+    }
+  },
+  "thankYou": {
+    "heading": "Thank You!",
+    "message": "Your callback request has been received.",
+    "responseTime": "We'll get back to you within 2 hours during working hours.",
+    "nextSteps": "While you wait, why not check out our services?"
+  },
+  "areas": {
+    "heading": "Areas We Cover",
+    "faqHeading": "What Do {area} Residents Ask Us?",
+    "nearbyHeading": "Nearby Areas",
+    "ctaHeading": "Ready to Move in {area}?",
+    "factBoxHeading": "Quick Area Guide"
+  },
+  "services": {
+    "hubHeading": "Our Services",
+    "relatedHeading": "Related Services",
+    "processHeading": "How We Do It",
+    "pricingHeading": "Pricing"
+  },
+  "blog": {
+    "heading": "Blog",
+    "readMore": "Read more",
+    "publishedOn": "Published on",
+    "lastUpdated": "Last updated",
+    "minRead": "min read",
+    "crossLinksHeading": "Helpful Resources"
+  },
+  "author": {
+    "heading": "About the Author",
+    "articlesHeading": "Published Articles",
+    "expertiseHeading": "Areas of Expertise"
+  },
+  "footer": {
+    "copyright": "\u00a9 {year} {companyName}. All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "terms": "Terms & Conditions",
+    "quickLinks": "Quick Links",
+    "ourServices": "Our Services",
+    "areasWeCover": "Areas We Cover"
+  },
+  "notFound": {
+    "heading": "Page Not Found",
+    "message": "Sorry, we couldn't find the page you're looking for.",
+    "cta": "Go to Homepage"
+  },
+  "errorBoundary": {
+    "heading": "Something went wrong",
+    "message": "We're sorry, something unexpected happened. Please try refreshing the page.",
+    "retry": "Try again"
+  },
+  "exitIntent": {
+    "heading": "Wait — before you go",
+    "description": "Get a free, no-obligation quote in under 30 seconds. We'll call you back at a time that suits."
+  },
+  "ctaCard": {
+    "message": "If you're stuck or have questions, just get in touch — we're here to help."
+  },
+  "beforeAfter": {
+    "before": "Before",
+    "after": "After"
+  },
+  "pricing": {
+    "serviceColumn": "Service",
+    "priceColumn": "Price"
+  },
+  "sidebar": {
+    "needHelp": "Need help with your move?",
+    "needQuote": "Need a quote for {area}?"
+  },
+  "toc": {
+    "heading": "Contents"
+  }
+}

@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/navigation/Header.astro';
+import Footer from '../../components/navigation/Footer.astro';
+import StickyHeaderCTA from '../../components/cta/StickyHeaderCTA.astro';
+import StickyMobileCTA from '../../components/cta/StickyMobileCTA.astro';
+import AreaCoverage from '../../components/sections/AreaCoverage.astro';
+import FinalCTA from '../../components/sections/FinalCTA.astro';
+import { config } from '../../config/siteConfig.example';
+import { collectionPageSchema } from '../../config/schema';
+import { t } from '../../i18n/utils';
+
+const schema = collectionPageSchema(config, {
+  name: 'Areas We Cover',
+  path: '/areas/',
+  items: config.areas.map(a => ({ name: a.name, url: `/areas/${a.slug}/` })),
+});
+---
+
+<BaseLayout
+  title={`Areas We Cover — Removals Across ${config.address.region}`}
+  description={`${config.name} covers ${config.areas.map(a => a.name).join(', ')} and surrounding areas. Local removals expertise in every neighbourhood.`}
+  canonicalPath="/areas/"
+  schema={schema}
+>
+  <Header slot="header" />
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-[var(--color-dark)] text-center mb-4">{t('areas.heading')}</h1>
+    <p class="text-lg text-gray-600 text-center max-w-2xl mx-auto mb-12">
+      We know every road, parking zone, and narrow staircase across {config.address.region}. Wherever you are moving, we have been there before.
+    </p>
+  </section>
+
+  <AreaCoverage />
+  <FinalCTA />
+
+  <Footer slot="footer" />
+
+  <Fragment slot="cta-overlays">
+    <StickyHeaderCTA />
+    <StickyMobileCTA />
+  </Fragment>
+</BaseLayout>

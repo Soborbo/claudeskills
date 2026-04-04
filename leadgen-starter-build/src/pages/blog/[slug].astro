@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/navigation/Header.astro';
+import Footer from '../../components/navigation/Footer.astro';
+import StickyHeaderCTA from '../../components/cta/StickyHeaderCTA.astro';
+import StickyMobileCTA from '../../components/cta/StickyMobileCTA.astro';
+import CTACard from '../../components/cta/CTACard.astro';
+import BlogLayout from '../../components/blog/BlogLayout.astro';
+import { config } from '../../config/siteConfig.example';
+import { articleSchema } from '../../config/schema';
+
+// Placeholder — in production, from Content Collections
+const posts = [
+  {
+    slug: 'home-removals-guide',
+    title: 'home removals guide for bristol & bath',
+    visualTitle: 'The Complete Home Removals Guide',
+    description: 'Everything you need to know about moving house in the Bristol area.',
+    heroImage: '/images/blog/home-removals-guide.jpg',
+    heroAlt: 'Painless Removals team during a home removal',
+    authorSlug: 'jay-sheridan',
+    publishDate: '2024-01-15',
+    lastModified: '2024-12-10',
+    readingTime: 8,
+    faqs: [
+      { question: 'When is the best time to move house?', answer: 'Mid-week moves (Tuesday to Thursday) are generally cheaper and easier to book. Avoid end-of-month if possible.' },
+      { question: 'How long does a house move take?', answer: 'A typical 3-bedroom house takes 6-8 hours. We will give you a more accurate estimate when we quote.' },
+    ],
+    crossLinks: [
+      { title: 'Our Services', href: '/services/', description: 'See the full range of removal services we offer.' },
+      { title: 'Areas We Cover', href: '/areas/', description: 'Check if we cover your area.' },
+    ],
+    content: `<h2 id="planning">Planning Your Move</h2>
+<p>Moving house is one of the most stressful things you can do. But with a bit of planning, it doesn't have to be. We have helped over 10,000 families move across Bristol and the South West, and here is what we have learned.</p>
+<p>Start planning at least 4 weeks before your move date. The earlier you book your removal company, the more likely you are to get your preferred date.</p>
+
+<h2 id="packing">Packing Tips</h2>
+<p>Start with the rooms you use least. Guest bedrooms, lofts, and garages are good places to begin. Leave the kitchen and bathroom until last — you will need those right up to moving day.</p>
+<p>Label every box on the top AND the side. When boxes are stacked, you can only see the sides, so labels on top alone are not much use.</p>
+
+<h2 id="moving-day">Moving Day</h2>
+<p>On the day itself, have a bag packed with essentials: phone charger, kettle, tea, toilet paper, and a change of clothes. You will thank yourself later.</p>
+<p>Leave the heavy lifting to the professionals. Our crew knows how to handle everything from pianos to fish tanks, and our insurance covers every item.</p>`,
+  },
+];
+
+export function getStaticPaths() {
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+
+const schema = articleSchema(config, {
+  headline: post.visualTitle,
+  slug: post.slug,
+  datePublished: post.publishDate,
+  dateModified: post.lastModified || post.publishDate,
+  authorSlug: post.authorSlug,
+  description: post.description,
+  image: post.heroImage,
+  type: 'BlogPosting',
+});
+---
+
+<BaseLayout
+  title={post.visualTitle}
+  description={post.description}
+  canonicalPath={`/blog/${post.slug}/`}
+  schema={schema}
+>
+  <Header slot="header" />
+
+  <BlogLayout
+    title={post.title}
+    visualTitle={post.visualTitle}
+    description={post.description}
+    heroImage={post.heroImage}
+    heroAlt={post.heroAlt}
+    authorSlug={post.authorSlug}
+    publishDate={post.publishDate}
+    lastModified={post.lastModified}
+    readingTime={post.readingTime}
+    faqs={post.faqs}
+    crossLinks={post.crossLinks}
+  >
+    <Fragment set:html={post.content} />
+  </BlogLayout>
+
+  <Footer slot="footer" />
+
+  <Fragment slot="cta-overlays">
+    <StickyHeaderCTA />
+    <StickyMobileCTA />
+    <CTACard />
+  </Fragment>
+</BaseLayout>

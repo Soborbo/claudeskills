@@ -1,0 +1,16 @@
+---
+import { config } from '../../config/siteConfig.example';
+
+const gtmId = config.tracking.gtmId;
+---
+
+{gtmId && (
+  <noscript>
+    <iframe
+      src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+      height="0"
+      width="0"
+      style="display:none;visibility:hidden"
+    ></iframe>
+  </noscript>
+)}

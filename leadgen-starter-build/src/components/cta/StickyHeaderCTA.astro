@@ -1,0 +1,62 @@
+---
+import { config } from '../../config/siteConfig.example';
+import Button from '../ui/Button.astro';
+---
+
+<div
+  class="sticky-header-cta fixed top-0 left-0 right-0 z-40 transform -translate-y-full transition-transform duration-300"
+  aria-hidden="true"
+  data-sticky-cta
+>
+  <div class="backdrop-blur-[12px] bg-white/85 shadow-md border-b border-gray-200/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+      <a href="/" class="flex-shrink-0">
+        <img src={config.assets.logo} alt={config.name} class="h-8 w-auto" />
+      </a>
+
+      <span class="hidden md:block text-sm font-medium text-[var(--color-dark)]">{config.tagline}</span>
+
+      <div class="flex items-center gap-4">
+        <a href={`tel:${config.contact.phone}`} class="hidden sm:block text-sm text-gray-600 hover:text-[var(--color-primary-600)]">
+          {config.contact.phoneDisplay}
+        </a>
+        <a href={`mailto:${config.contact.email}`} class="hidden md:block text-sm text-gray-600 hover:text-[var(--color-primary-600)]">
+          {config.contact.email}
+        </a>
+        <Button href="/contact/" variant="primary" size="sm" dataCta="sticky-header-cta">
+          {config.cta.primary}
+        </Button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const stickyHeader = document.querySelector('[data-sticky-cta]') as HTMLElement | null;
+  if (stickyHeader && !document.body.dataset.contactPage) {
+    let lastScrollY = 0;
+    let hasTriggered = false;
+    let scrollingDown = true;
+
+    window.addEventListener('scroll', () => {
+      const currentY = window.scrollY;
+      scrollingDown = currentY > lastScrollY;
+
+      if (scrollingDown && (currentY > 800 || hasTriggered)) {
+        hasTriggered = true;
+        stickyHeader.classList.remove('-translate-y-full');
+        stickyHeader.setAttribute('aria-hidden', 'false');
+        // Enable tab focus on CTA
+        const ctaBtn = stickyHeader.querySelector('[data-cta]') as HTMLElement;
+        if (ctaBtn) ctaBtn.tabIndex = 0;
+      } else if (!scrollingDown) {
+        stickyHeader.classList.add('-translate-y-full');
+        stickyHeader.setAttribute('aria-hidden', 'true');
+        const ctaBtn = stickyHeader.querySelector('[data-cta]') as HTMLElement;
+        if (ctaBtn) ctaBtn.tabIndex = -1;
+      }
+
+      lastScrollY = currentY;
+    }, { passive: true });
+  }
+</script>

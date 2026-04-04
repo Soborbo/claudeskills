@@ -1,0 +1,53 @@
+---
+import SectionWrapper from '../ui/SectionWrapper.astro';
+import { t } from '../../i18n/utils';
+
+interface PricingRow {
+  service: string;
+  price: string;
+  note?: string;
+}
+
+interface Props {
+  heading?: string;
+  rows: PricingRow[];
+  disclaimer?: string;
+}
+
+const {
+  heading = t('services.pricingHeading'),
+  rows,
+  disclaimer,
+} = Astro.props;
+---
+
+<SectionWrapper id="pricing" background="white">
+  <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-dark)] text-center mb-12">{heading}</h2>
+
+  <div class="max-w-2xl mx-auto overflow-x-auto">
+    <table class="w-full border-collapse" role="table">
+      <caption class="sr-only">{heading}</caption>
+      <thead>
+        <tr class="border-b-2 border-gray-200">
+          <th scope="col" class="text-left py-3 pr-4 font-semibold text-[var(--color-dark)]">{t('pricing.serviceColumn')}</th>
+          <th scope="col" class="text-right py-3 pl-4 font-semibold text-[var(--color-dark)]">{t('pricing.priceColumn')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(row => (
+          <tr class="border-b border-gray-100">
+            <td class="py-3 pr-4">
+              <span class="font-medium text-[var(--color-dark)]">{row.service}</span>
+              {row.note && <span class="block text-sm text-gray-500">{row.note}</span>}
+            </td>
+            <td class="py-3 pl-4 text-right font-semibold text-[var(--color-primary-600)]">{row.price}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {disclaimer && (
+    <p class="text-sm text-gray-500 text-center mt-4 max-w-2xl mx-auto">{disclaimer}</p>
+  )}
+</SectionWrapper>

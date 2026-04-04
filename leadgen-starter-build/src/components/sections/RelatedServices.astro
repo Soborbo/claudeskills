@@ -1,0 +1,37 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+import SectionWrapper from '../ui/SectionWrapper.astro';
+
+interface Props {
+  heading?: string;
+  excludeSlug?: string;
+  limit?: number;
+}
+
+const {
+  heading = t('services.relatedHeading'),
+  excludeSlug,
+  limit = 3,
+} = Astro.props;
+
+const services = config.services
+  .filter(s => s.slug !== excludeSlug)
+  .slice(0, limit);
+---
+
+<SectionWrapper id="related-services" background="light">
+  <h2 class="text-2xl font-bold text-[var(--color-dark)] text-center mb-8">{heading}</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+    {services.map(service => (
+      <a
+        href={`/services/${service.slug}/`}
+        class="block bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+      >
+        <h3 class="font-semibold text-[var(--color-dark)] mb-2">{service.name}</h3>
+        <p class="text-sm text-gray-600">{service.shortDescription}</p>
+      </a>
+    ))}
+  </div>
+</SectionWrapper>

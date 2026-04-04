@@ -1,0 +1,36 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+import SectionWrapper from '../ui/SectionWrapper.astro';
+---
+
+<SectionWrapper id="services" background="white">
+  <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-dark)] text-center mb-12">{t('servicesRoster.heading')}</h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {config.services.map(service => (
+      <a
+        href={`/services/${service.slug}/`}
+        class="group block bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+      >
+        <div class="aspect-[16/10] bg-[var(--color-light)] flex items-center justify-center">
+          <img
+            src={`/images/services/${service.slug}.jpg`}
+            alt={`${service.name} in ${config.address.city}`}
+            loading="lazy"
+            class="w-full h-full object-cover"
+          />
+        </div>
+        <div class="p-5">
+          <h3 class="text-lg font-bold text-[var(--color-dark)] mb-2 group-hover:text-[var(--color-primary-600)] transition-colors">
+            {service.name}
+          </h3>
+          <p class="text-sm text-gray-600 mb-3">{service.shortDescription}</p>
+          <span class="text-sm font-medium text-[var(--color-primary-600)] group-hover:underline">
+            {t('servicesRoster.learnMore')} &rarr;
+          </span>
+        </div>
+      </a>
+    ))}
+  </div>
+</SectionWrapper>

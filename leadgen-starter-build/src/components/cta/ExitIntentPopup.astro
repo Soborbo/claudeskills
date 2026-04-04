@@ -1,0 +1,101 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+import Button from '../ui/Button.astro';
+---
+
+<div
+  class="exit-intent fixed inset-0 z-50 hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="exit-intent-title"
+  data-exit-intent
+>
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" data-exit-backdrop></div>
+
+  <!-- Modal -->
+  <div class="absolute inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative" role="document">
+      <button
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1"
+        aria-label="Close"
+        data-exit-close
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <h2 id="exit-intent-title" class="text-2xl font-bold text-[var(--color-dark)] mb-2">
+        {t('exitIntent.heading')}
+      </h2>
+      <p class="text-gray-600 mb-6">
+        {t('exitIntent.description')}
+      </p>
+
+      <Button href="/contact/" variant="primary" size="lg" fullWidth dataCta="exit-intent-cta">
+        {config.cta.primary}
+      </Button>
+
+      <p class="text-sm text-gray-500 mt-3 text-center">{config.cta.riskReversal}</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const popup = document.querySelector('[data-exit-intent]') as HTMLElement | null;
+  if (popup && !document.body.dataset.contactPage && window.innerWidth >= 1024) {
+    const closeBtn = popup.querySelector('[data-exit-close]');
+    const backdrop = popup.querySelector('[data-exit-backdrop]');
+    let shown = false;
+    let previousFocus: HTMLElement | null = null;
+    const SESSION_KEY = 'exit-intent-shown';
+
+    // Only show once per session
+    if (!sessionStorage.getItem(SESSION_KEY)) {
+      function showPopup() {
+        if (shown) return;
+        shown = true;
+        sessionStorage.setItem(SESSION_KEY, '1');
+        previousFocus = document.activeElement as HTMLElement;
+        popup!.classList.remove('hidden');
+        (closeBtn as HTMLElement)?.focus();
+      }
+
+      function closePopup() {
+        popup!.classList.add('hidden');
+        previousFocus?.focus();
+      }
+
+      // Activate after 30 seconds
+      setTimeout(() => {
+        document.addEventListener('mouseout', (e) => {
+          if (e.clientY <= 0 && Math.abs(e.movementY) > 5) {
+            showPopup();
+          }
+        });
+      }, 30000);
+
+      closeBtn?.addEventListener('click', closePopup);
+      backdrop?.addEventListener('click', closePopup);
+
+      // Escape + focus trap
+      popup.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closePopup();
+        if (e.key === 'Tab') {
+          const focusable = popup!.querySelectorAll<HTMLElement>('a, button, [tabindex]:not([tabindex="-1"])');
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last?.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first?.focus();
+          }
+        }
+      });
+    }
+  }
+</script>

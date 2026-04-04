@@ -1,0 +1,143 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+import Button from '../ui/Button.astro';
+
+const navLinks = [
+  { href: '/', label: t('nav.home') },
+  { href: '/services/', label: t('nav.services') },
+  { href: '/areas/', label: t('nav.areas') },
+  { href: '/about/', label: t('nav.about') },
+  { href: '/blog/', label: t('nav.blog') },
+  { href: '/contact/', label: t('nav.contact') },
+];
+---
+
+<!-- Main Header -->
+<header class="header relative z-50 bg-white shadow-sm" style={`height: var(--header-h)`}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+    <!-- Logo -->
+    <a href="/" class="flex-shrink-0" aria-label={config.name}>
+      <img src={config.assets.logo} alt={config.name} class="h-10 w-auto" />
+    </a>
+
+    <!-- Desktop Nav -->
+    <nav class="hidden lg:flex items-center gap-8" aria-label="Main navigation">
+      {navLinks.map(link => (
+        <a
+          href={link.href}
+          class="text-sm font-medium text-gray-700 hover:text-[var(--color-primary-600)] transition-colors"
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <!-- Desktop CTA + Phone -->
+    <div class="hidden lg:flex items-center gap-4">
+      <a href={`tel:${config.contact.phone}`} class="text-sm font-medium text-gray-600 hover:text-[var(--color-primary-600)]">
+        {config.contact.phoneDisplay}
+      </a>
+      <Button href="/contact/" variant="primary" size="sm" dataCta="header-cta">
+        {config.cta.primary}
+      </Button>
+    </div>
+
+    <!-- Mobile Hamburger -->
+    <button
+      class="lg:hidden p-2 text-gray-700"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      aria-label="Open menu"
+      data-hamburger
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile Menu Overlay -->
+<div
+  id="mobile-menu"
+  class="mobile-menu fixed inset-0 z-[60] bg-white transform translate-x-full transition-transform duration-300 lg:hidden"
+  aria-hidden="true"
+>
+  <div class="flex items-center justify-between px-4 h-[var(--header-h)] border-b">
+    <a href="/" aria-label={config.name}>
+      <img src={config.assets.logo} alt={config.name} class="h-10 w-auto" />
+    </a>
+    <button class="p-2 text-gray-700" aria-label="Close menu" data-hamburger-close>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <nav class="px-4 py-8 space-y-4" aria-label="Mobile navigation">
+    {navLinks.map(link => (
+      <a
+        href={link.href}
+        class="block text-lg font-medium text-gray-900 py-2 border-b border-gray-100 hover:text-[var(--color-primary-600)]"
+      >
+        {link.label}
+      </a>
+    ))}
+    <div class="pt-4">
+      <Button href="/contact/" variant="primary" size="lg" fullWidth dataCta="mobile-menu-cta">
+        {config.cta.primary}
+      </Button>
+    </div>
+  </nav>
+</div>
+
+<script>
+  const hamburger = document.querySelector('[data-hamburger]');
+  const close = document.querySelector('[data-hamburger-close]');
+  const menu = document.getElementById('mobile-menu');
+
+  // Single keydown handler (defined once, not per open)
+  function handleMenuKeydown(e: KeyboardEvent) {
+    if (!menu) return;
+    if (e.key === 'Escape') { closeMenu(); return; }
+    if (e.key === 'Tab') {
+      const focusable = menu.querySelectorAll<HTMLElement>('a, button');
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    }
+  }
+
+  function openMenu() {
+    if (!menu || !hamburger) return;
+    menu.classList.remove('translate-x-full');
+    menu.setAttribute('aria-hidden', 'false');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+
+    const focusable = menu.querySelectorAll<HTMLElement>('a, button');
+    focusable[0]?.focus();
+
+    menu.addEventListener('keydown', handleMenuKeydown);
+  }
+
+  function closeMenu() {
+    if (!menu || !hamburger) return;
+    menu.classList.add('translate-x-full');
+    menu.setAttribute('aria-hidden', 'true');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    menu.removeEventListener('keydown', handleMenuKeydown);
+    (hamburger as HTMLElement).focus();
+  }
+
+  hamburger?.addEventListener('click', openMenu);
+  close?.addEventListener('click', closeMenu);
+</script>

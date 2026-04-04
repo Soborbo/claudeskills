@@ -1,0 +1,36 @@
+---
+import { config } from '../../config/siteConfig.example';
+
+const iconPaths: Record<string, string> = {
+  'shield-check': '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>',
+  'pound-sign': '<line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  'clock': '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  'award': '<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>',
+  'truck': '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+  'home': '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  'star': '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+};
+---
+
+<div class="bg-[var(--color-primary-50)] border-y border-[var(--color-primary-100)]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {config.usps.map(usp => (
+        <div class="flex items-center gap-3 justify-center text-center lg:text-left lg:justify-start">
+          <svg
+            class="w-5 h-5 text-[var(--color-primary-600)] flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            viewBox="0 0 24 24"
+          >
+            <Fragment set:html={iconPaths[usp.icon] || iconPaths['star']} />
+          </svg>
+          <span class="text-sm font-medium text-[var(--color-dark)]">{usp.text}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>

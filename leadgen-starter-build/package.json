@@ -1,0 +1,28 @@
+{
+  "name": "leadgen-starter",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "images": "tsx scripts/optimize-images.ts"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.0.0",
+    "@astrojs/sitemap": "^3.3.0",
+    "astro": "^6.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "sharp": "^0.33.0",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  },
+  "overrides": {
+    "vite": "^7"
+  }
+}

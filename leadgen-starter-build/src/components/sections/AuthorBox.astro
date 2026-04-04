@@ -1,0 +1,40 @@
+---
+import { config } from '../../config/siteConfig.example';
+
+interface Props {
+  authorSlug: string;
+  variant?: 'full' | 'inline';
+}
+
+const { authorSlug, variant = 'full' } = Astro.props;
+const person = config.people.find(p => p.slug === authorSlug);
+---
+
+{person && variant === 'full' && (
+  <div class="bg-[var(--color-light)] rounded-xl p-6 flex gap-4 items-start">
+    {person.image && (
+      <a href={`/author/${person.slug}/`}>
+        <img src={person.image} alt={person.name} class="w-16 h-16 rounded-full object-cover flex-shrink-0" loading="lazy" />
+      </a>
+    )}
+    <div>
+      <a href={`/author/${person.slug}/`} class="font-semibold text-[var(--color-dark)] hover:text-[var(--color-primary-600)]">{person.name}</a>
+      <p class="text-sm text-gray-500">{person.role}</p>
+      {person.bio && <p class="text-sm text-gray-600 mt-2">{person.bio}</p>}
+    </div>
+  </div>
+)}
+
+{person && variant === 'inline' && (
+  <div class="flex items-center gap-3">
+    {person.image && (
+      <a href={`/author/${person.slug}/`}>
+        <img src={person.image} alt={person.name} class="w-10 h-10 rounded-full object-cover" loading="lazy" />
+      </a>
+    )}
+    <div>
+      <a href={`/author/${person.slug}/`} class="text-sm font-semibold text-[var(--color-dark)] hover:text-[var(--color-primary-600)]">{person.name}</a>
+      <p class="text-xs text-gray-500">{person.role}</p>
+    </div>
+  </div>
+)}

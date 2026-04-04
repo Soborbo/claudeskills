@@ -1,0 +1,15 @@
+---
+---
+
+<div class="fixed top-0 left-0 h-1 bg-[var(--color-primary-600)] z-[100] transition-[width] duration-100" style="width: 0%" data-reading-progress></div>
+
+<script>
+  const bar = document.querySelector('[data-reading-progress]') as HTMLElement;
+  if (bar) {
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min((window.scrollY / docHeight) * 100, 100);
+      bar.style.width = `${progress}%`;
+    }, { passive: true });
+  }
+</script>

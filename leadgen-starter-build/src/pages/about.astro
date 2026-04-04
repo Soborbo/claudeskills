@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/navigation/Header.astro';
+import Footer from '../components/navigation/Footer.astro';
+import StickyHeaderCTA from '../components/cta/StickyHeaderCTA.astro';
+import StickyMobileCTA from '../components/cta/StickyMobileCTA.astro';
+import CTACard from '../components/cta/CTACard.astro';
+import Hero from '../components/sections/Hero.astro';
+import UspStrip from '../components/sections/UspStrip.astro';
+import OriginStory from '../components/sections/OriginStory.astro';
+import Timeline from '../components/sections/Timeline.astro';
+import MissionValues from '../components/sections/MissionValues.astro';
+import TeamGrid from '../components/sections/TeamGrid.astro';
+import Credentials from '../components/sections/Credentials.astro';
+import Testimonials from '../components/sections/Testimonials.astro';
+import FinalCTA from '../components/sections/FinalCTA.astro';
+import { config } from '../config/siteConfig.example';
+import { aboutPageSchema } from '../config/schema';
+
+const schema = aboutPageSchema(config);
+
+const milestones = [
+  { year: '1978', title: 'The Beginning', description: 'Founded by Jack Sheridan with one van and a handshake.' },
+  { year: '1995', title: 'Growing the Fleet', description: 'Expanded to three vans and a proper depot on Southmead Road.' },
+  { year: '2010', title: 'Jay Takes Over', description: 'Jay Sheridan steps up as Managing Director, modernising the operation.' },
+  { year: '2018', title: '40 Years Strong', description: 'Celebrated 40 years and 10,000+ successful moves.' },
+  { year: '2024', title: 'BAR Accredited', description: 'Officially accredited by the British Association of Removers.' },
+];
+
+const values = [
+  { title: 'Honesty', description: 'We say what we mean and charge what we quote. No hidden fees, no surprises.' },
+  { title: 'Care', description: 'Your things matter to you, so they matter to us. Every item gets wrapped properly.' },
+  { title: 'Reliability', description: 'We turn up on time, every time. Three generations of keeping our word.' },
+];
+
+const originContent = `<p>It started with a Bedford TK van and a strong back. In 1978, Jack Sheridan left his job at the docks and started moving furniture for neighbours in Southmead. Word got around. Within a year, he had more work than he could handle.</p>
+<p>Jack ran the business for over 30 years. His son Jay grew up loading vans during school holidays, learning the trade from the ground up. When Jay took over in 2010, he kept the things that mattered — fair pricing, careful handling, turning up when you said you would — and brought in the rest. Online booking, proper insurance, a crew that stays together.</p>
+<p>Today, Painless Removals has completed over 10,000 moves across Bristol and the South West. We are still based on Southmead Road, still family-run, and still doing things the way Jack taught us.</p>`;
+---
+
+<BaseLayout
+  title={`About ${config.name} — ${config.address.city}'s Trusted Removal Company`}
+  description={`Learn about ${config.name}, a family-run removal company serving ${config.address.city} since ${config.foundedYear}. Fully insured, BAR accredited.`}
+  canonicalPath="/about/"
+  schema={schema}
+>
+  <Header slot="header" />
+
+  <Hero
+    headline={`about ${config.name.toLowerCase()}`}
+    title={`${config.address.city}'s Most Trusted Removal Team`}
+    description={`Family-run since ${config.foundedYear}. Over 10,000 successful moves and counting.`}
+    heroImage="/images/about-hero.jpg"
+    heroAlt={`${config.name} team photo`}
+    showReviews={false}
+  />
+  <UspStrip />
+  <OriginStory content={originContent} />
+  <Timeline milestones={milestones} />
+  <MissionValues values={values} />
+  <TeamGrid />
+  <Credentials />
+  <Testimonials columns={2} />
+  <FinalCTA heading="Want to Work With Us?" description="Get a free, no-obligation quote and see why thousands of Bristol families trust us with their move." />
+
+  <Footer slot="footer" />
+
+  <Fragment slot="cta-overlays">
+    <StickyHeaderCTA />
+    <StickyMobileCTA />
+    <CTACard />
+  </Fragment>
+</BaseLayout>

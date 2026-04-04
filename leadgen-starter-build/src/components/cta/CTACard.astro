@@ -1,0 +1,113 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+
+const featuredPerson = config.people.find(p => p.featured);
+---
+
+<div
+  class="cta-card fixed bottom-6 right-6 z-30 hidden lg:block opacity-0 transition-all duration-500 pointer-events-none"
+  aria-live="polite"
+  data-cta-card
+>
+  <!-- Full card -->
+  <div class="cta-card-full bg-white rounded-2xl shadow-xl border border-gray-100 p-5 max-w-xs" role="region">
+    <button
+      class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 p-1"
+      aria-label="Close contact card"
+      data-cta-card-close
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+
+    {featuredPerson && (
+      <div class="flex items-center gap-3 mb-3">
+        {featuredPerson.image && (
+          <img
+            src={featuredPerson.image}
+            alt={featuredPerson.name}
+            class="w-12 h-12 rounded-full object-cover"
+            loading="lazy"
+          />
+        )}
+        <div>
+          <p class="font-semibold text-sm text-[var(--color-dark)]">{featuredPerson.name}</p>
+          <p class="text-xs text-gray-500">{featuredPerson.role}</p>
+        </div>
+      </div>
+    )}
+
+    <p class="text-sm text-gray-600 mb-3">
+      {t('ctaCard.message')}
+    </p>
+
+    <a
+      href={`tel:${config.contact.phone}`}
+      class="block text-sm text-gray-500 mb-2 hover:text-[var(--color-primary-600)]"
+    >
+      {config.contact.phoneDisplay}
+    </a>
+
+    <a
+      href="/contact/"
+      class="block w-full text-center py-2.5 bg-[var(--color-primary-600)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--color-primary-700)]"
+      data-cta="cta-card"
+    >
+      {config.cta.callbackButton}
+    </a>
+  </div>
+
+  <!-- Collapsed avatar (shown after close) -->
+  <div class="cta-card-collapsed hidden" role="button" tabindex="0" aria-label="Open contact card" data-cta-card-open>
+    {featuredPerson?.image && (
+      <img
+        src={featuredPerson.image}
+        alt={featuredPerson.name}
+        class="w-14 h-14 rounded-full object-cover shadow-lg border-2 border-white cursor-pointer hover:scale-105 transition-transform"
+      />
+    )}
+  </div>
+</div>
+
+<script>
+  const card = document.querySelector('[data-cta-card]') as HTMLElement | null;
+  if (card && !document.body.dataset.contactPage) {
+    const full = card.querySelector('.cta-card-full') as HTMLElement;
+    const collapsed = card.querySelector('.cta-card-collapsed') as HTMLElement;
+    const closeBtn = card.querySelector('[data-cta-card-close]');
+    const openBtn = card.querySelector('[data-cta-card-open]');
+
+    // Show after 9 seconds
+    setTimeout(() => {
+      card.classList.remove('opacity-0', 'pointer-events-none');
+      card.classList.add('opacity-100', 'pointer-events-auto');
+    }, 9000);
+
+    closeBtn?.addEventListener('click', () => {
+      full.classList.add('hidden');
+      collapsed.classList.remove('hidden');
+    });
+
+    const openHandler = () => {
+      full.classList.remove('hidden');
+      collapsed.classList.add('hidden');
+    };
+    openBtn?.addEventListener('click', openHandler);
+    openBtn?.addEventListener('keydown', (e) => {
+      if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+        e.preventDefault();
+        openHandler();
+      }
+    });
+
+    // Escape to close
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !full.classList.contains('hidden')) {
+        full.classList.add('hidden');
+        collapsed.classList.remove('hidden');
+      }
+    });
+  }
+</script>

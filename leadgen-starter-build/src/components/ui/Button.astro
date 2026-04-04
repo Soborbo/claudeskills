@@ -1,0 +1,41 @@
+---
+interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  fullWidth?: boolean;
+  dataCta?: string;
+  class?: string;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  fullWidth = false,
+  dataCta,
+  class: className = '',
+} = Astro.props;
+
+const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2';
+
+const variantClasses = {
+  primary: 'bg-[var(--color-primary-600)] text-white hover:bg-[var(--color-primary-700)] focus:ring-[var(--color-primary-500)]',
+  secondary: 'bg-[var(--color-primary-100)] text-[var(--color-primary-800)] hover:bg-[var(--color-primary-200)] focus:ring-[var(--color-primary-300)]',
+  outline: 'border-2 border-[var(--color-primary-600)] text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] focus:ring-[var(--color-primary-500)]',
+};
+
+const sizeClasses = {
+  sm: 'px-4 py-2 text-sm',
+  md: 'px-6 py-3 text-base',
+  lg: 'px-8 py-4 text-lg',
+};
+---
+
+<a
+  href={href}
+  class:list={[baseClasses, variantClasses[variant], sizeClasses[size], fullWidth && 'w-full', className]}
+  data-cta={dataCta}
+>
+  <slot />
+</a>

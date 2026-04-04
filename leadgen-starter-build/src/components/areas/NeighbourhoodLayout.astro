@@ -1,0 +1,130 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+import Button from '../ui/Button.astro';
+import UspStrip from '../sections/UspStrip.astro';
+import FAQ from '../sections/FAQ.astro';
+
+interface FAQItem { question: string; answer: string; }
+interface NearbyArea { name: string; slug: string; }
+interface ServiceCard { name: string; slug: string; shortDescription: string; }
+
+interface Props {
+  name: string;
+  slug: string;
+  heroImage: string;
+  heroAlt: string;
+  heroSubtitle?: string;
+  faqs?: FAQItem[];
+  nearby?: NearbyArea[];
+  services?: ServiceCard[];
+}
+
+const { name, slug, heroImage, heroAlt, heroSubtitle, faqs = [], nearby = [], services = config.services.slice(0, 3) } = Astro.props;
+---
+
+<!-- Hero -->
+<section class="relative overflow-hidden" style="max-height: calc(100dvh - var(--header-h))">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-8 items-center py-8 lg:py-12">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-[var(--color-dark)] mb-3">
+          Removals in {name}
+        </h1>
+        {heroSubtitle && <p class="text-lg text-gray-600 mb-4">{heroSubtitle}</p>}
+        <Button href="/contact/" variant="primary" size="lg" dataCta="area-hero-cta">{config.cta.primary}</Button>
+        <p class="text-sm text-gray-500 mt-2">{config.cta.riskReversal}</p>
+      </div>
+      <div>
+        <img src={heroImage} alt={heroAlt} loading="eager" fetchpriority="high" class="w-full rounded-2xl object-cover aspect-[4/3]" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<UspStrip />
+
+<!-- Breadcrumbs -->
+<nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-sm text-gray-500" aria-label="Breadcrumb">
+  <ol class="flex items-center gap-2">
+    <li><a href="/" class="hover:text-[var(--color-primary-600)]">Home</a></li>
+    <li aria-hidden="true">/</li>
+    <li><a href="/areas/" class="hover:text-[var(--color-primary-600)]">Areas</a></li>
+    <li aria-hidden="true">/</li>
+    <li class="text-[var(--color-dark)] font-medium" aria-current="page">{name}</li>
+  </ol>
+</nav>
+
+<!-- 2-column layout -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid lg:grid-cols-[1fr_340px] gap-12">
+    <!-- Article -->
+    <article class="prose">
+      <slot />
+    </article>
+
+    <!-- Sidebar (desktop only) -->
+    <aside class="hidden lg:block space-y-6">
+      <div class="sticky top-[calc(var(--header-h)+15px)] space-y-6" style="max-height: calc(100dvh - var(--header-h) - 30px); overflow-y: auto;">
+        <slot name="sidebar" />
+
+        <!-- Sidebar CTA -->
+        <div class="bg-[var(--color-primary-50)] rounded-xl p-5 border border-[var(--color-primary-100)]">
+          <p class="font-semibold text-[var(--color-dark)] mb-2">{t('sidebar.needHelp')}</p>
+          <Button href="/contact/" variant="primary" size="md" fullWidth dataCta="area-sidebar-cta">{config.cta.callbackButton}</Button>
+          <p class="text-xs text-gray-500 mt-2 text-center">{config.cta.riskReversal}</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Mobile mid-CTA (full bleed) -->
+<div class="lg:hidden bg-[var(--color-primary-600)] text-white py-8 px-4 text-center">
+  <p class="font-semibold mb-3">{t('sidebar.needQuote', { area: name })}</p>
+  <Button href="/contact/" variant="secondary" size="lg" dataCta="area-mid-cta" class="bg-white text-[var(--color-primary-600)]">{config.cta.primary}</Button>
+</div>
+
+<!-- FAQ -->
+{faqs.length > 0 && (
+  <FAQ heading={t('areas.faqHeading', { area: name })} faqs={faqs} id="area-faq" />
+)}
+
+<!-- Nearby + Services -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  {nearby.length > 0 && (
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-[var(--color-dark)] mb-6">{t('areas.nearbyHeading')}</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {nearby.map(area => (
+          <a href={`/areas/${area.slug}/`} class="block bg-white border border-gray-200 rounded-lg p-3 text-center hover:shadow-md hover:-translate-y-0.5 transition-all">
+            <span class="font-medium text-[var(--color-dark)]">{area.name}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  )}
+
+  <div>
+    <h2 class="text-xl font-bold text-[var(--color-dark)] mb-6">{t('servicesRoster.heading')}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {services.map(s => (
+        <a href={`/services/${s.slug}/`} class="block bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <h3 class="font-semibold text-[var(--color-dark)] mb-1">{s.name}</h3>
+          <p class="text-sm text-gray-600">{s.shortDescription}</p>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- Area Final CTA -->
+<section class="bg-[var(--color-primary-600)] text-white py-12">
+  <div class="max-w-2xl mx-auto px-4 text-center">
+    <h2 class="text-2xl font-bold mb-3">{t('areas.ctaHeading', { area: name })}</h2>
+    <Button href="/contact/" variant="secondary" size="lg" dataCta="area-final-cta" class="bg-white text-[var(--color-primary-600)]">{config.cta.primary}</Button>
+    <p class="text-sm text-white/70 mt-3">
+      <a href="/areas/" class="underline hover:text-white">View all areas we cover</a>
+    </p>
+  </div>
+</section>

@@ -1,0 +1,59 @@
+---
+import { config } from '../../config/siteConfig.example';
+---
+
+<div
+  class="sticky-mobile-cta fixed bottom-0 left-0 right-0 z-40 lg:hidden opacity-0 transition-opacity duration-500 pointer-events-none"
+  role="complementary"
+  aria-label="Quick contact"
+  data-sticky-mobile
+>
+  <div class="bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.1)] border-t border-gray-200 px-4 py-3 flex gap-3">
+    <a
+      href={`tel:${config.contact.phone}`}
+      class="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-[var(--color-primary-600)] text-[var(--color-primary-600)] font-semibold text-sm"
+      data-cta="mobile-call"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+      {config.cta.mobileCall}
+    </a>
+    <a
+      href="/contact/"
+      class="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg bg-[var(--color-primary-600)] text-white font-semibold text-sm"
+      data-cta="mobile-calculator"
+    >
+      {config.cta.mobileCalculator || config.cta.primary}
+    </a>
+  </div>
+</div>
+
+<script>
+  const mobileBar = document.querySelector('[data-sticky-mobile]') as HTMLElement | null;
+  if (mobileBar && !document.body.dataset.contactPage) {
+    // Only apply on mobile (matches lg:hidden CSS)
+    const mql = window.matchMedia('(max-width: 1023px)');
+
+    function handleMobileBar(matches: boolean) {
+      if (matches) {
+        document.body.style.paddingBottom = '72px';
+      } else {
+        document.body.style.paddingBottom = '';
+      }
+    }
+
+    setTimeout(() => {
+      mobileBar.classList.remove('opacity-0', 'pointer-events-none');
+      mobileBar.classList.add('opacity-100', 'pointer-events-auto');
+      // Measure actual height after visible
+      const height = mobileBar.offsetHeight || 72;
+      if (mql.matches) {
+        document.body.style.paddingBottom = `${height}px`;
+      }
+    }, 5000);
+
+    handleMobileBar(mql.matches);
+    mql.addEventListener('change', (e) => handleMobileBar(e.matches));
+  }
+</script>

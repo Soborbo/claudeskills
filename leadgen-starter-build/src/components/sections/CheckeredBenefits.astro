@@ -1,0 +1,67 @@
+---
+import SectionWrapper from '../ui/SectionWrapper.astro';
+import Button from '../ui/Button.astro';
+import { config } from '../../config/siteConfig.example';
+
+interface BenefitItem {
+  title: string;
+  description: string;
+  image: string;
+  imageAlt: string;
+}
+
+interface Props {
+  heading?: string;
+  items: BenefitItem[];
+}
+
+const { heading, items } = Astro.props;
+---
+
+<SectionWrapper id="benefits" background="white">
+  {heading && (
+    <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-dark)] text-center mb-12">{heading}</h2>
+  )}
+
+  <div class="space-y-0">
+    {items.map((item, i) => {
+      const isReversed = i % 2 !== 0;
+
+      return (
+        <div class="grid lg:grid-cols-2">
+          {/* Image — always first in DOM for mobile ordering */}
+          <div class:list={[
+            'order-1',
+            isReversed ? 'lg:order-2' : 'lg:order-1',
+          ]}>
+            <img
+              src={item.image}
+              alt={item.imageAlt}
+              loading="lazy"
+              class="w-full h-full object-cover aspect-[4/3]"
+            />
+          </div>
+
+          {/* Text */}
+          <div class:list={[
+            'order-2 flex items-center p-8 lg:p-12',
+            isReversed ? 'lg:order-1' : 'lg:order-2',
+          ]}>
+            <div>
+              <h3 class="text-xl sm:text-2xl font-bold text-[var(--color-dark)] mb-4">{item.title}</h3>
+              <p class="text-gray-600 leading-relaxed">{item.description}</p>
+
+              {(i + 1) % 2 === 0 && (
+                <div class="mt-6">
+                  <Button href="/contact/" variant="primary" size="md" dataCta="checkered-cta">
+                    {config.cta.primary}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</SectionWrapper>

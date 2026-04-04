@@ -1,0 +1,64 @@
+---
+import { t, tArray } from '../../i18n/utils';
+import { config } from '../../config/siteConfig.example';
+import SectionWrapper from '../ui/SectionWrapper.astro';
+import Button from '../ui/Button.astro';
+
+interface Step {
+  title: string;
+  description: string;
+}
+
+interface Props {
+  heading?: string;
+  steps?: Step[];
+}
+
+const defaultSteps: Step[] = tArray<Step>('howItWorks.steps');
+
+const {
+  heading = t('howItWorks.heading'),
+  steps = defaultSteps,
+} = Astro.props;
+---
+
+<SectionWrapper id="how-it-works" background="primary" padding="lg">
+  <h2 class="text-2xl sm:text-3xl font-bold text-center mb-12">{heading}</h2>
+
+  <!-- Desktop: horizontal row with connecting line -->
+  <div class="hidden md:block relative">
+    <div class="absolute top-8 left-[10%] right-[10%] h-0.5 bg-white/30"></div>
+    <div class="grid grid-cols-4 gap-6 relative">
+      {steps.map((step, i) => (
+        <div class="text-center">
+          <div class="w-16 h-16 rounded-full bg-white text-[var(--color-primary-600)] flex items-center justify-center text-xl font-bold mx-auto mb-4 relative z-10">
+            {i + 1}
+          </div>
+          <h4 class="font-semibold mb-2">{step.title}</h4>
+          <p class="text-sm text-white/80">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Mobile: horizontal scroll with snap -->
+  <div class="md:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+    <div class="flex gap-4" style={`width: ${steps.length * 80}%`}>
+      {steps.map((step, i) => (
+        <div class="snap-start flex-shrink-0 bg-white/10 rounded-xl p-6 backdrop-blur-sm" style="width: calc(85vw - 2rem)">
+          <div class="w-12 h-12 rounded-full bg-white text-[var(--color-primary-600)] flex items-center justify-center text-lg font-bold mb-3">
+            {i + 1}
+          </div>
+          <h4 class="font-semibold mb-2">{step.title}</h4>
+          <p class="text-sm text-white/80">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="text-center mt-10">
+    <Button href="/contact/" variant="secondary" size="lg" dataCta="how-it-works-cta" class="bg-white text-[var(--color-primary-600)] hover:bg-gray-100">
+      {config.cta.primary}
+    </Button>
+  </div>
+</SectionWrapper>

@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/navigation/Header.astro';
+import Footer from '../../components/navigation/Footer.astro';
+import StickyHeaderCTA from '../../components/cta/StickyHeaderCTA.astro';
+import StickyMobileCTA from '../../components/cta/StickyMobileCTA.astro';
+import CTACard from '../../components/cta/CTACard.astro';
+import Hero from '../../components/sections/Hero.astro';
+import UspStrip from '../../components/sections/UspStrip.astro';
+import ProblemSolution from '../../components/sections/ProblemSolution.astro';
+import CheckeredBenefits from '../../components/sections/CheckeredBenefits.astro';
+import ProcessSteps from '../../components/sections/ProcessSteps.astro';
+import PricingTable from '../../components/sections/PricingTable.astro';
+import Testimonials from '../../components/sections/Testimonials.astro';
+import FAQ from '../../components/sections/FAQ.astro';
+import RelatedServices from '../../components/sections/RelatedServices.astro';
+import FinalCTA from '../../components/sections/FinalCTA.astro';
+import { config } from '../../config/siteConfig.example';
+import { serviceSchema, faqSchema } from '../../config/schema';
+
+export function getStaticPaths() {
+  return config.services.map(service => ({
+    params: { slug: service.slug },
+    props: { service },
+  }));
+}
+
+const { service } = Astro.props;
+const schema = serviceSchema(config, service.slug);
+
+// Placeholder content — in production, this comes from Content Collections
+const serviceFaqs = [
+  { question: `How much does ${service.name.toLowerCase()} cost?`, answer: `Our ${service.name.toLowerCase()} prices start from a competitive rate and we always provide fixed-price quotes with no hidden fees.` },
+  { question: `How do I book ${service.name.toLowerCase()}?`, answer: 'Simply fill in our quick quote form or give us a call. We typically respond within 2 hours during working hours.' },
+  { question: 'Are you insured?', answer: 'Yes, we carry full goods-in-transit and public liability insurance covering every item we handle.' },
+];
+
+const processSteps = [
+  { title: 'Initial Enquiry', description: 'Tell us what you need and we will come back with a fixed price.' },
+  { title: 'Planning', description: 'We sort the logistics — access, parking, timing.' },
+  { title: 'The Day', description: 'Our crew arrives on time, handles everything with care.' },
+  { title: 'All Done', description: 'Everything in its place, no damage, no surprises.' },
+];
+---
+
+<BaseLayout
+  title={`${service.name} in ${config.address.city}`}
+  description={service.shortDescription}
+  canonicalPath={`/services/${service.slug}/`}
+  schema={schema}
+>
+  <Header slot="header" />
+
+  <Hero
+    headline={`${service.name.toLowerCase()} in ${config.address.city.toLowerCase()}`}
+    title={service.name}
+    description={service.shortDescription}
+    heroImage={`/images/services/${service.slug}.jpg`}
+    heroAlt={`${service.name} by ${config.name} in ${config.address.city}`}
+  />
+  <UspStrip />
+  <ProblemSolution />
+  <CheckeredBenefits items={[
+    { title: 'Professional Equipment', description: 'We bring the right tools for every job. Furniture blankets, straps, trolleys, and specialist equipment where needed.', image: `/images/services/${service.slug}-detail-1.jpg`, imageAlt: `${service.name} equipment` },
+    { title: 'Experienced Crew', description: 'Our team has been doing this for years. They know how to handle everything from antique furniture to office IT equipment.', image: `/images/services/${service.slug}-detail-2.jpg`, imageAlt: `${config.name} crew during ${service.name.toLowerCase()}` },
+  ]} />
+  <ProcessSteps steps={processSteps} />
+  <Testimonials columns={2} filterService={service.slug} />
+  <FAQ faqs={serviceFaqs} />
+  <RelatedServices excludeSlug={service.slug} />
+  <FinalCTA />
+
+  <Footer slot="footer" />
+
+  <Fragment slot="cta-overlays">
+    <StickyHeaderCTA />
+    <StickyMobileCTA />
+    <CTACard />
+  </Fragment>
+</BaseLayout>

@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/navigation/Header.astro';
+import Footer from '../components/navigation/Footer.astro';
+import StickyHeaderCTA from '../components/cta/StickyHeaderCTA.astro';
+import StickyMobileCTA from '../components/cta/StickyMobileCTA.astro';
+import CTACard from '../components/cta/CTACard.astro';
+import ExitIntentPopup from '../components/cta/ExitIntentPopup.astro';
+import Hero from '../components/sections/Hero.astro';
+import UspStrip from '../components/sections/UspStrip.astro';
+import ProblemSolution from '../components/sections/ProblemSolution.astro';
+import CheckeredBenefits from '../components/sections/CheckeredBenefits.astro';
+import HowItWorks from '../components/sections/HowItWorks.astro';
+import Testimonials from '../components/sections/Testimonials.astro';
+import ServicesRoster from '../components/sections/ServicesRoster.astro';
+import FAQ from '../components/sections/FAQ.astro';
+import FinalCTA from '../components/sections/FinalCTA.astro';
+import LCPTracker from '../components/images/LCPTracker.astro';
+import { config } from '../config/siteConfig.example';
+import { homepageSchema, faqSchema } from '../config/schema';
+
+const homepageFaqs = [
+  { question: 'How much do house removals cost in Bristol?', answer: 'Our house removals in Bristol typically start from around £350 for a one-bedroom flat. We provide fixed-price quotes with no hidden fees, so the price we quote is the price you pay.' },
+  { question: 'Are you insured for house removals?', answer: 'Yes, we carry full goods-in-transit and public liability insurance. Every item we handle is covered from the moment we pick it up to when it reaches your new home.' },
+  { question: 'How far in advance should I book?', answer: 'We recommend booking 2-4 weeks ahead, especially for weekend moves. That said, we often have same-week availability, so it is always worth asking.' },
+  { question: 'Do you provide packing materials?', answer: 'Yes, we can supply boxes, bubble wrap, tape, and wardrobe boxes. We also offer a full professional packing service if you prefer to leave it to us.' },
+  { question: 'What areas do you cover?', answer: 'We cover Bristol, Bath, Weston-super-Mare, and the wider South West. For moves further afield, get in touch and we will work something out.' },
+];
+
+const benefitItems = [
+  { title: 'Family-Run Since 1978', description: 'Three generations of our family have been helping people move across Bristol. We are not a franchise or a faceless corporation. When you call, you talk to us.', image: '/images/benefits/family-run.jpg', imageAlt: 'The Sheridan family at Painless Removals depot in Bristol' },
+  { title: 'Fixed Prices, Always', description: 'The quote we give you is the price you pay. No fuel surcharges, no stair fees, no surprises on the day. We have built our reputation on honest pricing.', image: '/images/benefits/fixed-prices.jpg', imageAlt: 'Painless Removals van loaded and ready for a Bristol house move' },
+  { title: 'Your Stuff, Our Priority', description: 'We wrap everything properly, use furniture blankets on every piece, and take the time to do it right. If something does get damaged, our insurance covers it.', image: '/images/benefits/careful-handling.jpg', imageAlt: 'Removal team carefully wrapping furniture for transport' },
+];
+
+const schema = homepageSchema(config);
+---
+
+<BaseLayout
+  title={config.tagline}
+  description={config.description}
+  canonicalPath="/"
+  schema={schema}
+  heroImage="/images/hero-main.jpg"
+>
+  <Header slot="header" />
+
+  <Hero />
+  <UspStrip />
+  <ProblemSolution />
+  <CheckeredBenefits items={benefitItems} />
+  <HowItWorks />
+  <Testimonials columns={2} />
+  <ServicesRoster />
+  <FAQ faqs={homepageFaqs} />
+  <FinalCTA />
+
+  <Footer slot="footer" />
+
+  <Fragment slot="cta-overlays">
+    <StickyHeaderCTA />
+    <StickyMobileCTA />
+    <CTACard />
+    <ExitIntentPopup />
+  </Fragment>
+
+  <LCPTracker slot="head-extra" />
+</BaseLayout>

@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/navigation/Header.astro';
+import Footer from '../../components/navigation/Footer.astro';
+import StickyHeaderCTA from '../../components/cta/StickyHeaderCTA.astro';
+import StickyMobileCTA from '../../components/cta/StickyMobileCTA.astro';
+import Hero from '../../components/sections/Hero.astro';
+import UspStrip from '../../components/sections/UspStrip.astro';
+import ServicesRoster from '../../components/sections/ServicesRoster.astro';
+import Credentials from '../../components/sections/Credentials.astro';
+import FAQ from '../../components/sections/FAQ.astro';
+import FinalCTA from '../../components/sections/FinalCTA.astro';
+import { config } from '../../config/siteConfig.example';
+import { collectionPageSchema } from '../../config/schema';
+
+const schema = collectionPageSchema(config, {
+  name: 'Our Services',
+  path: '/services/',
+  items: config.services.map(s => ({ name: s.name, url: `/services/${s.slug}/` })),
+});
+
+const serviceFaqs = [
+  { question: 'What removal services do you offer?', answer: 'We offer house removals, office removals, packing services, storage, man and van, and specialist piano removals across Bristol and the South West.' },
+  { question: 'Can I combine services?', answer: 'Absolutely. Most of our customers combine removals with our packing service. We can also arrange storage if you need it.' },
+  { question: 'Do you offer free quotes?', answer: 'Yes, all our quotes are free and no-obligation. We will give you a fixed price that will not change.' },
+];
+---
+
+<BaseLayout
+  title="Removal Services in Bristol"
+  description={`Professional removal services in ${config.address.city}. House removals, office moves, packing, storage and more. Free quotes, fixed prices.`}
+  canonicalPath="/services/"
+  schema={schema}
+>
+  <Header slot="header" />
+
+  <Hero
+    headline="our removal services"
+    title="Everything You Need for a Stress-Free Move"
+    description="From full house removals to single-item moves, we have got you covered."
+    heroImage="/images/services-hero.jpg"
+    heroAlt={`${config.name} fleet ready for removal services in ${config.address.city}`}
+  />
+  <UspStrip />
+  <ServicesRoster />
+  <Credentials />
+  <FAQ faqs={serviceFaqs} />
+  <FinalCTA />
+
+  <Footer slot="footer" />
+
+  <Fragment slot="cta-overlays">
+    <StickyHeaderCTA />
+    <StickyMobileCTA />
+  </Fragment>
+</BaseLayout>

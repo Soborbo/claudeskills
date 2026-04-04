@@ -1,0 +1,25 @@
+---
+/**
+ * ContentImage — 50vw (split layouts), lazy loaded
+ */
+import Picture from './Picture.astro';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  class?: string;
+  objectPosition?: string;
+  aspectRatio?: string;
+}
+
+const { src, alt, class: className, objectPosition, aspectRatio } = Astro.props;
+---
+
+<Picture
+  src={src}
+  alt={alt}
+  pattern="HALF"
+  class={className}
+  objectPosition={objectPosition}
+  aspectRatio={aspectRatio}
+/>

@@ -1,0 +1,29 @@
+---
+import SectionWrapper from '../ui/SectionWrapper.astro';
+import { t } from '../../i18n/utils';
+
+interface Props {
+  heading?: string;
+  beforeImage: string;
+  afterImage: string;
+  beforeAlt: string;
+  afterAlt: string;
+}
+
+const { heading = 'Before & After', beforeImage, afterImage, beforeAlt, afterAlt } = Astro.props;
+---
+
+<SectionWrapper id="before-after" background="light">
+  <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-dark)] text-center mb-12">{heading}</h2>
+
+  <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+    <div>
+      <p class="text-sm font-medium text-gray-500 mb-2 uppercase">{t('beforeAfter.before')}</p>
+      <img src={beforeImage} alt={beforeAlt} loading="lazy" class="w-full rounded-xl object-cover aspect-[4/3]" />
+    </div>
+    <div>
+      <p class="text-sm font-medium text-gray-500 mb-2 uppercase">{t('beforeAfter.after')}</p>
+      <img src={afterImage} alt={afterAlt} loading="lazy" class="w-full rounded-xl object-cover aspect-[4/3]" />
+    </div>
+  </div>
+</SectionWrapper>

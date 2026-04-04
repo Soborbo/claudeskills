@@ -1,0 +1,39 @@
+---
+/**
+ * LCPTracker — monitors LCP element and reports to error tracking
+ * Only fires if LCP > 2.5s (poor threshold)
+ */
+---
+
+<script>
+  if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
+    const LCP_THRESHOLD = 2500;
+
+    const observer = new PerformanceObserver((list) => {
+      const entries = list.getEntries();
+      const lastEntry = entries[entries.length - 1] as PerformanceEntry & {
+        startTime: number;
+        element?: Element;
+      };
+
+      if (lastEntry && lastEntry.startTime > LCP_THRESHOLD) {
+        const element = lastEntry.element;
+        const data = {
+          type: 'lcp-slow',
+          value: Math.round(lastEntry.startTime),
+          element: element?.tagName ?? 'unknown',
+          url: window.location.pathname,
+        };
+
+        // Report via error endpoint if available
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon('/api/error-report', JSON.stringify(data));
+        }
+      }
+
+      observer.disconnect();
+    });
+
+    observer.observe({ type: 'largest-contentful-paint', buffered: true });
+  }
+</script>

@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/navigation/Header.astro';
+import Footer from '../../components/navigation/Footer.astro';
+import StickyHeaderCTA from '../../components/cta/StickyHeaderCTA.astro';
+import StickyMobileCTA from '../../components/cta/StickyMobileCTA.astro';
+import CTACard from '../../components/cta/CTACard.astro';
+import NeighbourhoodLayout from '../../components/areas/NeighbourhoodLayout.astro';
+import FactBox from '../../components/areas/FactBox.astro';
+import ReviewInline from '../../components/areas/ReviewInline.astro';
+import AuthorBox from '../../components/sections/AuthorBox.astro';
+import { config } from '../../config/siteConfig.example';
+import { areaServiceSchema, faqSchema } from '../../config/schema';
+
+export function getStaticPaths() {
+  return config.areas.map(area => ({
+    params: { slug: area.slug },
+    props: { area },
+  }));
+}
+
+const { area } = Astro.props;
+const schema = areaServiceSchema(config, area.slug);
+
+const nearby = config.areas.filter(a => a.slug !== area.slug).slice(0, 4);
+
+// Placeholder content — in production, from Content Collections
+const areaFaqs = [
+  { question: `How much do removals in ${area.name} cost?`, answer: `Our ${area.name} removals typically start from around £350, depending on the size of your property and access requirements.` },
+  { question: `Is parking a problem in ${area.name}?`, answer: `We know the parking situation in ${area.name} well. If we need a parking suspension, we will sort that out for you.` },
+  { question: `Do you cover all of ${area.name}?`, answer: `Yes, we cover every street in ${area.name} and surrounding areas. Our depot is a short drive away.` },
+];
+
+const factBoxData = [
+  { section: 'Location', rows: [
+    { label: 'Postcode', value: area.postcodePrefixes?.join(', ') || 'Various' },
+    { label: 'County', value: area.county || 'N/A' },
+  ]},
+  { section: 'Typical Move', rows: [
+    { label: 'Crew size', value: '2-4 people' },
+    { label: 'Duration', value: '4-8 hours' },
+    { label: 'Cost range', value: 'From £350' },
+  ]},
+];
+
+const featuredPerson = config.people.find(p => p.featured);
+---
+
+<BaseLayout
+  title={`Removals in ${area.name} — ${config.name}`}
+  description={`Professional removal services in ${area.name}. Fully insured, fixed prices, local expertise. Get a free quote from ${config.name}.`}
+  canonicalPath={`/areas/${area.slug}/`}
+  schema={schema}
+>
+  <Header slot="header" />
+
+  <NeighbourhoodLayout
+    name={area.name}
+    slug={area.slug}
+    heroImage={`/images/areas/${area.slug}-hero.jpg`}
+    heroAlt={`House removal in ${area.name}`}
+    heroSubtitle={`Local expertise, careful handling, and fixed prices for every move in ${area.name}.`}
+    faqs={areaFaqs}
+    nearby={nearby}
+  >
+    <!-- Main editorial content -->
+    <h2>Moving in {area.name}</h2>
+    <p>
+      {area.name} is one of the most popular areas we serve. Whether you are moving into a Victorian terrace,
+      a modern apartment, or a family home, our team knows the area inside out.
+    </p>
+    <p>
+      We handle everything from narrow staircases and tight parking spots to conservation area requirements.
+      Our crew has moved hundreds of families in and out of {area.name} over the years.
+    </p>
+
+    <h2>What to Expect</h2>
+    <p>
+      When you book a removal in {area.name}, we will send you a fixed-price quote within a few hours.
+      On the day, our crew arrives on time, wraps everything carefully, and gets you settled into your new place.
+    </p>
+
+    <!-- Sidebar content -->
+    <Fragment slot="sidebar">
+      <FactBox facts={factBoxData} />
+      <ReviewInline
+        text="The team were brilliant. Knew exactly where to park in our awkward street and had everything moved in under 4 hours."
+        name="Local Customer"
+        context="Google Review"
+      />
+      {featuredPerson && <AuthorBox authorSlug={featuredPerson.slug} variant="full" />}
+    </Fragment>
+  </NeighbourhoodLayout>
+
+  <Footer slot="footer" />
+
+  <Fragment slot="cta-overlays">
+    <StickyHeaderCTA />
+    <StickyMobileCTA />
+    <CTACard />
+  </Fragment>
+</BaseLayout>

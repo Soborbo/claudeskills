@@ -1,0 +1,31 @@
+---
+import { config } from '../../config/siteConfig.example';
+
+interface Props {
+  class?: string;
+  display?: string;
+}
+
+const { class: className = '', display = config.contact.phoneDisplay } = Astro.props;
+---
+
+<a
+  href={`tel:${config.contact.phone}`}
+  class={className}
+  data-tracking-phone
+>
+  {display}
+</a>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tracking-phone]').forEach(el => {
+    el.addEventListener('click', () => {
+      if (typeof window !== 'undefined' && (window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          event: 'phone_click',
+          click_url: el.getAttribute('href'),
+        });
+      }
+    });
+  });
+</script>

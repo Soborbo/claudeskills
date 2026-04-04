@@ -1,0 +1,78 @@
+---
+/**
+ * YouTube facade pattern — shows poster, loads iframe on click
+ * Lazy iframe, local posters, GA4 tracking via data attribute
+ */
+interface Props {
+  videoId: string;
+  title: string;
+  poster?: string;
+  class?: string;
+}
+
+const { videoId, title, poster, class: className = '' } = Astro.props;
+const posterUrl = poster || `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+---
+
+<div
+  class:list={['youtube-facade relative cursor-pointer overflow-hidden rounded-lg', className]}
+  data-video-id={videoId}
+  role="button"
+  tabindex="0"
+  aria-label={`Play video: ${title}`}
+>
+  <img
+    src={posterUrl}
+    alt={title}
+    loading="lazy"
+    class="w-full aspect-video object-cover"
+  />
+  <!-- Play button overlay -->
+  <div class="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors">
+    <svg class="w-16 h-16 text-white drop-shadow-lg" viewBox="0 0 68 48">
+      <path
+        d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55C3.97 2.33 2.27 4.81 1.48 7.74.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z"
+        fill="red"
+      />
+      <path d="M45 24L27 14v20" fill="white" />
+    </svg>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.youtube-facade').forEach((el) => {
+    const handler = () => {
+      const videoId = el.dataset.videoId;
+      if (!videoId) return;
+
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+      iframe.title = el.getAttribute('aria-label') || '';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.className = 'absolute inset-0 w-full h-full';
+
+      el.innerHTML = '';
+      el.classList.add('aspect-video');
+      el.appendChild(iframe);
+
+      // GA4 event
+      if (typeof window !== 'undefined' && (window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          event: 'video_start',
+          video_provider: 'youtube',
+          video_title: el.getAttribute('aria-label'),
+          video_url: `https://www.youtube.com/watch?v=${videoId}`,
+        });
+      }
+    };
+
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handler();
+      }
+    });
+  });
+</script>

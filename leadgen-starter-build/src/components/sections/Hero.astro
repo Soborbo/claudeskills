@@ -1,0 +1,89 @@
+---
+import { config } from '../../config/siteConfig.example';
+import { t } from '../../i18n/utils';
+import Button from '../ui/Button.astro';
+import ReviewCounter from '../ui/ReviewCounter.astro';
+
+interface Props {
+  headline?: string;
+  title?: string;
+  description?: string;
+  heroImage?: string;
+  heroAlt?: string;
+  showReviews?: boolean;
+}
+
+const {
+  headline = t('hero.headline'),
+  title = t('hero.title'),
+  description = t('hero.description'),
+  heroImage = '/images/hero-main.jpg',
+  heroAlt = `${config.name} team during a house removal in ${config.address.city}`,
+  showReviews = true,
+} = Astro.props;
+
+const primaryReview = config.reviews.find(r => r.primary) || config.reviews[0];
+---
+
+<section class="hero relative overflow-hidden" style="max-height: calc(100vh - var(--header-h) - 60px)">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center py-8 lg:py-12">
+
+      <!-- Text side -->
+      <div class="order-2 lg:order-1">
+        <p class="text-sm font-normal text-gray-500 mb-2 lowercase">{headline}</p>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[var(--color-dark)] uppercase leading-tight mb-4">
+          {title}
+        </h1>
+        <p class="text-lg text-gray-600 mb-6 max-w-lg">{description}</p>
+
+        <div class="flex flex-col sm:flex-row gap-3 mb-6">
+          <Button href="/contact/" variant="primary" size="lg" dataCta="hero-primary">
+            {config.cta.primary}
+          </Button>
+          <Button href={`tel:${config.contact.phone}`} variant="outline" size="lg" dataCta="hero-secondary">
+            {config.cta.secondary}
+          </Button>
+        </div>
+
+        {showReviews && primaryReview && (
+          <div class="flex items-center gap-2 text-sm">
+            <div class="flex text-[var(--color-accent-500)]">
+              {Array.from({ length: 5 }).map(() => (
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              ))}
+            </div>
+            <ReviewCounter targetNumber={primaryReview.rating} class="font-bold text-[var(--color-dark)]" />
+            <span class="text-gray-500">from {primaryReview.count} {primaryReview.platform} reviews</span>
+          </div>
+        )}
+      </div>
+
+      <!-- Image side -->
+      <div class="order-1 lg:order-2 relative">
+        <img
+          src={heroImage}
+          alt={heroAlt}
+          loading="eager"
+          fetchpriority="high"
+          class="w-full rounded-2xl object-cover aspect-square lg:aspect-[4/3]"
+        />
+
+        {showReviews && primaryReview && (
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 shadow-lg min-w-[140px] text-center">
+            <div class="flex justify-center text-[var(--color-accent-500)] mb-1">
+              {Array.from({ length: 5 }).map(() => (
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              ))}
+            </div>
+            <span class="text-sm font-semibold text-[var(--color-dark)]">{primaryReview.count} reviews</span>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</section>
