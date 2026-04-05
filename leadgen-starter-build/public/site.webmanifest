@@ -1,0 +1,10 @@
+{
+  "name": "Painless Removals",
+  "short_name": "Painless",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ],
+  "theme_color": "#2563EB",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}
