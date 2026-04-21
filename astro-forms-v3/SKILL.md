@@ -140,6 +140,17 @@ What happens when part of the pipeline fails:
 
 **Core principle: never lose a valid lead because a secondary system failed.** Email and Sheets failures are logged and alerted, but the user sees success and the lead data is preserved in logs at minimum.
 
+**Log failures with `console.error`, never `logger.debug`.** Cloudflare Workers production logs (wrangler tail, dashboard) only surface `console.log/warn/error`. A silent-catch that uses `logger.debug` is invisible in prod — you will burn hours on a "Sheets doesn't work" ghost. Every fire-and-forget `.catch(...)` in `submit.ts` / `sheets.ts` / email senders must call `console.error('[scope] ...', err)`.
+
+## Google Sheets: `values:append` range rule
+
+Google Sheets' `values:append` with a too-wide range (e.g. `SheetName!A:Z`) auto-detects the "table" by scanning right; if any right-side column has data (a status column, a formula, an old header), new rows are appended **starting from that column**, shifting everything. Symptom: the submission works, but in the sheet the data lands in column E, F, G… instead of A, B, C…
+
+Rules:
+1. The range must span **exactly** the columns you write: `` `${sheetName}!A:${columnLetter(headers.length)}` ``. The boilerplate in `assets/boilerplate/lib/sheets.ts` already does this — do not widen it.
+2. Always pass `insertDataOption=INSERT_ROWS` (not the default `OVERWRITE`). This inserts new rows instead of filling blank cells wherever they happen to exist.
+3. If a project adds a new column, update both the sheet headers (row 1) AND the column count in the append range — they must match.
+
 ## Conversion Verdict
 
 | Condition | Verdict |

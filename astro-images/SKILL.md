@@ -116,6 +116,19 @@ Every pattern includes 480w. Minimum width is always ≥ mobile viewport.
 
 **Unknown layout → default to HALF**
 
+## `sizes` Honesty Check (before picking a pattern)
+
+The `sizes` attribute is a **promise** to the browser about how wide the image will actually render. If your HALF pattern says `50vw` but the image is inside a `max-width: 1000px` container that only gets 40% of that width on desktop, the browser downloads a file that's 2–3× bigger than needed and LCP suffers.
+
+Before picking a pattern, measure the **actual rendered width** in DevTools (inspect the `<img>`, check "Rendered size" in the image info panel) across at least:
+- Mobile (375px viewport)
+- Tablet (768px viewport)
+- Desktop (1440px viewport)
+
+If the rendered width is consistently smaller than the pattern's `sizes` value claims, step down one pattern (e.g. HALF → SMALL, THIRD → QUARTER). The default component-level pattern (e.g. `ContentImage = HALF`) is only correct when the call site actually matches a 50/50 split — verify, don't trust.
+
+Symptom that something's off: DevTools "Currentsrc" picks a width notably larger than what the image renders at.
+
 ## Layout → Pattern Mapping
 
 | Layout | Pattern |

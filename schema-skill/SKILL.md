@@ -78,6 +78,8 @@ Every function takes `config: SiteConfig` as first argument.
 
 Root-level entities (`#business`, `#website`) have no path before the hash — this is the actual output of the `id()` helper when path is `/`. Inner entities retain their path slash.
 
+**Never bloat an @id reference.** On any page other than the declaring page, cross-entity links are reference-only: `{ "@id": "https://domain.com#business" }`. Do NOT add `name`, `aggregateRating`, `address`, or any other property alongside the `@id` — Google treats the merge as a redeclaration and emits "multiple aggregate ratings" / duplicate-entity errors. Properties live only on the single declaring schema.
+
 ### 2. @id generation
 
 The `id()` helper handles all @id generation:
@@ -223,6 +225,8 @@ schema['@graph'].push(faqSchema(faqData));
 - [ ] Schema content matches visible page content
 - [ ] Business info matches GBP exactly
 
+**`astro check` green ≠ GSC green.** TypeScript does not see Google's rules — it cannot catch mutually-exclusive properties, cross-page `@id` references that don't resolve, wrong image URLs, or malformed date strings. After every schema change, run the live URL against `https://search.google.com/test/rich-results?url=...` on the deployed site (not localhost). GSC's "Affected items" URL column tells you WHERE the schema is rendered, not which product/entity is broken — a list of 15 Products all showing `https://example.com/` means the homepage `ItemList` is the emitter, not 15 broken detail pages.
+
 ---
 
 ## sameAs — Auto-generated
@@ -272,6 +276,15 @@ Does NOT put LocalBusiness on area pages.
 ## FAQ Schema — 2026 Status
 
 FAQ rich results were fully removed in January 2026. FAQ schema still significantly increases AI search visibility — implement where genuine Q&A content exists on the page. Text must match visible content word-for-word.
+
+---
+
+## VideoObject — Rules
+
+- **Scope:** only on watch/embed pages (the page that actually hosts the video). Never on listing or hub pages that merely link to video pages — Google drops eligibility with a "video content not present" flag.
+- **`uploadDate` must be full ISO 8601 with timezone** (`2025-04-15T09:00:00+00:00`). Date-only `YYYY-MM-DD` is rejected by Google's stricter validator — a date that worked last year may now silently fail validation.
+- **`publisher` is a reference,** `{ "@id": "...#business" }`, never a redeclared object.
+- **Required fields:** `name`, `description`, `thumbnailUrl`, `uploadDate`. Add `contentUrl` or `embedUrl` when available (at least one helps carousel eligibility).
 
 ---
 

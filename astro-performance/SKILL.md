@@ -51,6 +51,17 @@ BaseLayout renders: `<link rel="preload" as="image" href="..." type="image/avif"
 - Each page passes its OWN hero image — never hardcode a single image for all pages
 - Only ONE `fetchpriority="high"` per page (the preload + the `<img>` tag)
 
+**Responsive hero trap:** `<link rel="preload" as="image" href="...">` preloads ONE URL. If the hero `<img>` uses `srcset` + `sizes`, the browser picks a DIFFERENT file at runtime — the preloaded one is wasted and the LCP image arrives later. For responsive heroes, preload MUST use `imagesrcset` + `imagesizes` with the same widths and `sizes` value as the `<img>`:
+
+```html
+<link rel="preload" as="image"
+  imagesrcset="/img/hero-480w.avif 480w, /img/hero-960w.avif 960w, /img/hero-1600w.avif 1600w"
+  imagesizes="(min-width: 768px) 50vw, 100vw"
+  type="image/avif" fetchpriority="high">
+```
+
+Rule: the `imagesrcset` + `imagesizes` on the preload must match the `<img srcset>` + `sizes` byte-for-byte.
+
 ### 2. Font Strategy
 
 **Primary fonts (body, headings):** `font-display: swap` + preload in `<head>`
@@ -103,6 +114,8 @@ See [third-party scripts reference](references/third-party-scripts.md) for Cloud
 - Component CSS that's only used below-fold: use `<style is:inline>` to move it into the HTML body (not a blocking `<link>` in `<head>`)
 - Never add extra `<link rel="stylesheet">` in `<head>` unless absolutely needed above-fold
 - Below-fold component CSS total impact: monitor, should not add >2KB inline
+
+**Render-blocking CSS quick-fix for small sites:** on sites with <100 pages and <20KB CSS/page, set `build: { inlineStylesheets: 'always' }` in `astro.config.mjs`. Astro inlines the stylesheet into each HTML document, eliminating the CSS request from the critical path. PageSpeed's "Eliminate render-blocking resources" flag disappears with one config line — no `critters`/`beasties` plugin needed. Only revert to `'auto'` if HTML size becomes the actual bottleneck.
 
 ### 6. CLS Prevention
 

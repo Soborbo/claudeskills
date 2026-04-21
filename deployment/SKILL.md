@@ -70,6 +70,22 @@ Required in wrangler config for Resend/Brevo fetch calls and any Node.js API usa
 
 After `npm run build`, verify `dist/_worker.js/` (server) and `dist/client/` (static) exist.
 
+### 8. Silent-catch paths must use `console.error`
+
+Cloudflare Workers production logs (wrangler tail, dashboard) only surface `console.log/warn/error`. A `logger.debug(...)` call inside a `.catch(() => false)` or fire-and-forget branch is effectively invisible in prod — the failure silently disappears and you waste hours chasing a "works locally, broken on CF" ghost.
+
+Rule: any path that swallows a failure (catch block, early `return false`, `Promise.all().catch(() => null)`) MUST log with `console.error` so the error shows up in wrangler tail. Use `logger.debug` only for verbose dev-only diagnostics gated behind an env var — never for actual error paths.
+
+```ts
+// BAD — error disappears in prod
+ctx.waitUntil(appendToSheet(row).catch((err) => logger.debug('sheets failed', err)));
+
+// GOOD — visible in wrangler tail
+ctx.waitUntil(
+  appendToSheet(row).catch((err) => console.error('[sheets] append failed', err)),
+);
+```
+
 ---
 
 ## Deploy Flow — Workers Builds (primary)

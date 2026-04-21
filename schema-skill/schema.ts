@@ -572,6 +572,13 @@ export function articleSchema(
  * VideoObject — for pages with embedded video.
  * Can trigger video carousels in SERP — high value.
  * Add to @graph alongside the page's main schema.
+ *
+ * Scope: ONLY on watch/embed pages (the page that actually hosts the video).
+ * Do NOT emit VideoObject on listing/hub pages that merely link to video pages —
+ * Google flags these as "video content not present" and drops eligibility.
+ *
+ * uploadDate MUST be ISO 8601 with timezone, e.g. "2025-04-15T09:00:00+00:00".
+ * Date-only "YYYY-MM-DD" is rejected by Google's stricter validator.
  */
 export function videoSchema(
   config: SiteConfig,
@@ -579,7 +586,7 @@ export function videoSchema(
     name: string;
     description: string;
     thumbnailUrl: string;
-    uploadDate: string;
+    uploadDate: string; // ISO 8601 with timezone: "2025-04-15T09:00:00+00:00"
     contentUrl?: string;
     embedUrl?: string;
     duration?: string; // ISO 8601: "PT5M30S"
