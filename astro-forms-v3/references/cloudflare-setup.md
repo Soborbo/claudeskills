@@ -172,11 +172,25 @@ IP_HASH_SALT=dev-salt
 
 - [ ] Worker project created (`wrangler init` or existing)
 - [ ] Turnstile widget created (invisible mode)
+- [ ] **Turnstile allowed hostnames include** all domains: prod, preview, `workers.dev`, `localhost` (missing hostname = `TurnstileError: 110200`)
 - [ ] KV namespace created and bound in `wrangler.toml`
 - [ ] Google Cloud service account created
 - [ ] Google Sheet shared with service account email
 - [ ] Sheet row 1 has correct column headers
 - [ ] All secrets set via `wrangler secret put`
+- [ ] `TURNSTILE_SITE_KEY` available at **build time** (Build → Variables and secrets, in addition to runtime)
+- [ ] Deploy command uses `--keep-vars` (Workers Builds → Build configuration) — otherwise every deploy wipes dashboard-set plaintext vars
 - [ ] `.dev.vars` configured for local dev
 - [ ] `wrangler dev` works locally
-- [ ] `wrangler deploy` succeeds
+- [ ] `wrangler deploy --keep-vars` succeeds
+
+---
+
+## Critical Astro v6 gotchas
+
+If the form runs through an Astro SSR API route (not a raw Worker), see [astro-v6-runtime.md](./astro-v6-runtime.md) for:
+
+- `Astro.locals.runtime.env` was removed → use `import { env } from 'cloudflare:workers'`
+- Every handler needs a top-level try/catch or it's impossible to debug
+- `trailingSlash: 'always'` means every frontend fetch must include trailing `/`
+- `--keep-vars` flag on the deploy command so dashboard vars survive redeploys

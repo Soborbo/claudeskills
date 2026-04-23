@@ -152,6 +152,10 @@ What happens when part of the pipeline fails:
 | No thank-you redirect/state | **FAIL** |
 | No GTM event | **FAIL** |
 | No input sanitisation in email templates | **FAIL** |
+| Astro SSR API handler reads `Astro.locals.runtime.env` (removed in v6) | **FAIL** |
+| Astro SSR API handler without top-level try/catch (silent 500, no logs) | **FAIL** |
+| Frontend `fetch('/api/name')` missing trailing slash when `trailingSlash: 'always'` | **FAIL** |
+| Deploy command missing `--keep-vars` (dashboard plaintext vars get wiped) | **FAIL** |
 | Fewer than 2 spam protection layers | **WARN** |
 | No duplicate protection | **WARN** |
 | Personal data on step 1 (non-contact page) | **WARN** |
@@ -185,6 +189,8 @@ SITE_URL=https://example.com
 
 **Critical: all backend env vars are accessed via the `env` parameter (Workers binding), NOT `import.meta.env`.** The `submit.ts` handler receives `env` from the Workers `fetch(request, env, ctx)` signature. Every boilerplate helper accepts `env` as a parameter.
 
+**If the form runs inside an Astro SSR API route (`src/pages/api/*.ts`):** use `import { env } from 'cloudflare:workers'` at the top of each handler file. `Astro.locals.runtime.env` was **removed in Astro v6** and throws `Worker unhandled exception` at runtime. See [astro-v6-runtime.md](references/astro-v6-runtime.md) for the full writeup (covers try/catch, `--keep-vars`, trailing slash, Turnstile hostname allowlist).
+
 For Google Sheets: create a service account in Google Cloud Console, download the JSON key, share the target spreadsheet with the service account email address, then set `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, and `GOOGLE_SHEET_ID` as secrets.
 
 ## References
@@ -193,6 +199,7 @@ For Google Sheets: create a service account in Google Cloud Console, download th
 - [email.md](references/email.md) — Email templates and delivery rules
 - [resend-setup.md](references/resend-setup.md) — Resend DNS + account setup guide
 - [cloudflare-setup.md](references/cloudflare-setup.md) — Turnstile, KV, Workers
+- [astro-v6-runtime.md](references/astro-v6-runtime.md) — Astro v6 env access, try/catch pattern, `--keep-vars`, trailing slash, Turnstile hostnames
 - [modifiers.md](references/modifiers.md) — Form layout variants (UI reference)
 - [schema-cta.md](references/schema-cta.md) — CTA structure and tracking
 
@@ -227,8 +234,12 @@ Copy `assets/boilerplate/lib/` → `src/lib/forms/`. The key file is `submit.ts`
 ## Definition of Done
 
 - [ ] Schema defined with correct locale
-- [ ] `submit.ts` handler wired up
+- [ ] `submit.ts` handler wired up (or Astro API route using `import { env } from 'cloudflare:workers'`)
+- [ ] Every API handler wrapped in a top-level try/catch that logs `SRV-FUNC-001`
 - [ ] Env vars configured (local + production)
+- [ ] Deploy command uses `--keep-vars` (Workers Builds → Build configuration)
+- [ ] Turnstile site key set at **build time** and all hostnames listed in Turnstile allowed list
+- [ ] Frontend fetches use trailing slash if `trailingSlash: 'always'`
 - [ ] CookieYes consent banner configured
 - [ ] Spam protection: minimum 2 layers active
 - [ ] Duplicate protection active
