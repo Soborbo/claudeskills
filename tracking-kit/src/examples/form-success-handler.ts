@@ -19,6 +19,7 @@
  */
 
 import {
+  hasViewContentFired,
   markViewContentFired,
   mirrorMetaCapi,
   resetConversionState,
@@ -71,9 +72,10 @@ export function onFormSuccess(input: FormSuccessInput): void {
   });
 
   // 4. First-ever-completion signal for Meta `ViewContent`. Fires once
-  //    per browser ever; the conversion-state machine remembers via
-  //    `viewContentFired` flag so re-runs don't double-fire.
-  if (!state.viewContentFired) {
+  //    per browser ever — the flag lives in its own localStorage key
+  //    (`hasViewContentFired`/`markViewContentFired`) so it survives
+  //    the conversion-state being wiped on every primary fire.
+  if (!hasViewContentFired()) {
     const firstViewId = trackEvent('primary_first_view', {
       service: state.service,
       // intentionally NO value — this is engagement, not commerce

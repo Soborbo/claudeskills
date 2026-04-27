@@ -8,7 +8,15 @@
  */
 
 import { NextResponse, type NextRequest } from 'next/server';
-import { deriveClientId, sendGA4MP, type ServerEnv } from '@/lib/tracking/server';
+import {
+  checkRateLimit,
+  corsPreflightResponse,
+  deriveClientId,
+  isAllowedOrigin,
+  sendGA4MP,
+  type ServerEnv,
+} from '@/lib/tracking/server';
+import { RATE_LIMIT_ABANDONMENT_MAX } from '@/lib/tracking/config';
 
 export const runtime = 'edge'; // or 'nodejs'
 
@@ -48,10 +56,6 @@ function sanitize(input: unknown): AbandonmentPayload {
   return out as AbandonmentPayload;
 }
 
-async function checkRateLimit(_req: NextRequest): Promise<boolean> {
-  return true;
-}
-
 function envFromProcess(): ServerEnv {
   return {
     GA4_MEASUREMENT_ID: process.env.GA4_MEASUREMENT_ID,
@@ -59,23 +63,28 @@ function envFromProcess(): ServerEnv {
   };
 }
 
+export async function OPTIONS(request: NextRequest): Promise<Response> {
+  return corsPreflightResponse(request.headers.get('Origin'), ALLOWED_ORIGINS);
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const origin = request.headers.get('Origin');
-  if (origin && !ALLOWED_ORIGINS.has(origin)) {
+  if (!isAllowedOrigin(origin, ALLOWED_ORIGINS)) {
     return new NextResponse(null, { status: 204 });
   }
-  if (!(await checkRateLimit(request))) {
-    return new NextResponse(null, { status: 204 });
+
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    request.headers.get('cf-connecting-ip') ||
+    '';
+  if (!checkRateLimit(`abandon:${ip}`, RATE_LIMIT_ABANDONMENT_MAX)) {
+    return new NextResponse(null, { status: 429 });
   }
 
   try {
     const raw = (await request.json()) as unknown;
     const payload = sanitize(raw);
 
-    const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-      request.headers.get('cf-connecting-ip') ||
-      '';
     const ua = request.headers.get('user-agent') || '';
     const clientId = deriveClientId(`${ip}${ua}`.replace(/[^a-f0-9]/gi, '').padEnd(32, '0'));
 

@@ -117,7 +117,60 @@ on," and the GA4 / Pixel UI keeps reporting the test events as if real,
 so the breakage is invisible until you check the Events Manager
 production view.
 
-## 10. Don't add a new DataLayer event without updating the GTM container
+## 10. ViewContent fires once per browser EVER
+
+`primary_first_view` (which becomes Meta `ViewContent`) is gated by the
+standalone `hasViewContentFired()` flag, NOT by a field inside the
+conversion state. The conversion state is wiped after every primary
+conversion fires, so a flag stored inside it would re-arm `ViewContent`
+on the next funnel completion — defeating the "once per browser" intent
+and double-counting the engagement signal.
+
+When adding new "first-time" engagement signals, give each its own
+persistent localStorage key. Do NOT bundle them into the conversion
+state.
+
+## 11. PII at rest has a 24h TTL and a consent gate
+
+`setUserDataOnDOM()` only persists to localStorage when `ad_storage`
+consent is granted, and the stored blob carries `savedAt` so reads past
+`USER_DATA_TTL_MS` (default 24h) silently purge. Fire-and-forget paths
+(late conversion, upgrade) call `clearUserDataOnDOM()` after the
+synchronous side-channel read — so the at-rest PII window matches the
+window during which it could plausibly be needed.
+
+Don't widen the TTL or remove the consent gate to "fix" missing PII on
+late conversions — the user who closed the tab past the TTL is gone,
+and forwarding their hashed PII to Meta without consent is a regulatory
+exposure.
+
+## 12. Server endpoints reject requests without an `Origin` header
+
+`isAllowedOrigin()` fails closed: no Origin = not a browser request =
+reject. Server-to-server, curl, and most automation tooling don't set
+Origin, so a missing header is the strongest signal that something is
+attempting to inject fake conversions. Don't relax this to `if (origin
+&& !allowed)` — that's the bypass we just closed.
+
+## 13. CAPI server rejects requests without a granted consent snapshot
+
+The client `mirrorMetaCapi` reads the live Consent Mode v2 snapshot and
+includes it in the payload. The server re-checks (`metaCapiConsentAllowed`)
+and refuses to forward to Meta if `ad_storage` or `ad_user_data` is
+denied. This is defense-in-depth — a tampered client can omit the
+snapshot, and the server still won't forward.
+
+## 14. `custom_data` is whitelisted on the CAPI endpoint
+
+Only `value` (range-checked against `MAX_CONVERSION_VALUE`), `currency`
+(ISO-4217 regex), and `content_name` (length-capped string) are
+forwarded to Meta. Adding a field to the whitelist means:
+1. Add validation to `sanitizeCustomData()` in BOTH the Astro and
+   Next.js routes.
+2. Verify the new field can't be used to inflate Smart Bidding signals
+   (e.g. don't let the client set `predicted_ltv` directly).
+
+## 15. Don't add a new DataLayer event without updating the GTM container
 
 Adding a new `trackEvent('my_new_event', ...)` call without a
 corresponding GTM trigger and tag means the event lives in the dataLayer

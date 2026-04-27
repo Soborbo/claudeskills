@@ -15,6 +15,7 @@ import {
   DEFAULT_COUNTRY,
   USER_DATA_ELEMENT_ID,
   USER_DATA_STORAGE_KEY,
+  USER_DATA_TTL_MS,
   type CountryCode,
 } from './config';
 import { generateUUID } from './uuid';
@@ -110,13 +111,33 @@ function writeUserDataToDOMElement(data: UserData): void {
   if (data.country) el.dataset.country = data.country;
 }
 
+interface StoredUserData {
+  v: 1;
+  savedAt: number;
+  data: UserData;
+}
+
+function isStoredUserData(v: unknown): v is StoredUserData {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  return o.v === 1 && typeof o.savedAt === 'number' && !!o.data && typeof o.data === 'object';
+}
+
 /**
- * Stores user data on a hidden DOM element AND in localStorage so the
- * data survives a page close. Subsequent page-loads call
- * `restoreUserDataFromStorage()` from boot to repopulate the DOM —
- * this is what lets a late-conversion CAPI mirror (fired from
+ * Stores user data on a hidden DOM element AND (gated by consent) in
+ * localStorage with a TTL so the data survives a page close. Subsequent
+ * page-loads call `restoreUserDataFromStorage()` from boot to repopulate
+ * the DOM — this is what lets a late-conversion CAPI mirror (fired from
  * `boot.ts` before any UI component mounts) include hashed user
  * identifiers, which Meta requires.
+ *
+ * Persistence rules:
+ *   - localStorage write only happens if `ad_storage` consent is
+ *     granted. Without ads consent, PII lives only on the DOM element
+ *     and dies with the tab.
+ *   - Stored blob carries `savedAt`; on read past `USER_DATA_TTL_MS` it
+ *     is purged, so an unattended browser doesn't leave PII recoverable
+ *     indefinitely.
  *
  * Each call merges with previously-stored fields rather than replacing
  * the whole blob, so earlier-step data isn't wiped by later steps.
@@ -125,14 +146,15 @@ export function setUserDataOnDOM(data: UserData): void {
   if (typeof document === 'undefined') return;
   writeUserDataToDOMElement(data);
 
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const existing = readUserDataFromStorage();
-      const merged: UserData = { ...existing, ...data };
-      localStorage.setItem(USER_DATA_STORAGE_KEY, JSON.stringify(merged));
-    } catch {
-      // localStorage full / disabled — DOM-only is still functional
-    }
+  if (typeof localStorage === 'undefined') return;
+  if (!hasAdStorageConsent()) return;
+  try {
+    const existing = readUserDataFromStorage();
+    const merged: UserData = { ...existing, ...data };
+    const blob: StoredUserData = { v: 1, savedAt: Date.now(), data: merged };
+    localStorage.setItem(USER_DATA_STORAGE_KEY, JSON.stringify(blob));
+  } catch {
+    // localStorage full / disabled — DOM-only is still functional
   }
 }
 
@@ -141,9 +163,17 @@ function readUserDataFromStorage(): UserData {
   try {
     const raw = localStorage.getItem(USER_DATA_STORAGE_KEY);
     if (!raw) return {};
-    const parsed = JSON.parse(raw) as unknown;
-    if (!parsed || typeof parsed !== 'object') return {};
-    return parsed as UserData;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isStoredUserData(parsed)) {
+      // Legacy blob (pre-TTL format) or hand-edited junk — drop it.
+      try { localStorage.removeItem(USER_DATA_STORAGE_KEY); } catch { /* ignore */ }
+      return {};
+    }
+    if (Date.now() - parsed.savedAt > USER_DATA_TTL_MS) {
+      try { localStorage.removeItem(USER_DATA_STORAGE_KEY); } catch { /* ignore */ }
+      return {};
+    }
+    return parsed.data;
   } catch {
     return {};
   }
@@ -152,7 +182,9 @@ function readUserDataFromStorage(): UserData {
 /**
  * Called from `boot.ts` on every page-load so the hidden DOM element
  * is repopulated before `resumeConversionTimer()` runs (which may
- * immediately fire a late conversion + CAPI mirror).
+ * immediately fire a late conversion + CAPI mirror). Reads through
+ * `readUserDataFromStorage()` which enforces the TTL, so an expired
+ * blob is silently purged.
  */
 export function restoreUserDataFromStorage(): void {
   if (typeof document === 'undefined') return;
@@ -161,6 +193,12 @@ export function restoreUserDataFromStorage(): void {
   writeUserDataToDOMElement(data);
 }
 
+/**
+ * Wipes the side-channel PII from BOTH the hidden DOM element and
+ * localStorage. Call after a conversion is fully complete (e.g. once
+ * `primary_conversion` fires and there's nothing else to attribute) so
+ * the PII has the shortest possible at-rest lifetime.
+ */
 export function clearUserDataOnDOM(): void {
   if (typeof document === 'undefined') return;
   document.getElementById(USER_DATA_ELEMENT_ID)?.remove();
@@ -171,6 +209,71 @@ export function clearUserDataOnDOM(): void {
       // ignore
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Consent state — read from Google's consent API (set by GTM Consent Mode v2)
+// ---------------------------------------------------------------------------
+
+export type ConsentValue = 'granted' | 'denied';
+export interface ConsentSnapshot {
+  ad_storage: ConsentValue;
+  ad_user_data: ConsentValue;
+  ad_personalization: ConsentValue;
+  analytics_storage: ConsentValue;
+}
+
+interface GoogleTagData {
+  ics?: { entries?: Record<string, { default?: string; update?: string }> };
+}
+
+declare global {
+  interface Window {
+    google_tag_data?: GoogleTagData;
+  }
+}
+
+/**
+ * Reads the current Consent Mode v2 state. GTM exposes the per-purpose
+ * consent values on `window.google_tag_data.ics.entries`; if the user has
+ * not interacted yet, the `default` from `GTMHead` applies (denied for
+ * everything except security_storage).
+ *
+ * Returns 'denied' for any purpose we can't read — fail closed, never
+ * fail open. Server-side callers (sendMetaCapi etc.) MUST receive this
+ * snapshot from the client and refuse to forward when ads consent is
+ * denied.
+ */
+export function getConsentSnapshot(): ConsentSnapshot {
+  const fallback: ConsentSnapshot = {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+  };
+  if (typeof window === 'undefined') return fallback;
+  const entries = window.google_tag_data?.ics?.entries;
+  if (!entries) return fallback;
+  const read = (k: keyof ConsentSnapshot): ConsentValue => {
+    const e = entries[k];
+    const v = e?.update ?? e?.default;
+    return v === 'granted' ? 'granted' : 'denied';
+  };
+  return {
+    ad_storage: read('ad_storage'),
+    ad_user_data: read('ad_user_data'),
+    ad_personalization: read('ad_personalization'),
+    analytics_storage: read('analytics_storage'),
+  };
+}
+
+export function hasAdStorageConsent(): boolean {
+  return getConsentSnapshot().ad_storage === 'granted';
+}
+
+export function hasFullAdsConsent(): boolean {
+  const c = getConsentSnapshot();
+  return c.ad_storage === 'granted' && c.ad_user_data === 'granted';
 }
 
 export function readUserDataFromDOM(): UserData {

@@ -113,20 +113,29 @@ gets logged client-side. Flow:
 1. Form-success handler calls `setUserDataOnDOM(normalizeUserData({...}))`.
 2. The values land on `<div id="__tk_user_data__" hidden>` as
    `data-email`, `data-phone`, `data-firstName`, etc.
-3. GTM Custom JavaScript variables read the dataset and feed the
+3. The same values are mirrored to `localStorage` ONLY if `ad_storage`
+   consent is granted, with a `savedAt` timestamp. On every page-load
+   `restoreUserDataFromStorage()` enforces the TTL (`USER_DATA_TTL_MS`,
+   default 24h) — anything older is purged.
+4. After a final conversion (late-fire or upgrade) `clearUserDataOnDOM()`
+   wipes both the DOM element and the localStorage blob.
+5. GTM Custom JavaScript variables read the dataset and feed the
    Google Ads "User-Provided Data" variable.
-4. Google Ads tags hash the values inside the GTM tag (Google's
+6. Google Ads tags hash the values inside the GTM tag (Google's
    client-side SDK handles SHA-256). They get sent only to Google.
-5. Meta's path: `mirrorMetaCapi()` POSTs (`sendBeacon` if available)
-   to `/api/meta/capi` with the raw values. The server normalizes
-   (email lowercase, phone E.164, postal code uppercase & spaces
-   stripped, country lower) and SHA-256-hashes them via `@noble/hashes`
-   before sending to Meta CAPI.
+7. Meta's path: `mirrorMetaCapi()` POSTs (`sendBeacon` if available)
+   to `/api/meta/capi` with the raw values + the live consent snapshot.
+   The server re-checks the consent snapshot, normalizes (email
+   lowercase, phone E.164, postal code uppercase & spaces stripped,
+   country lower), and SHA-256-hashes via `@noble/hashes` before
+   sending to Meta CAPI. Without granted ads consent, the server
+   refuses to forward.
 
-Result: PII is in a single hidden DOM node and on two outbound HTTPS
-requests (GTM→Google, ours→Meta), with hashing in the latter. Not in
-`window.dataLayer`, not in the page source, not in any GTM Variable that
-vendor scripts can sniff.
+Result: PII is in a single hidden DOM node, an opt-in localStorage blob
+with a TTL, and on two outbound HTTPS requests (GTM→Google,
+ours→Meta), with hashing in the latter. Not in `window.dataLayer`, not
+in the page source, not in any GTM Variable that vendor scripts can
+sniff, and not at rest beyond the TTL.
 
 The browser-side Meta Pixel (loaded by GTM) gets only the `event_id` and
 `value`/`currency`. CAPI carries the hashed PII. They share `event_id`
@@ -202,6 +211,39 @@ helpers in `server.ts` to SubtleCrypto and drop the dependency.
 - `src/` — the actual code. Drop `src/lib/tracking/` into your repo as-is
   after editing `config.ts`.
 - `package.json` — minimal dependencies the kit needs.
+
+## Hardening on the server endpoints
+
+The `/api/meta/capi` and `/api/track/abandonment` mounts (Astro and
+Next.js variants) enforce:
+
+- **Origin allowlist, fail-closed.** Requests with no `Origin` header
+  are rejected — that's the strongest signal of server-to-server /
+  curl injection attempts. Edit `ALLOWED_ORIGINS` in each route file
+  to your domains.
+- **Per-IP rate limit, in-memory sliding window.** Defaults:
+  `RATE_LIMIT_CAPI_MAX = 20` requests/min/IP, `RATE_LIMIT_ABANDONMENT_MAX
+  = 60` requests/min/IP. Survives across requests in the same isolate;
+  on Cloudflare Workers, that's "best effort". For stricter guarantees
+  swap the helper for a KV/Durable-Object-backed limiter.
+- **Strict input validation.** `event_id` regex, `event_name` enum,
+  `currency` ISO-4217 regex, `value` capped at `MAX_CONVERSION_VALUE`,
+  email regex, `fbp/fbc` cookie shape regex, length caps on every
+  string field.
+- **`event_source_url` pinned to allowed origins**, with the request's
+  `Referer` as a fallback if the client-provided URL doesn't match.
+- **`custom_data` whitelist** — only `value`/`currency`/`content_name`
+  are forwarded to Meta. A tampered client cannot inject
+  `predicted_ltv` or other Smart Bidding signals.
+- **CAPI consent gate.** The client includes a Consent Mode v2
+  snapshot; the server requires `ad_storage = granted` AND
+  `ad_user_data = granted` before forwarding to Meta.
+- **CORS preflight responder** so cross-origin `OPTIONS` requests get
+  a proper 204 with `Access-Control-Allow-*` headers, only echoing
+  allowed origins (never `*`).
+- **Meta Graph API version pinned** in `config.ts`
+  (`META_GRAPH_API_VERSION`). Bump in one place when Meta deprecates
+  a version.
 
 ## Known limitations
 
