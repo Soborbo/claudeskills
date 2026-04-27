@@ -1,0 +1,18 @@
+{
+  "name": "tracking-kit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portable browser+server tracking pipeline (GTM + GA4 + Google Ads + Meta CAPI). See README.md.",
+  "type": "module",
+  "dependencies": {
+    "@noble/hashes": "^1.4.0"
+  },
+  "peerDependencies": {
+    "astro": ">=4 <7",
+    "next": ">=13"
+  },
+  "peerDependenciesMeta": {
+    "astro": { "optional": true },
+    "next": { "optional": true }
+  }
+}

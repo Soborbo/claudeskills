@@ -1,0 +1,25 @@
+---
+/**
+ * Google Tag Manager — <body> noscript fallback (Astro variant).
+ *
+ * Include this right after <body> on every page.
+ */
+
+// --- For Cloudflare Pages / Workers runtime: ---
+// import { env } from 'cloudflare:workers';
+// const gtmId = env.GTM_ID || '';
+
+// --- For Vite/Astro static-build env: ---
+const gtmId = (import.meta.env.PUBLIC_GTM_ID as string | undefined) || '';
+---
+
+{gtmId && (
+  <noscript>
+    <iframe
+      src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+      height="0"
+      width="0"
+      style="display:none;visibility:hidden"
+    ></iframe>
+  </noscript>
+)}

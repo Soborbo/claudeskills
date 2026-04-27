@@ -1,0 +1,37 @@
+<!--
+  Google Tag Manager — <head> snippet (vanilla HTML variant).
+
+  Drop this verbatim as the FIRST thing inside <head>, with no other
+  <script>/<link> before it. Replace GTM-XXXXXXX with your container ID.
+
+  The Consent Mode v2 default block declares "everything denied" before
+  GTM loads. Your CMP (CookieYes / Cookiebot / etc.) — loaded as a tag
+  INSIDE the GTM container on the "Consent Initialization - All Pages"
+  trigger — flips the relevant flags to "granted" once the user picks.
+-->
+
+<!-- 1. Consent Mode v2 default — first script in <head> -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ window.dataLayer.push(arguments); }
+  window.gtag = window.gtag || gtag;
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    analytics_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    functionality_storage: 'denied',
+    personalization_storage: 'denied',
+    security_storage: 'granted',
+    wait_for_update: 500,
+  });
+</script>
+
+<!-- 2. GTM bootstrap -->
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-XXXXXXX');
+</script>
