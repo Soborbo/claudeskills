@@ -16,6 +16,14 @@
  * The CLIENT must pass `event_id` in the request body so the same
  * dedup key is shared with whatever browser-side event fires later.
  * Without that, GA4 will count two distinct sessions instead of one.
+ *
+ * Why no Meta CAPI mirror here: this endpoint fires on the engagement
+ * event (`primary_conversion_complete`), which is intentionally NOT
+ * mirrored to Meta — the conversion-state machine owns the Meta side
+ * and fires `Lead` via CAPI on upgrade or on the late-fire timer (with
+ * the same `event_id`). Mirroring CAPI here too would double-count.
+ * For the Meta `ViewContent` engagement signal, see the client-side
+ * `primary_first_view` flow in form-success-handler.ts.
  */
 
 import type { APIRoute } from 'astro';

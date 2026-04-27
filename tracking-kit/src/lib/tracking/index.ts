@@ -13,15 +13,21 @@ export {
   restoreUserDataFromStorage,
   normalizePhoneE164,
   normalizeUserData,
+  getConsentSnapshot,
+  hasAdStorageConsent,
+  hasFullAdsConsent,
   type UserData,
   type CountryCode,
   type TrackingParams,
+  type ConsentSnapshot,
+  type ConsentValue,
 } from './tracking';
 
 export {
   resetConversionState,
   getActiveConversionState,
   markConversionUpgraded,
+  hasViewContentFired,
   markViewContentFired,
   resumeConversionTimer,
   type ConversionState,

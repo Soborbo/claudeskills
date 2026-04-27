@@ -16,7 +16,14 @@
 
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { deriveClientId, sendGA4MP } from '@/lib/tracking/server';
+import {
+  checkRateLimit,
+  corsPreflightResponse,
+  deriveClientId,
+  isAllowedOrigin,
+  sendGA4MP,
+} from '@/lib/tracking/server';
+import { RATE_LIMIT_ABANDONMENT_MAX } from '@/lib/tracking/config';
 
 export const prerender = false;
 
@@ -57,22 +64,21 @@ function sanitize(input: unknown): AbandonmentPayload {
   return out as AbandonmentPayload;
 }
 
-// --- CUSTOMIZE: drop in your project's rate limiter. ---
-async function checkRateLimit(_request: Request): Promise<boolean> {
-  return true;
-}
+export const OPTIONS: APIRoute = async ({ request }) => {
+  return corsPreflightResponse(request.headers.get('Origin'), ALLOWED_ORIGINS);
+};
 
 export const POST: APIRoute = async (context) => {
   const { request } = context;
   const origin = request.headers.get('Origin');
 
-  if (origin && !ALLOWED_ORIGINS.has(origin)) {
+  if (!isAllowedOrigin(origin, ALLOWED_ORIGINS)) {
     return new Response(null, { status: 204 });
   }
 
-  const rateLimitOk = await checkRateLimit(request);
-  if (!rateLimitOk) {
-    return new Response(null, { status: 204 });
+  const ip = request.headers.get('CF-Connecting-IP') || '';
+  if (!checkRateLimit(`abandon:${ip}`, RATE_LIMIT_ABANDONMENT_MAX)) {
+    return new Response(null, { status: 429 });
   }
 
   try {
@@ -83,7 +89,6 @@ export const POST: APIRoute = async (context) => {
     // a fingerprint-only client_id. We do NOT send the IP to GA4 — that
     // would breach our own consent posture for analytics_storage=denied
     // sessions.
-    const ip = request.headers.get('CF-Connecting-IP') || '';
     const ua = request.headers.get('User-Agent') || '';
     const clientId = deriveClientId(`${ip}${ua}`.replace(/[^a-f0-9]/gi, '').padEnd(32, '0'));
 

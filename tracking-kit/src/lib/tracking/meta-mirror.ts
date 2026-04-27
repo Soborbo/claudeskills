@@ -10,16 +10,32 @@
  *
  * The map of internal-event → Meta-event-name lives in config.ts so you
  * can add events without touching this file.
+ *
+ * Consent: this function refuses to mirror when ads consent is denied.
+ * The server endpoint also re-checks the consent snapshot included in
+ * the payload — defense-in-depth so a tampered client can't bypass.
  */
 
 import { META_CAPI_ENDPOINT, META_EVENT_NAMES } from './config';
-import { readUserDataFromDOM, type UserData } from './tracking';
+import {
+  getConsentSnapshot,
+  hasFullAdsConsent,
+  readUserDataFromDOM,
+  type UserData,
+} from './tracking';
 
 export interface MetaMirrorPayload {
   value?: number;
   currency?: string;
   content_name?: string;
 }
+
+/** _fbp / _fbc cookie format Meta sets and expects back:
+ *    fb.subdomain_index.creation_time.unique_id (fbp)
+ *    fb.subdomain_index.creation_time.fbclid    (fbc)
+ *  Anything else is junk or attribution-spoofing — drop. */
+const FBP_RE = /^fb\.\d+\.\d+\.\d+$/;
+const FBC_RE = /^fb\.\d+\.\d+\.[A-Za-z0-9_-]+$/;
 
 export async function mirrorMetaCapi(
   internalEventName: string,
@@ -30,11 +46,18 @@ export async function mirrorMetaCapi(
   const metaName = META_EVENT_NAMES[internalEventName];
   if (!metaName) return;
 
+  // Fail-closed consent gate — never forward to Meta without ads consent.
+  if (!hasFullAdsConsent()) return;
+
   const userData: UserData = readUserDataFromDOM();
   // Best-effort _fbp / _fbc cookie parse — Meta uses these to attribute
   // the browser side; CAPI strongly recommends including them server-side
-  // too so Meta can connect server hits to the same device.
+  // too so Meta can connect server hits to the same device. We validate
+  // the shape so a malicious cookie injection can't smuggle a bogus
+  // attribution pointer through to Meta.
   const cookies = parseCookies();
+  const fbp = cookies._fbp && FBP_RE.test(cookies._fbp) ? cookies._fbp : undefined;
+  const fbc = cookies._fbc && FBC_RE.test(cookies._fbc) ? cookies._fbc : undefined;
 
   const payload = {
     event_name: metaName,
@@ -43,11 +66,12 @@ export async function mirrorMetaCapi(
     event_source_url: window.location.href,
     user_data: {
       ...userData,
-      fbp: cookies._fbp,
-      fbc: cookies._fbc,
+      fbp,
+      fbc,
       client_user_agent: navigator.userAgent,
     },
     custom_data: data,
+    consent_state: getConsentSnapshot(),
   };
 
   try {

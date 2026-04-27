@@ -12,6 +12,11 @@
  * Hashing uses `@noble/hashes`. If you'd rather use a different hash
  * library or the runtime's built-in WebCrypto SubtleCrypto.digest,
  * swap the `hash*` helpers below — the rest of the file is unchanged.
+ *
+ * Beyond hashing + sending, this module exports the validation,
+ * rate-limit, and consent helpers that BOTH the Astro and Next.js
+ * route mounts share. Keep route handlers thin: parse, hand off to
+ * these helpers, return 204.
  */
 
 import { sha256 } from '@noble/hashes/sha2.js';
@@ -21,7 +26,11 @@ import {
   type CountryCode,
   type UserData,
 } from './tracking';
-import { DEFAULT_COUNTRY } from './config';
+import {
+  DEFAULT_COUNTRY,
+  META_GRAPH_API_VERSION,
+  RATE_LIMIT_WINDOW_MS,
+} from './config';
 
 /**
  * Server-side env contract. The keys are read on every send; the
@@ -63,7 +72,7 @@ const consoleLogger: Logger = {
 
 const enc = new TextEncoder();
 
-function hash(value: string | undefined): string | undefined {
+function hashEmail(value: string | undefined): string | undefined {
   if (!value) return undefined;
   return bytesToHex(sha256(enc.encode(value.trim().toLowerCase())));
 }
@@ -76,6 +85,176 @@ function hashPostal(value: string | undefined): string | undefined {
 function hashCountry(value: string | undefined): string | undefined {
   if (!value) return undefined;
   return bytesToHex(sha256(enc.encode(value.trim().toLowerCase().slice(0, 2))));
+}
+
+// ---------------------------------------------------------------------------
+// Validation primitives shared by the route handlers
+// ---------------------------------------------------------------------------
+
+/** Meta `event_id` is a free-form string but must be stable, short, and
+ *  printable. We accept the typical UUID/slug shape and cap length. */
+const EVENT_ID_RE = /^[A-Za-z0-9._:\-]{1,200}$/;
+const CURRENCY_RE = /^[A-Z]{3}$/;
+/** Loose RFC-5321 email check — strict enough to reject obvious junk
+ *  before we spend a hash on it; lenient enough to not reject valid
+ *  unicode-local-part addresses outright. */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const FBP_RE = /^fb\.\d+\.\d+\.\d+$/;
+const FBC_RE = /^fb\.\d+\.\d+\.[A-Za-z0-9_-]+$/;
+
+/** Cap on `value` we'll forward to Meta. Anything above this is almost
+ *  certainly an attacker trying to inflate Smart Bidding signals; legit
+ *  lead values for B2C funnels are well below this. Tune for your
+ *  business if you have genuinely high-ticket conversions. */
+export const MAX_CONVERSION_VALUE = 1_000_000;
+
+export function isValidEventId(v: unknown): v is string {
+  return typeof v === 'string' && EVENT_ID_RE.test(v);
+}
+
+export function isValidCurrency(v: unknown): v is string {
+  return typeof v === 'string' && CURRENCY_RE.test(v);
+}
+
+export function isValidConversionValue(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= MAX_CONVERSION_VALUE;
+}
+
+export function isValidEmail(v: unknown): v is string {
+  return typeof v === 'string' && v.length <= 320 && EMAIL_RE.test(v);
+}
+
+export function isValidFbp(v: unknown): v is string {
+  return typeof v === 'string' && v.length <= 100 && FBP_RE.test(v);
+}
+
+export function isValidFbc(v: unknown): v is string {
+  return typeof v === 'string' && v.length <= 200 && FBC_RE.test(v);
+}
+
+/** Validates `event_source_url` against the configured allowed origins.
+ *  If it doesn't match (or is malformed), falls back to the request's
+ *  Referer if THAT matches. Otherwise undefined — better to send no
+ *  source URL than an attacker-controlled one. */
+export function pickEventSourceUrl(
+  candidate: unknown,
+  referer: string | null,
+  allowedOrigins: ReadonlySet<string>,
+): string | undefined {
+  if (typeof candidate === 'string' && candidate.length <= 2000) {
+    try {
+      const u = new URL(candidate);
+      if (allowedOrigins.has(u.origin)) return candidate;
+    } catch { /* malformed URL — ignore */ }
+  }
+  if (referer) {
+    try {
+      const u = new URL(referer);
+      if (allowedOrigins.has(u.origin)) return referer.slice(0, 2000);
+    } catch { /* ignore */ }
+  }
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Origin gate
+// ---------------------------------------------------------------------------
+
+/** Strict origin check: requests with no Origin header are REJECTED.
+ *  The previous policy ("if Origin missing, allow") was bypassable from
+ *  curl/server-to-server tools — the whole point of the gate is that
+ *  fake conversions can't be POSTed from outside the browser. */
+export function isAllowedOrigin(
+  origin: string | null,
+  allowed: ReadonlySet<string>,
+): boolean {
+  if (!origin) return false;
+  return allowed.has(origin);
+}
+
+// ---------------------------------------------------------------------------
+// Consent gate
+// ---------------------------------------------------------------------------
+
+export interface ConsentState {
+  ad_storage?: 'granted' | 'denied' | string;
+  ad_user_data?: 'granted' | 'denied' | string;
+  ad_personalization?: 'granted' | 'denied' | string;
+  analytics_storage?: 'granted' | 'denied' | string;
+}
+
+/** Fail-closed Meta CAPI gate. Forwarding ad-attributable conversions to
+ *  Meta without ad consent is a regulatory exposure (GDPR + Meta's own
+ *  policy). The client's `mirrorMetaCapi` already gates on this; the
+ *  server re-checks because a tampered client can omit it. */
+export function metaCapiConsentAllowed(consent: unknown): boolean {
+  if (!consent || typeof consent !== 'object') return false;
+  const c = consent as ConsentState;
+  return c.ad_storage === 'granted' && c.ad_user_data === 'granted';
+}
+
+// ---------------------------------------------------------------------------
+// In-memory rate limiter
+// ---------------------------------------------------------------------------
+
+/**
+ * Per-IP sliding-window limiter, in-memory. Survives across requests
+ * within the same isolate but NOT across isolates — on Cloudflare
+ * Workers this means a single attacker can be rate-limited per isolate
+ * but distributed traffic that lands on different isolates is not
+ * counted globally. For stronger guarantees, swap this out for a
+ * KV-backed (Cloudflare KV / Vercel KV / Redis) limiter.
+ *
+ * The map is bounded by periodic GC of expired entries to avoid
+ * unbounded growth under unique-IP attack.
+ */
+const rateBuckets = new Map<string, number[]>();
+let lastGc = 0;
+
+function gcRateBuckets(now: number): void {
+  if (now - lastGc < RATE_LIMIT_WINDOW_MS) return;
+  lastGc = now;
+  for (const [k, arr] of rateBuckets) {
+    const fresh = arr.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+    if (fresh.length === 0) rateBuckets.delete(k);
+    else rateBuckets.set(k, fresh);
+  }
+}
+
+export function checkRateLimit(key: string, max: number): boolean {
+  if (!key) return true;
+  const now = Date.now();
+  gcRateBuckets(now);
+  const arr = rateBuckets.get(key) || [];
+  const fresh = arr.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (fresh.length >= max) {
+    rateBuckets.set(key, fresh);
+    return false;
+  }
+  fresh.push(now);
+  rateBuckets.set(key, fresh);
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// CORS / OPTIONS preflight helper
+// ---------------------------------------------------------------------------
+
+/** Generic CORS-preflight responder. Echoes only allowed origins (never
+ *  `*`) and limits methods to POST. */
+export function corsPreflightResponse(
+  origin: string | null,
+  allowed: ReadonlySet<string>,
+): Response {
+  const headers = new Headers();
+  if (origin && allowed.has(origin)) {
+    headers.set('Access-Control-Allow-Origin', origin);
+    headers.set('Vary', 'Origin');
+    headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type');
+    headers.set('Access-Control-Max-Age', '600');
+  }
+  return new Response(null, { status: 204, headers });
 }
 
 // ---------------------------------------------------------------------------
@@ -126,7 +305,7 @@ export async function sendGA4MP(
       body: JSON.stringify(body),
     });
     if (!res.ok) {
-      log.warn('GA4MP', `Non-2xx response: ${res.status}`);
+      (log.error || log.warn)('GA4MP', `Non-2xx response: ${res.status}`);
     }
   } catch (err) {
     log.warn('GA4MP', 'Send failed', { error: err instanceof Error ? err.message : String(err) });
@@ -169,6 +348,16 @@ export async function sendMetaCapi(
   const transformed = events.map((evt) => {
     const ud = evt.user_data || {};
     const phone = ud.phone_number ? normalizePhoneE164(ud.phone_number, countryCode) : undefined;
+    // Hash each field once. The previous form computed each hash twice
+    // (once for the truthy check, once for the value) which is both
+    // wasteful and easy to read wrong.
+    const em = hashEmail(ud.email);
+    const ph = hashEmail(phone);
+    const fn = hashEmail(ud.first_name);
+    const ln = hashEmail(ud.last_name);
+    const ct = hashEmail(ud.city);
+    const zp = hashPostal(ud.postal_code);
+    const country = hashCountry(ud.country);
     return {
       event_name: evt.event_name,
       event_id: evt.event_id,
@@ -176,13 +365,13 @@ export async function sendMetaCapi(
       event_source_url: evt.event_source_url,
       action_source: evt.action_source || 'website',
       user_data: {
-        em: hash(ud.email) ? [hash(ud.email)] : undefined,
-        ph: hash(phone) ? [hash(phone)] : undefined,
-        fn: hash(ud.first_name) ? [hash(ud.first_name)] : undefined,
-        ln: hash(ud.last_name) ? [hash(ud.last_name)] : undefined,
-        ct: hash(ud.city) ? [hash(ud.city)] : undefined,
-        zp: hashPostal(ud.postal_code) ? [hashPostal(ud.postal_code)] : undefined,
-        country: hashCountry(ud.country) ? [hashCountry(ud.country)] : undefined,
+        em: em ? [em] : undefined,
+        ph: ph ? [ph] : undefined,
+        fn: fn ? [fn] : undefined,
+        ln: ln ? [ln] : undefined,
+        ct: ct ? [ct] : undefined,
+        zp: zp ? [zp] : undefined,
+        country: country ? [country] : undefined,
         fbp: ud.fbp,
         fbc: ud.fbc,
         client_user_agent: ud.client_user_agent,
@@ -197,7 +386,7 @@ export async function sendMetaCapi(
     payload.test_event_code = env.META_CAPI_TEST_EVENT_CODE;
   }
 
-  const url = `https://graph.facebook.com/v18.0/${encodeURIComponent(pixelId)}/events?access_token=${encodeURIComponent(accessToken)}`;
+  const url = `https://graph.facebook.com/${META_GRAPH_API_VERSION}/${encodeURIComponent(pixelId)}/events?access_token=${encodeURIComponent(accessToken)}`;
 
   try {
     const res = await fetch(url, {
@@ -207,7 +396,7 @@ export async function sendMetaCapi(
     });
     if (!res.ok) {
       const text = await res.text().catch(() => '');
-      log.warn('MetaCAPI', `Non-2xx response: ${res.status}`, { body: text.slice(0, 500) });
+      (log.error || log.warn)('MetaCAPI', `Non-2xx response: ${res.status}`, { body: text.slice(0, 500) });
       return;
     }
   } catch (err) {

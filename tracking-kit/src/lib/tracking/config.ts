@@ -58,6 +58,37 @@ export const LATE_CATCHUP_MS = 24 * 60 * 60 * 1000;
 export const ABANDONMENT_MIN_DWELL_MS = 10 * 1000;
 
 // ---------------------------------------------------------------------------
+// PII retention
+// ---------------------------------------------------------------------------
+
+/** PII (email/phone/name/address) on the side-channel `localStorage` blob
+ *  expires after this. On every page-load `restoreUserDataFromStorage()`
+ *  enforces the TTL. Set short enough that an unattended browser session
+ *  doesn't leave PII recoverable indefinitely; long enough that a returning
+ *  user inside the upgrade window still has hashed identifiers for CAPI. */
+export const USER_DATA_TTL_MS = 24 * 60 * 60 * 1000;
+
+// ---------------------------------------------------------------------------
+// Server-side rate limit (best-effort, in-memory per isolate)
+// ---------------------------------------------------------------------------
+
+/** Sliding window length for the per-IP request limiter. */
+export const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+/** Max requests per IP per window for the abandonment beacon. */
+export const RATE_LIMIT_ABANDONMENT_MAX = 60;
+/** Max requests per IP per window for the Meta CAPI mirror — tighter
+ *  because each accepted hit forwards a real conversion to Meta. */
+export const RATE_LIMIT_CAPI_MAX = 20;
+
+// ---------------------------------------------------------------------------
+// Meta Graph API version
+// ---------------------------------------------------------------------------
+
+/** Pinned Meta Graph API version for CAPI calls. Bump in one place when
+ *  Meta deprecates a version (they support each version for ~2 years). */
+export const META_GRAPH_API_VERSION = 'v22.0';
+
+// ---------------------------------------------------------------------------
 // Storage keys & DOM ids — derived from STORAGE_PREFIX so you almost never
 // need to touch them directly.
 // ---------------------------------------------------------------------------
@@ -66,6 +97,10 @@ export const CONVERSION_STATE_KEY = `${STORAGE_PREFIX}_conversion_state`;
 export const USER_DATA_STORAGE_KEY = `${STORAGE_PREFIX}_user_data`;
 export const USER_DATA_ELEMENT_ID = `__${STORAGE_PREFIX}_user_data__`;
 export const CONVERSION_STATE_CHANNEL = `${STORAGE_PREFIX}_conversion_state_v1`;
+/** Standalone flag — survives `deleteState()` on the conversion state so
+ *  Meta `ViewContent` only fires once per browser EVER, not once per
+ *  upgrade window. */
+export const VIEW_CONTENT_FIRED_KEY = `${STORAGE_PREFIX}_view_content_fired`;
 
 // ---------------------------------------------------------------------------
 // Endpoints — the paths your server-side handlers will be mounted at.

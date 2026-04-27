@@ -14,7 +14,7 @@
 
 import { getActiveConversionState, markConversionUpgraded } from './conversion-state';
 import { mirrorMetaCapi } from './meta-mirror';
-import { trackEvent } from './tracking';
+import { clearUserDataOnDOM, trackEvent } from './tracking';
 import { generateUUID } from './uuid';
 
 let installed = false;
@@ -59,10 +59,14 @@ function onDocumentClick(e: Event): void {
       source: 'after_primary',
       ...extras,
     });
+    // The mirror reads side-channel PII synchronously; once that returns
+    // we can drop the PII even though the network send is still in
+    // flight. sendBeacon is fire-and-forget by design.
     void mirrorMetaCapi(eventName, eventId, {
       value: active.value,
       currency: active.currency,
     });
+    clearUserDataOnDOM();
   } else {
     trackEvent(eventName, {
       event_id: eventId,

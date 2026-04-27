@@ -29,7 +29,7 @@
  * mirrorMetaCapi directly from your form-success handler.
  */
 
-import { trackEvent } from './tracking';
+import { clearUserDataOnDOM, trackEvent } from './tracking';
 import { mirrorMetaCapi } from './meta-mirror';
 import { generateUUID } from './uuid';
 import {
@@ -38,6 +38,7 @@ import {
   CONVERSION_STATE_CHANNEL,
   CONVERSION_STATE_KEY,
   UPGRADE_WINDOW_MS,
+  VIEW_CONTENT_FIRED_KEY,
 } from './config';
 
 export interface ConversionState {
@@ -49,10 +50,19 @@ export interface ConversionState {
   completedAt: number;
   eventId: string;
   upgraded: boolean;
-  /** Whether the Meta `ViewContent` engagement signal has already fired
-   *  in this browser. Survives across re-completions so re-runs don't
-   *  double-fire. */
-  viewContentFired: boolean;
+}
+
+function isConversionState(v: unknown): v is ConversionState {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  return (
+    typeof o.value === 'number' && Number.isFinite(o.value) &&
+    typeof o.currency === 'string' &&
+    typeof o.service === 'string' &&
+    typeof o.completedAt === 'number' && Number.isFinite(o.completedAt) &&
+    typeof o.eventId === 'string' && o.eventId.length > 0 &&
+    typeof o.upgraded === 'boolean'
+  );
 }
 
 let pendingTimerId: ReturnType<typeof setTimeout> | null = null;
@@ -89,7 +99,14 @@ function readState(): ConversionState | null {
   try {
     const raw = localStorage.getItem(CONVERSION_STATE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as ConversionState;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isConversionState(parsed)) {
+      // Schema-mismatch (older version, hand-edited, or junk) — drop it
+      // rather than crash downstream callers that read state.upgraded etc.
+      try { localStorage.removeItem(CONVERSION_STATE_KEY); } catch { /* ignore */ }
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -114,6 +131,23 @@ function deleteState(): void {
 }
 
 /**
+ * `viewContentFired` lives in its own localStorage key — NOT inside the
+ * conversion state — because the state is wiped after every primary
+ * conversion fires (`deleteState()` in `fireConversionIfStillActive`).
+ * If we kept the flag inside the state, every subsequent primary
+ * completion would re-fire Meta `ViewContent`, double-counting an
+ * engagement signal that's supposed to fire at most once per browser.
+ */
+export function hasViewContentFired(): boolean {
+  if (typeof localStorage === 'undefined') return false;
+  try {
+    return localStorage.getItem(VIEW_CONTENT_FIRED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Called from the primary-completion success handler to start a fresh
  * upgrade window. Resets the timer and event_id; preserves
  * `viewContentFired` so the Meta ViewContent only fires once per
@@ -130,7 +164,6 @@ export function resetConversionState(input: {
   eventId?: string;
 }): ConversionState {
   clearPendingTimer();
-  const previous = readState();
 
   const state: ConversionState = {
     value: input.value,
@@ -139,7 +172,6 @@ export function resetConversionState(input: {
     completedAt: Date.now(),
     eventId: input.eventId || generateUUID(),
     upgraded: false,
-    viewContentFired: previous?.viewContentFired ?? false,
   };
   writeState(state);
   pendingTimerId = setTimeout(
@@ -177,10 +209,12 @@ export function markConversionUpgraded(): void {
 }
 
 export function markViewContentFired(): void {
-  const state = readState();
-  if (!state) return;
-  state.viewContentFired = true;
-  writeState(state);
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(VIEW_CONTENT_FIRED_KEY, '1');
+  } catch {
+    // ignore
+  }
 }
 
 function fireConversionIfStillActive(isLate: boolean): void {
@@ -201,6 +235,9 @@ function fireConversionIfStillActive(isLate: boolean): void {
 
   deleteState();
   clearPendingTimer();
+  // Conversion is final — drop side-channel PII so the at-rest blob
+  // doesn't outlive the conversion that needed it.
+  clearUserDataOnDOM();
 }
 
 /**
