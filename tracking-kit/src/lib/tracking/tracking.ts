@@ -224,7 +224,7 @@ export interface ConsentSnapshot {
 }
 
 interface GoogleTagData {
-  ics?: { entries?: Record<string, { default?: string; update?: string }> };
+  ics?: { entries?: Record<string, { default?: boolean; update?: boolean }> };
 }
 
 declare global {
@@ -238,6 +238,12 @@ declare global {
  * consent values on `window.google_tag_data.ics.entries`; if the user has
  * not interacted yet, the `default` from `GTMHead` applies (denied for
  * everything except security_storage).
+ *
+ * NOTE: GTM stores these as BOOLEANS internally (true = granted, false =
+ * denied), even though the public `gtag('consent', ...)` API takes the
+ * strings 'granted' / 'denied'. Comparing `=== 'granted'` against the
+ * boolean would always fall through to 'denied', silently fail-closing
+ * the entire CAPI mirror in production — so we truthy-check instead.
  *
  * Returns 'denied' for any purpose we can't read — fail closed, never
  * fail open. Server-side callers (sendMetaCapi etc.) MUST receive this
@@ -257,7 +263,7 @@ export function getConsentSnapshot(): ConsentSnapshot {
   const read = (k: keyof ConsentSnapshot): ConsentValue => {
     const e = entries[k];
     const v = e?.update ?? e?.default;
-    return v === 'granted' ? 'granted' : 'denied';
+    return v ? 'granted' : 'denied';
   };
   return {
     ad_storage: read('ad_storage'),
