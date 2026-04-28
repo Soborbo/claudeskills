@@ -265,3 +265,75 @@ Once validation is green:
 ## Adding a new event later
 
 See [EVENTS.md](EVENTS.md).
+
+## Migrating from a legacy GTM container
+
+If you're cutting over from a previous tracking implementation that used
+its own GTM container (rather than starting fresh), two pieces of stale
+state survive in Meta after you swap the container — both need a manual
+cleanup pass, neither is automatic.
+
+### A. Custom Events queue cleanup
+
+Meta Events Manager → **Custom Events** lists every event name that
+fired from your pixel in the last 28 days. Even after the old container
+is unpublished, those event names sit there with `Active` status until
+the rolling window expires. Two concrete failure modes:
+
+1. **Custom audiences** built on a legacy event keep recruiting users
+   from the old `Active` status until day 28, then go silent — no
+   warning, just a drift in audience size.
+2. **Lookalikes** seeded on a legacy event silently degrade for the
+   same reason.
+
+**Workflow.** After the cutover and one full production session:
+
+```bash
+# Extract event names triggered by the NEW container
+python3 -c "
+import json,sys
+data=json.load(open(sys.argv[1]))
+for t in data['containerVersion'].get('trigger',[]):
+    for f in t.get('customEventFilter',[]):
+        for p in f.get('parameter',[]):
+            if p.get('key')=='arg1':
+                print(p.get('value',''))
+" new-workspace.json | sort -u > new-events.txt
+
+# Same for the OLD container, then diff
+python3 -c "..." old-workspace.json | sort -u > old-events.txt
+diff new-events.txt old-events.txt
+```
+
+Every event name that appears in `old-events.txt` but NOT in
+`new-events.txt` → manually mark `Block` in Meta Events Manager. They
+will not stop firing on their own; the queue is append-only by design.
+
+**Watch for renaming patterns:** the kit's canonical names are
+suffix-explicit (`contact_form_submit`, not `contact_form`;
+`callback_conversion`, not `callback`). Legacy containers often used
+the bare verb. Bare-verb event names in the old list are virtually
+always retired.
+
+### B. Blocked Parameters carryover
+
+If the old container shipped raw `user_email` / `user_phone` on any
+event, Meta will have flagged those event-parameter pairs in **Settings
+→ Blocked parameters** with `Action required` status. Switching to the
+kit does NOT clear the flag — Meta has no signal that the underlying
+container changed.
+
+Per INVARIANT #16, the unblock workflow is:
+
+1. Confirm the flagged event-parameter pair is no longer reachable in
+   the new container — grep both the new GTM JSON for any tag that
+   passes the param to `fbq()`, and the codebase for any
+   `trackEvent('flagged_event', { flagged_param: ... })` call.
+2. Deploy the kit + run one production session.
+3. In Meta Events Manager → Settings → Blocked parameters →
+   `Request review` → answer `yes` to the self-attestation popup.
+
+The attestation lights the recurrence-detection clock. If a single
+session in the next 7 days re-leaks the same param on the same event,
+Meta auto-re-blocks more aggressively. Verify in Tag Assistant before
+clicking — not after.

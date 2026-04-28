@@ -12,14 +12,25 @@ production from silent regressions.
 
 Email, phone, names, addresses are stored on a hidden DOM element via
 `setUserDataOnDOM()` and read by GTM variables directly. `trackEvent()`
-strips a `user_data` key if anyone accidentally passes one (and warns in
-dev). Adding raw PII fields to a `trackEvent` call is forbidden — push
-the value through `setUserDataOnDOM()` and reference it in GTM via the
-"User-Provided Data" variable instead.
+silently strips the entire `PII_KEYS` set (`user_data`, `user_email`,
+`user_phone`, `email`, `phone`, `phone_number`, `first_name`, `last_name`,
+`name`, `street`, `city`, `postal_code`, `postcode`, plus the Meta
+Advanced Matching short-codes `em` / `ph` / `fn` / `ln`) — and warns in
+dev about the stripped keys. Adding raw PII fields to a `trackEvent`
+call is forbidden — push the value through `setUserDataOnDOM()` and
+reference it in GTM via the "User-Provided Data" variable instead.
+
+**If you introduce a new PII-shaped field name, ADD IT to `PII_KEYS`.**
+The guard is name-based, not value-based: putting an email STRING into
+a non-PII key like `lead_id` will NOT be caught — the caller must
+choose the right key.
 
 **Why:** anything in `window.dataLayer` is visible to every GTM tag
 (including third-party HTML tags). One leaked PII push to the wrong tag
-is a GDPR incident.
+is a GDPR incident — and Meta's automatic detection (Events Manager →
+Settings → Blocked parameters) will block the offending event-parameter
+pair within 24h, killing optimization signal until you remediate per
+INVARIANT #16.
 
 ## 2. Every `trackEvent` call ends up with an `event_id`
 
@@ -180,3 +191,37 @@ to GA4, Ads, and Meta even though the code looks correct.
 **Why:** GTM is the routing layer. The dataLayer push is necessary but
 not sufficient — every new event needs (a) a custom-event trigger and
 (b) at least one tag firing on it. EVENTS.md documents the workflow.
+
+## 16. Meta Blocked Parameters: "Request review" is self-attestation, not audit
+
+When Meta detects raw PII on a custom event parameter, it lands in
+**Events Manager → Settings → Blocked parameters** with `Action required`
+status. The "Request review" button opens a yes/no popup (*"Did you
+make changes?"*) — answering `yes` unblocks immediately. **There is no
+server-side review.** SETUP.md documents the full remediation playbook;
+two non-obvious behaviors that make this an invariant:
+
+1. **Cross-event attribution.** When one event leaks (e.g.
+   `quote_request` carries a raw `user_email`), Meta's session-level
+   detector tags **other custom events fired in the same session** with
+   the same `user_email` parameter (e.g. `calculator_step`). The
+   blocked-parameters list will appear to show two independent leaks —
+   it is one leak. Fix the source event; the secondary attribution
+   clears on its own.
+
+2. **Recurrence detection.** After unblock, Meta watches for ~7 days.
+   If the same event-parameter pair leaks again, Meta auto-re-blocks,
+   this time more aggressively (potential account-level delivery
+   impact). Self-attestation is a contract — **deploy the fix BEFORE
+   clicking "Request review"**, never after.
+
+**Workflow:** (1) grep the codebase for `trackEvent` calls passing the
+flagged param name, (2) move the value to `setUserDataOnDOM()`, (3)
+deploy + verify in Tag Assistant that the next push is clean, (4) THEN
+click "Request review" and answer `yes`.
+
+**Why an invariant rather than just docs:** the natural reaction to a
+"blocked parameter" notice is to click the unblock button immediately
+to restore signal. Doing that without deploying the fix burns the
+recurrence-detection grace period and risks an account-level penalty.
+Treat the self-attestation as a load-bearing promise.
