@@ -22,6 +22,9 @@ export interface TrackingData {
   gbraid?: string;
   wbraid?: string;
   fbclid?: string;
+  /** First-capture timestamp for fbclid (ms). Used to reconstruct
+   *  Meta's `_fbc` cookie when the Pixel hasn't run yet. */
+  fbclidAt?: number;
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
@@ -157,8 +160,16 @@ export function persistTrackingParams(): void {
   if (!fresh) return;
   persistFirstTouch(fresh);
   const stored = getStoredData();
+  // Stamp the fbclid capture time only when fbclid is new — needed to
+  // reconstruct Meta's `_fbc` cookie with the original click timestamp.
+  // Re-stamping on every persist would drift the timestamp away from the
+  // actual click, breaking match quality.
+  const fbclidAt = fresh.fbclid && (!stored?.fbclid || stored.fbclid !== fresh.fbclid)
+    ? Date.now()
+    : stored?.fbclidAt;
   lsSet(TRACKING_KEY, JSON.stringify({
     ...stored, ...fresh,
+    fbclidAt,
     timestamp: Date.now(),
     landingPage: stored?.landingPage || window.location.pathname,
   } satisfies TrackingData));
@@ -229,8 +240,32 @@ export function getAllTrackingData(): Partial<TrackingData> {
 export function getFbp(): string | null {
   return typeof document !== 'undefined' ? document.cookie.match(/(?:^|;\s*)_fbp=([^;]*)/)?.[1] || null : null;
 }
+
+/**
+ * Returns the canonical Pixel-set `_fbc` cookie when present, otherwise
+ * reconstructs it from the stored fbclid + first-capture timestamp.
+ *
+ * Why: Meta's `_fbc` cookie is only set by the Pixel AFTER marketing
+ * consent runs, which loses the click ID for any landing → consent →
+ * navigate → submit flow. Meta's CAPI EMQ diagnostic flags this as low
+ * Click ID coverage and recommends sending fbc on the server. By
+ * reconstructing from our own stored fbclid we close the gap without
+ * needing Meta's parameter builder SDK.
+ *
+ * Format: `fb.<subdomain_index>.<click_timestamp_ms>.<fbclid>`
+ * subdomain_index = 1 for apex-domain cookies (most common case).
+ * Spec: https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/fbp-and-fbc/
+ */
+const FBCLID_RE = /^[A-Za-z0-9_-]{1,500}$/;
 export function getFbc(): string | null {
-  return typeof document !== 'undefined' ? document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/)?.[1] || null : null;
+  if (typeof document !== 'undefined') {
+    const cookie = document.cookie.match(/(?:^|;\s*)_fbc=([^;]*)/)?.[1];
+    if (cookie) return cookie;
+  }
+  const stored = getStoredData();
+  if (!stored?.fbclid || !stored.fbclidAt) return null;
+  if (!FBCLID_RE.test(stored.fbclid)) return null;
+  return `fb.1.${stored.fbclidAt}.${stored.fbclid}`;
 }
 
 export function getPageUrl(): string {

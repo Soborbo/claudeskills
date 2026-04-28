@@ -130,6 +130,49 @@ Add `?debugTracking=1` to any URL → all events logged to console.
 4. **Optional HMAC token** (`TRACK_TOKEN` env var)
 5. **In-memory rate limit** (soft — supplement with Cloudflare WAF)
 
+## Click ID (fbc) coverage
+
+The Pixel-set `_fbc` cookie only exists **after marketing consent runs**.
+A user who lands with `?fbclid=…`, doesn't accept the banner immediately,
+navigates, then submits a form arrives at the server with `_fbc = null` —
+even though the click came from Meta. Meta's CAPI EMQ diagnostic flags
+this as low Click ID coverage (often 0%), with up to 0.7 EMQ score lost.
+
+`getFbc()` in `persistence.ts` closes this:
+- Cookie wins when present (canonical Pixel value).
+- Otherwise reconstruct: `fb.1.<fbclidAt>.<fbclid>`, where `fbclidAt`
+  is captured the **first time** fbclid is persisted (re-stamping on
+  every persist would drift the timestamp away from the actual click).
+- Subdomain index `1` is correct for apex-domain cookies (most sites).
+
+**Don't try to "patch" `_fbc` cookie ourselves** (`document.cookie = …`)
+— it conflicts with the Pixel and creates dueling values. Reconstruct
+in memory at send-time only.
+
+For projects that need pre-consent capture (lossy GDPR-strict mode is
+the default in this skill), add fbclid to a non-consent inline IIFE that
+writes localStorage on every pageload. This is a per-project legal call;
+the skill stays consent-first.
+
+## Meta CAPI custom_data invariants
+
+**Always send a numeric `value` + `currency`** in `custom_data` for every
+Meta event. If you skip them on Contact / ViewContent events, Meta's
+diagnostics flag `s2s_invalid_custom_data_value` and **drop the events**
+(seen in production at 79% drop rate).
+
+- For Lead/ViewContent tied to a real monetary amount → pass that amount.
+- For Contact (phone/email/whatsapp/contact form) and value-less Leads →
+  fall back to a token `value: 1`. Meta accepts it as valid; it doesn't
+  inflate Smart Bidding signals.
+- The `/api/track` endpoint enforces this fallback server-side, so
+  client-side callers can omit `value` safely. **Don't add a "skip if
+  missing" guard at the server** — it reintroduces the dropped-event bug.
+
+Currency: pass `currency` whenever you pass a meaningful `value`. Default
+is `GBP` (override via `DEFAULT_CURRENCY` env var per project — e.g. HUF
+for HU sites).
+
 ## Normalization
 
 Single canonical normalizer used everywhere (dataLayer, hidden fields, Meta CAPI, Sheets):
@@ -143,6 +186,7 @@ Single canonical normalizer used everywhere (dataLayer, hidden fields, Meta CAPI
 META_ACCESS_TOKEN  = EAA...    (encrypted, production)
 META_PIXEL_ID      = 123456789
 ALLOWED_ORIGINS    = https://example.com,https://www.example.com
+DEFAULT_CURRENCY   = GBP        (optional; HUF/EUR/USD per project)
 TRACK_TOKEN        = random-secret-here  (optional)
 TRACKING_SHEETS_WEBHOOK = https://script.google.com/...  (optional)
 ```

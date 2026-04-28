@@ -135,8 +135,16 @@ async function sendMeta(p: BeaconPayload, ip: string, env: Record<string, string
   if (p.fbc) ud.fbc = p.fbc;
 
   const evName = p.type === 'contact' ? 'Contact' : 'Lead';
-  const cd: Record<string, unknown> = {};
-  if ('value' in p && p.value && p.value > 0) { cd.value = p.value; cd.currency = ('currency' in p && p.currency) || 'GBP'; }
+  // Meta drops events whose custom_data.value is missing or non-numeric
+  // (s2s_invalid_custom_data_value diagnostic). Always emit a numeric
+  // value + currency — fall back to a token 1.0 so Contact events and
+  // value-less Leads still pass Meta's validator.
+  const incomingValue = ('value' in p && typeof p.value === 'number' && p.value > 0) ? p.value : 1;
+  const incomingCurrency = ('currency' in p && p.currency) ? p.currency : (env.DEFAULT_CURRENCY || 'GBP');
+  const cd: Record<string, unknown> = {
+    value: incomingValue,
+    currency: incomingCurrency,
+  };
   if ('contentName' in p && p.contentName) cd.content_name = p.contentName;
 
   const ev: Record<string, unknown> = {
@@ -146,8 +154,8 @@ async function sendMeta(p: BeaconPayload, ip: string, env: Record<string, string
     event_source_url: p.url || p.pageUrl || '',
     event_id: p.eventId,
     user_data: ud,
+    custom_data: cd,
   };
-  if (Object.keys(cd).length) ev.custom_data = cd;
 
   try {
     const r = await fetch(
