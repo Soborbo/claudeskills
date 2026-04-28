@@ -156,18 +156,34 @@ the skill stays consent-first.
 
 ## Meta CAPI custom_data invariants
 
-**Always send a numeric `value` + `currency`** in `custom_data` for every
-Meta event. If you skip them on Contact / ViewContent events, Meta's
-diagnostics flag `s2s_invalid_custom_data_value` and **drop the events**
-(seen in production at 79% drop rate).
+`value` handling is **event-type-aware**, not a blanket "always send 1":
 
-- For Lead/ViewContent tied to a real monetary amount → pass that amount.
-- For Contact (phone/email/whatsapp/contact form) and value-less Leads →
-  fall back to a token `value: 1`. Meta accepts it as valid; it doesn't
-  inflate Smart Bidding signals.
-- The `/api/track` endpoint enforces this fallback server-side, so
-  client-side callers can omit `value` safely. **Don't add a "skip if
-  missing" guard at the server** — it reintroduces the dropped-event bug.
+- **Lead / ViewContent** are revenue-relevant. Meta's
+  `s2s_invalid_custom_data_value` diagnostic flags missing `value`, and
+  attribution / Smart Bidding suffers. Callsites must always pass a real
+  monetary value. The `/api/track` endpoint keeps a token `1` fallback
+  *only* for Lead as a regression safety net — never as a normal path.
+- **Contact** is naturally value-less for many flows (a `tel:` click
+  without a quote has no monetary amount). Faking `value: 1` here would
+  poison value-based Smart Bidding — Meta would optimise for "cheap
+  leads" and crush ad performance. The endpoint omits `value` entirely
+  when the client didn't send one.
+
+Browser-side (GTM Meta Pixel tags) follows the same rule: when the tag
+template references `{{DLV - value}}`, gate it with a runtime check so
+standalone clicks don't render `value: undefined, currency: 'undefined'`:
+
+```js
+var v = {{DLV - value}};
+var cd = (typeof v === 'number' && v > 0)
+  ? { value: v, currency: '{{DLV - currency}}' }
+  : {};
+fbq('track', 'Contact', cd, { eventID: '{{DLV - event_id}}' });
+```
+
+**Don't set GTM DLV defaults to 1+HUF** — that propagates fake values to
+every Pixel call AND every Google Ads conversion tag, polluting bidding
+across the whole stack. Use the conditional template instead.
 
 Currency: pass `currency` whenever you pass a meaningful `value`. Default
 is `GBP` (override via `DEFAULT_CURRENCY` env var per project — e.g. HUF

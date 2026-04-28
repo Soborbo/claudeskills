@@ -135,16 +135,26 @@ async function sendMeta(p: BeaconPayload, ip: string, env: Record<string, string
   if (p.fbc) ud.fbc = p.fbc;
 
   const evName = p.type === 'contact' ? 'Contact' : 'Lead';
-  // Meta drops events whose custom_data.value is missing or non-numeric
-  // (s2s_invalid_custom_data_value diagnostic). Always emit a numeric
-  // value + currency — fall back to a token 1.0 so Contact events and
-  // value-less Leads still pass Meta's validator.
-  const incomingValue = ('value' in p && typeof p.value === 'number' && p.value > 0) ? p.value : 1;
-  const incomingCurrency = ('currency' in p && p.currency) ? p.currency : (env.DEFAULT_CURRENCY || 'GBP');
-  const cd: Record<string, unknown> = {
-    value: incomingValue,
-    currency: incomingCurrency,
-  };
+  // Event-aware custom_data:
+  // - Lead is revenue-relevant. Meta flags missing value under
+  //   s2s_invalid_custom_data_value, so fall back to a token 1 ONLY as
+  //   a regression safety net (callsites should always pass a real
+  //   value when they have one).
+  // - Contact is naturally value-less for many flows (a tel: click
+  //   without a quote has no monetary value). Faking value: 1 here
+  //   would poison value-based Smart Bidding — Meta would optimise for
+  //   "cheap leads". Omit value entirely when the client didn't send one.
+  const cd: Record<string, unknown> = {};
+  const hasValue = 'value' in p && typeof p.value === 'number' && p.value > 0;
+  const currency = ('currency' in p && p.currency) ? p.currency : (env.DEFAULT_CURRENCY || 'GBP');
+  if (hasValue) {
+    cd.value = p.value;
+    cd.currency = currency;
+  } else if (evName === 'Lead') {
+    console.warn('[Track] Lead arrived without value; using token 1 as last-resort fallback');
+    cd.value = 1;
+    cd.currency = currency;
+  }
   if ('contentName' in p && p.contentName) cd.content_name = p.contentName;
 
   const ev: Record<string, unknown> = {
