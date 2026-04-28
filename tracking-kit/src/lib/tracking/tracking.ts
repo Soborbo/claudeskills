@@ -31,18 +31,53 @@ declare global {
 export type TrackingParams = Record<string, unknown> & { event_id?: string };
 
 /**
+ * Keys that must NEVER reach `window.dataLayer` in cleartext. Meta's
+ * automatic detection (Events Manager → Blocked parameters) flags any
+ * event that ships raw email/phone/name through the pixel and Google's
+ * policies are equivalent. PII belongs on the hidden DOM side-channel
+ * via `setUserDataOnDOM()` — server-hashed before egress.
+ *
+ * The guard is name-based, not value-based: putting an email STRING into
+ * a non-PII key like `lead_id` will NOT be caught — that is the caller's
+ * responsibility. If you introduce a new PII-shaped field name, ADD IT
+ * to this set.
+ */
+const PII_KEYS = new Set<string>([
+  'user_data',
+  'user_email', 'user_phone',
+  'email', 'phone', 'phone_number',
+  'first_name', 'last_name', 'name',
+  'street', 'city', 'postal_code', 'postcode',
+  // Meta Advanced Matching short-codes — silently picked up by the Pixel
+  // if exposed on the dataLayer near a tracked event.
+  'em', 'ph', 'fn', 'ln',
+]);
+
+/**
  * Pushes a NON-PII event to `window.dataLayer`. Returns the `event_id`
  * used (generated if not provided) so callers that need to mirror to a
  * server-side endpoint with the same dedup key can do so.
+ *
+ * PII keys (see `PII_KEYS`) are silently stripped from the push and
+ * warned about in dev. Use `setUserDataOnDOM()` for email/phone/name.
  */
 export function trackEvent(name: string, params: TrackingParams = {}): string {
   if (typeof window === 'undefined') return '';
 
-  const { user_data, event_id: providedId, ...safe } = params;
-  if (user_data && isDevEnv()) {
+  const { event_id: providedId, ...rest } = params;
+  const safe: Record<string, unknown> = {};
+  const stripped: string[] = [];
+  for (const [k, v] of Object.entries(rest)) {
+    if (PII_KEYS.has(k)) {
+      stripped.push(k);
+      continue;
+    }
+    safe[k] = v;
+  }
+  if (stripped.length && isDevEnv()) {
     // eslint-disable-next-line no-console
     console.warn(
-      `[tracking] PII detected in trackEvent('${name}'). Use setUserDataOnDOM() instead.`,
+      `[tracking] PII keys stripped from trackEvent('${name}'): ${stripped.join(', ')}. Use setUserDataOnDOM() instead.`,
     );
   }
 
