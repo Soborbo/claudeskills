@@ -24,12 +24,12 @@ export function initErrorTracker(config: InitConfig): void {
     window.addEventListener('error', (event: ErrorEvent) => {
       // Sub-resource errors (img, script) bubble here too — handle them
       // narrowly via target-type check so we don't double-report runtime errors.
-      const target = event.target as Element | null;
-      if (target && target !== window && target.nodeName === 'IMG') {
+      const target = event.target as Element | Window | null;
+      if (target && target !== window && (target as Element).nodeName === 'IMG') {
         trackError(
           'IMG-LOAD-001',
           null,
-          { src: (target as HTMLImageElement).src.slice(0, 200) },
+          { src: ((target as HTMLImageElement).src || '').slice(0, 200) },
           'global:img',
         );
         return;
