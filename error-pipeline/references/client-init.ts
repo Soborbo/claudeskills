@@ -1,8 +1,11 @@
 // src/lib/errors/client-init.ts
 //
 // Wires window-level error handlers and configures the tracker. Safe to call
-// multiple times. Init runs in requestIdleCallback so it never blocks the
-// critical path.
+// multiple times.
+//
+// Listeners are attached SYNCHRONOUSLY so we never miss errors thrown during
+// hydration / early script execution. The actual report send is fire-and-
+// forget via sendBeacon, which is itself non-blocking (~microseconds).
 
 import { configureTracker, trackError } from './tracker';
 
@@ -13,64 +16,78 @@ interface InitConfig {
   endpoint: string;
 }
 
+// Resource-element types whose load failures should be reported as resource
+// errors rather than runtime JS errors. The 'error' event bubbles to window
+// for these even though they don't cross the runtime boundary.
+const RESOURCE_NODES = new Set(['IMG', 'SCRIPT', 'LINK', 'SOURCE', 'VIDEO', 'AUDIO']);
+
 export function initErrorTracker(config: InitConfig): void {
   if (_initialised) return;
   _initialised = true;
 
   configureTracker({ endpoint: config.endpoint, siteId: config.siteId });
 
-  const setup = () => {
-    // Uncaught synchronous errors
-    window.addEventListener('error', (event: ErrorEvent) => {
-      // Sub-resource errors (img, script) bubble here too — handle them
-      // narrowly via target-type check so we don't double-report runtime errors.
-      const target = event.target as Element | Window | null;
-      if (target && target !== window && (target as Element).nodeName === 'IMG') {
+  // Uncaught synchronous errors AND sub-resource load failures.
+  // Both bubble through the same listener; distinguish via event.target.
+  window.addEventListener('error', (event: ErrorEvent) => {
+    const target = event.target as (Element & { src?: string; href?: string }) | Window | null;
+
+    if (target && target !== window) {
+      const node = (target as Element).nodeName;
+      if (node && RESOURCE_NODES.has(node)) {
+        const src =
+          (target as HTMLImageElement | HTMLScriptElement).src ||
+          (target as HTMLLinkElement).href ||
+          '';
+        const code = node === 'IMG' ? 'IMG-LOAD-001' : 'NET-RESOURCE-001';
         trackError(
-          'IMG-LOAD-001',
+          code,
           null,
-          { src: ((target as HTMLImageElement).src || '').slice(0, 200) },
-          'global:img',
+          { src: String(src).slice(0, 200), tag: node },
+          `global:${node.toLowerCase()}`,
         );
         return;
       }
+    }
 
-      const err = event.error;
-      const code = detectCode(err, event.message);
-      trackError(code, err ?? event.message, {
+    const err = event.error;
+    const code = detectCode(err, event.message);
+    trackError(
+      code,
+      err ?? event.message,
+      {
         line: event.lineno || 0,
         col: event.colno || 0,
-      }, `global:${event.filename || 'unknown'}`);
-    });
+      },
+      `global:${event.filename || 'unknown'}`,
+    );
+  });
 
-    // Unhandled promise rejections
-    window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-      const reason = event.reason;
-      const err = reason instanceof Error ? reason : new Error(String(reason));
-      const code = detectCode(err, err.message);
-      trackError(
-        code === 'JS-UNHANDLED-001' ? 'JS-PROMISE-001' : code,
-        err,
-        { type: typeof reason },
-        'global:promise',
-      );
-    });
+  // Unhandled promise rejections. Pass the ORIGINAL reason to detectCode so
+  // TypeError/ReferenceError prototypes survive — wrapping in
+  // `new Error(String(reason))` would collapse every rejection to JS-PROMISE.
+  window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+    const reason = event.reason;
+    const reasonMessage =
+      reason instanceof Error
+        ? reason.message
+        : typeof reason === 'string'
+          ? reason
+          : '';
+    const code = detectCode(reason, reasonMessage);
+    trackError(
+      code === 'JS-UNHANDLED-001' ? 'JS-PROMISE-001' : code,
+      reason instanceof Error ? reason : new Error(reasonMessage || 'Unhandled rejection'),
+      { type: typeof reason },
+      'global:promise',
+    );
+  });
 
-    // Offline detection — pure observation, not an error itself but useful
-    // signal when paired with subsequent fetch failures.
-    window.addEventListener('offline', () => {
-      trackError('NET-OFFLINE-001', null, { page: location.pathname }, 'global:network');
-    });
-  };
-
-  // Run setup off the critical path — never block first paint.
-  if ('requestIdleCallback' in window) {
-    (window as Window & {
-      requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => void;
-    }).requestIdleCallback(setup, { timeout: 2000 });
-  } else {
-    setTimeout(setup, 0);
-  }
+  // Offline detection — pure observation, not an error itself but useful
+  // signal when paired with subsequent fetch failures.
+  window.addEventListener('offline', () => {
+    trackError('NET-OFFLINE-001', null, { page: location.pathname }, 'global:network');
+  });
 }
 
 /** Map JS Error subclasses → catalogue codes. */

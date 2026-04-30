@@ -12,7 +12,9 @@
 import type { APIRoute } from 'astro';
 
 const MAX_BODY_BYTES = 8 * 1024;
-const CODE_PATTERN = /^[A-Z]{2,6}-[A-Z]{2,8}-\d{3}$/;
+// CATEGORY-SUBCATEGORY-NNN. Sub-category len up to 12 to admit codes like
+// JS-UNHANDLED-001 / NET-OFFLINE-001 / RESEND-SEND-001 already in use.
+const CODE_PATTERN = /^[A-Z]{2,6}-[A-Z]{2,12}-\d{3}$/;
 
 export const POST: APIRoute = async ({ request }) => {
   // Quick body-size guard before allocating a string.

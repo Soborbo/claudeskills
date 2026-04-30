@@ -64,12 +64,20 @@ function shouldReport(fingerprint: string): boolean {
   return true;
 }
 
+function makeId(): string {
+  // Prefer crypto.randomUUID (secure context). Fallback to Math.random.
+  // Strip dashes so the result is a clean alphanum string without surprises
+  // for downstream regexes / logging.
+  const raw = crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
+  return raw.replace(/-/g, '').slice(0, 12);
+}
+
 function getSessionId(): string {
   try {
     const k = '_err_sid';
     let id = sessionStorage.getItem(k);
     if (!id) {
-      id = (crypto?.randomUUID?.() ?? Math.random().toString(36)).slice(0, 12);
+      id = makeId();
       sessionStorage.setItem(k, id);
     }
     return id;
@@ -79,9 +87,22 @@ function getSessionId(): string {
 }
 
 function getConnection(): string {
-  if (!navigator.onLine) return 'offline';
-  const c = (navigator as unknown as { connection?: { effectiveType?: string } }).connection;
-  return c?.effectiveType || 'unknown';
+  try {
+    if (!navigator.onLine) return 'offline';
+    const c = (navigator as unknown as { connection?: { effectiveType?: string } }).connection;
+    return c?.effectiveType || 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+function getViewport(): string {
+  try {
+    if (typeof window === 'undefined') return '';
+    return `${window.innerWidth}x${window.innerHeight}`;
+  } catch {
+    return '';
+  }
 }
 
 function send(payload: object): void {
@@ -124,6 +145,7 @@ export function trackError(
 
   send({
     __pipeline: 'error',
+    siteId: _config.siteId,
     code,
     message: trunc(message || 'Unknown error'),
     url: trunc(location.href),
@@ -133,7 +155,7 @@ export function trackError(
     sessionId: getSessionId(),
     requestId: hash(fingerprint + Date.now()),
     userAgent: trunc(navigator.userAgent, 200),
-    viewport: `${innerWidth}x${innerHeight}`,
+    viewport: getViewport(),
     connection: getConnection(),
     fingerprint,
     ts: new Date().toISOString(),
