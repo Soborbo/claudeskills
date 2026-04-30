@@ -11,6 +11,13 @@
 
 import type { APIRoute } from 'astro';
 
+// Required when the host site uses `output: 'static'` — without this Astro
+// emits an empty placeholder asset at /api/error-log which the CF static-
+// assets binding then serves (200 for GET, 405 for POST), shadowing the
+// actual handler. With `prerender = false` the route runs server-side.
+// Harmless on `output: 'server'` / 'hybrid' projects.
+export const prerender = false;
+
 const MAX_BODY_BYTES = 8 * 1024;
 // CATEGORY-SUBCATEGORY-NNN. Sub-category len up to 12 to admit codes like
 // JS-UNHANDLED-001 / NET-OFFLINE-001 / RESEND-SEND-001 already in use.
