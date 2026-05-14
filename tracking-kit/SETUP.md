@@ -116,7 +116,7 @@ your container ID.
 | Var | Required for | Purpose |
 | --- | --- | --- |
 | `GTM_ID` (or `PUBLIC_GTM_ID` / `NEXT_PUBLIC_GTM_ID`) | client | Used by `GTMHead` to render the GTM bootstrap |
-| `GA4_MEASUREMENT_ID` | server-side mirror | Used by `sendGA4MP()` |
+| `GA4_MEASUREMENT_ID` | server-side mirror | Used by `sendGA4MP()`; also used by `readGa4IdsFromCookie()` to derive the `_ga_<container>` session-cookie name |
 | `GA4_API_SECRET` | server-side mirror | GA4 → Admin → Data Streams → Web → Measurement Protocol API secrets |
 | `META_PIXEL_ID` | server-side mirror | Used by `sendMetaCapi()` |
 | `META_CAPI_ACCESS_TOKEN` | server-side mirror | Meta Events Manager → Pixel → Settings → Conversions API → Generate access token |
@@ -243,6 +243,15 @@ In GA4 DebugView:
    `tk_conversion_state` entry appears after primary completion.
 2. GA4 Admin → DebugView → confirm `primary_conversion_complete`,
    `scroll_50`/`scroll_90` events appear.
+3. Open a fresh incognito session with a `?gclid=test123` (or your real
+   ad URL) → accept all cookies → complete the funnel. In DebugView,
+   find the **server-side** `primary_conversion_complete` event and
+   confirm its params include `session_id` (matching the browser
+   event's session), and that `Realtime → Session source/medium` does
+   NOT file it under `(not set)/(not set)`. If it does, the MP send used
+   a synthetic `client_id` — confirm `readGa4IdsFromCookie()` is wired
+   into your save endpoint and that `GA4_MEASUREMENT_ID` is set
+   server-side. See INVARIANT #17.
 
 In Google Ads Tag Assistant:
 

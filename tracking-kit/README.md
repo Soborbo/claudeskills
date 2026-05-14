@@ -149,6 +149,15 @@ and Meta dedupes them.
 | `form_abandonment` | GA4 MP from `/api/track/abandonment` (sendBeacon) | Pagehide-time browser pushes don't reliably reach GTM on mobile. |
 | `primary_conversion`, `callback_conversion`, `phone_conversion`, `email_conversion`, `whatsapp_conversion`, `primary_first_view` | Meta CAPI from `/api/meta/capi` | Browser Pixel quality is degraded by iOS/ATT and adblockers. CAPI gives the server-side signal Meta uses to model attribution. |
 
+Both GA4 MP paths read the visitor's **real `_ga` / `_ga_<container>`
+cookies** off the (same-origin) request via `readGa4IdsFromCookie()` and
+pass `client_id` + `session_id` to `sendGA4MP()`. This is load-bearing: a
+server-side MP hit with a synthetic `client_id` creates an unattributed
+`(not set)/(not set)` session that GA4 can't dedup against the browser
+event and that poisons Google Ads conversion imports. If there's no `_ga`
+cookie (fresh visitor / analytics consent denied) the kit skips the MP
+send rather than fabricate an id. See INVARIANT #17.
+
 We do NOT mirror Google Ads conversions server-side. The client tag
 already sees `gclid` cookies via Conversion Linker, which is what Ads
 needs. Server-side Ads conversion uploads (offline conversion uploads

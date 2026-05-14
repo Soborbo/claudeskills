@@ -19,9 +19,10 @@ import { env } from 'cloudflare:workers';
 import {
   checkRateLimit,
   corsPreflightResponse,
-  deriveClientId,
   isAllowedOrigin,
+  readGa4IdsFromCookie,
   sendGA4MP,
+  type ServerEnv,
 } from '@/lib/tracking/server';
 import { RATE_LIMIT_ABANDONMENT_MAX } from '@/lib/tracking/config';
 
@@ -85,19 +86,27 @@ export const POST: APIRoute = async (context) => {
     const raw = (await request.json()) as unknown;
     const payload = sanitize(raw);
 
-    // Caller-supplied IP is unreliable; we use the CF-Connecting-IP for
-    // a fingerprint-only client_id. We do NOT send the IP to GA4 — that
-    // would breach our own consent posture for analytics_storage=denied
-    // sessions.
-    const ua = request.headers.get('User-Agent') || '';
-    const clientId = deriveClientId(`${ip}${ua}`.replace(/[^a-f0-9]/gi, '').padEnd(32, '0'));
+    // `navigator.sendBeacon` on `pagehide` is same-origin, so the visitor's
+    // real `_ga` / `_ga_<container>` cookies ride along on this request —
+    // read the client_id + session_id from them so the abandonment event
+    // attributes to the actual session. Never fabricate a client_id (see
+    // INVARIANT #17): a synthetic id files every abandonment under a zombie
+    // (not set)/(not set) session.
+    const serverEnv = env as ServerEnv;
+    const { clientId, sessionId } = readGa4IdsFromCookie(
+      request.headers.get('cookie'),
+      serverEnv.GA4_MEASUREMENT_ID,
+    );
 
-    await sendGA4MP(env as Parameters<typeof sendGA4MP>[0], clientId, [
-      {
-        name: 'form_abandonment',
-        params: payload as Record<string, unknown>,
-      },
-    ]);
+    if (clientId) {
+      await sendGA4MP(
+        serverEnv,
+        clientId,
+        [{ name: 'form_abandonment', params: payload as Record<string, unknown> }],
+        { sessionId },
+      );
+    }
+    // No `_ga` cookie (consent denied / fresh visitor) → skip the send.
   } catch (err) {
     console.warn('[Abandonment] Failed to process beacon', err);
   }

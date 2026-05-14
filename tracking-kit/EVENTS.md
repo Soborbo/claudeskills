@@ -102,7 +102,9 @@ export const META_EVENT_NAMES: Record<string, string> = {
 
 If the event needs a server-side GA4 MP mirror (rare — only when the
 browser may not fire), call `sendGA4MP()` from your existing API route
-that processed the action.
+that processed the action. Read the `client_id` / `session_id` from the
+request's cookies with `readGa4IdsFromCookie()` first, and skip the send
+when there's no `_ga` cookie — never pass a synthetic id (INVARIANT #17).
 
 ### 2. GTM container
 
