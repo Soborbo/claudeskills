@@ -225,3 +225,45 @@ click "Request review" and answer `yes`.
 to restore signal. Doing that without deploying the fix burns the
 recurrence-detection grace period and risks an account-level penalty.
 Treat the self-attestation as a load-bearing promise.
+
+## 17. Never send a GA4 MP event with a synthetic `client_id`
+
+Server-side GA4 Measurement Protocol sends MUST use the visitor's real
+`_ga` cookie `client_id`, read via `readGa4IdsFromCookie()` from the
+request's `Cookie` header. The kit's MP endpoints are same-origin, so
+the `_ga` and `_ga_<container>` cookies ride along on every form POST
+and `sendBeacon` automatically — no client-side relay needed.
+
+- **No synthetic `client_id` — ever.** Not an IP+User-Agent hash, not a
+  random number, not a request fingerprint. If there's no real `_ga`
+  cookie (fresh visitor, or analytics consent denied),
+  `readGa4IdsFromCookie()` returns `{}` and the caller MUST **skip the MP
+  send entirely** — guard on `clientId` being present.
+- **Pass `session_id` whenever you have it.** `readGa4IdsFromCookie()`
+  also returns the `session_id` from the `_ga_<container>` cookie;
+  `sendGA4MP()` merges it (with `engagement_time_msec`) into every
+  event's params. Without `session_id` the event still attributes to the
+  right user but starts a *new* session — a session-count distorter.
+- **There is no `deriveClientId()` helper.** It was deleted on purpose.
+  Don't reintroduce a "fallback" id generator under any name — the next
+  person to call it re-creates this exact bug six months later.
+- **Applies to every MP path:** the save-conversion mirror, the
+  `/api/track/abandonment` beacon, and any future beacon endpoint. They
+  all receive same-origin cookies, so they can all read the real id.
+
+**Why:** a synthetic `client_id` is an unknown user to GA4 → new user,
+new session, no source/medium → the event lands in the
+`(not set)/(not set)` bucket. The browser-side `gtag` event for the
+*same* conversion arrives under the real `_ga` client_id, so GA4 cannot
+dedup the pair. Every server-side "backstop" event then becomes a zombie
+unattributed session; Google Ads imports those conversions without
+attribution and Smart Bidding optimizes on poisoned data. It's nearly
+invisible at first — the client-side event usually fires, so the
+`google/cpc` bucket isn't empty, just suspiciously low. You only catch
+it by diffing the `form_start` source breakdown against the conversion
+event's source breakdown in GA4 Explore.
+
+The Meta CAPI side has the identical trap on `_fbp` / `_fbc` cookies
+(and the `fbclid` URL param). `meta-mirror.ts` already does this right —
+it parses the click-id cookies back out and shape-validates them. Use it
+as the reference pattern when wiring any new server-side mirror.

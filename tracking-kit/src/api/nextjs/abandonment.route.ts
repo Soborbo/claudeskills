@@ -11,8 +11,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import {
   checkRateLimit,
   corsPreflightResponse,
-  deriveClientId,
   isAllowedOrigin,
+  readGa4IdsFromCookie,
   sendGA4MP,
   type ServerEnv,
 } from '@/lib/tracking/server';
@@ -85,12 +85,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const raw = (await request.json()) as unknown;
     const payload = sanitize(raw);
 
-    const ua = request.headers.get('user-agent') || '';
-    const clientId = deriveClientId(`${ip}${ua}`.replace(/[^a-f0-9]/gi, '').padEnd(32, '0'));
+    // Same-origin `sendBeacon` carries the visitor's real `_ga` /
+    // `_ga_<container>` cookies — read the client_id + session_id from
+    // them. Never fabricate a client_id (see INVARIANT #17): a synthetic
+    // id files every abandonment under a zombie (not set)/(not set)
+    // session.
+    const env = envFromProcess();
+    const { clientId, sessionId } = readGa4IdsFromCookie(
+      request.headers.get('cookie'),
+      env.GA4_MEASUREMENT_ID,
+    );
 
-    await sendGA4MP(envFromProcess(), clientId, [
-      { name: 'form_abandonment', params: payload as Record<string, unknown> },
-    ]);
+    if (clientId) {
+      await sendGA4MP(
+        env,
+        clientId,
+        [{ name: 'form_abandonment', params: payload as Record<string, unknown> }],
+        { sessionId },
+      );
+    }
+    // No `_ga` cookie (consent denied / fresh visitor) → skip the send.
   } catch (err) {
     console.warn('[Abandonment] Failed to process beacon', err);
   }

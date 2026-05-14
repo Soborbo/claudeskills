@@ -267,21 +267,88 @@ export interface GA4MPEvent {
 }
 
 /**
- * Sends one or more events to GA4 via Measurement Protocol. Uses a
- * stable `client_id` (caller-provided, e.g. derived from request
- * fingerprint) so server-side hits attribute to the same user the
- * browser-side gtag is reporting under, when possible.
+ * Extract GA4 `client_id` and `session_id` from a request's Cookie header.
  *
- * Server-side hits do NOT carry browser context (no _ga cookie, no
- * gclid auto-resolution). Use this primarily for events the browser
- * may not have a chance to fire (abandonment, late conversions where
- * we know the tab closed) — not as a primary conversion path.
+ * - `_ga` cookie format: `GA1.<scope>.<random>.<timestamp>` →
+ *   client_id is the trailing `<random>.<timestamp>` pair.
+ * - `_ga_<container>` cookie format:
+ *   `GS1.<x>.<session_id>.<session_count>.<engagement>.<last_active>...`
+ *   The container suffix is the measurement ID stripped of `G-`
+ *   (e.g. `G-ABCD1234` → cookie name `_ga_ABCD1234`).
+ *
+ * The kit's MP endpoints are same-origin, so these cookies ride along on
+ * every form POST and `sendBeacon` automatically — no client-side relay
+ * needed.
+ *
+ * Returns `{}` when the `_ga` cookie is missing — the caller MUST skip the
+ * MP send when `clientId` is absent. Sending an MP event without a real
+ * client_id creates an unattributed (not set)/(not set) session that
+ * pollutes GA4 reports and Google Ads conversion imports. See INVARIANT #17.
+ */
+export function readGa4IdsFromCookie(
+  cookieHeader: string | null | undefined,
+  measurementId: string | undefined,
+): { clientId?: string; sessionId?: string } {
+  if (!cookieHeader) return {};
+
+  const cookies: Record<string, string> = {};
+  for (const part of cookieHeader.split(';')) {
+    const eq = part.indexOf('=');
+    if (eq <= 0) continue;
+    const k = part.slice(0, eq).trim();
+    if (!k) continue;
+    cookies[k] = part.slice(eq + 1).trim();
+  }
+
+  let clientId: string | undefined;
+  const ga = cookies._ga;
+  if (ga) {
+    const parts = ga.split('.');
+    if (parts.length >= 4 && parts[0] === 'GA1') {
+      const candidate = `${parts[parts.length - 2]}.${parts[parts.length - 1]}`;
+      if (/^\d+\.\d+$/.test(candidate)) clientId = candidate;
+    }
+  }
+
+  let sessionId: string | undefined;
+  if (measurementId) {
+    const sessionCookieName = `_ga_${measurementId.replace(/^G-/, '')}`;
+    const gaSession = cookies[sessionCookieName];
+    if (gaSession) {
+      const parts = gaSession.split('.');
+      if (parts.length >= 3 && parts[0] === 'GS1' && /^\d+$/.test(parts[2])) {
+        sessionId = parts[2];
+      }
+    }
+  }
+
+  return { clientId, sessionId };
+}
+
+/**
+ * Sends one or more events to GA4 via Measurement Protocol.
+ *
+ * `clientId` MUST be a real `_ga` cookie client_id obtained from
+ * `readGa4IdsFromCookie()` — never a synthetic hash / random / IP+UA
+ * value. A synthetic id is an unknown user to GA4: new user, new session,
+ * no source/medium, so the event lands in the `(not set)/(not set)`
+ * bucket and (if it's a conversion) poisons Google Ads conversion imports
+ * and Smart Bidding. The browser-side gtag event for the SAME conversion
+ * arrives under the real `_ga` client_id, so GA4 can't even dedup the
+ * pair. See INVARIANT #17.
+ *
+ * Pass `options.sessionId` (also from `readGa4IdsFromCookie()`) whenever
+ * it's available: GA4 attaches the event to the browser's existing
+ * session — inheriting its source/medium — only when every event's
+ * params carry `session_id` plus a non-zero `engagement_time_msec`.
+ * Without it the event still attributes to the right user but starts a
+ * NEW session — a session-count distorter.
  */
 export async function sendGA4MP(
   env: ServerEnv,
   clientId: string,
   events: GA4MPEvent[],
-  options: { userId?: string; logger?: Logger } = {},
+  options: { userId?: string; sessionId?: string; logger?: Logger } = {},
 ): Promise<void> {
   const log = options.logger || consoleLogger;
   const measurementId = env.GA4_MEASUREMENT_ID;
@@ -291,11 +358,25 @@ export async function sendGA4MP(
     return;
   }
 
+  // GA4 only honours the session attachment when `session_id` is in each
+  // event's own params — a top-level field is ignored. `engagement_time_msec`
+  // must be present and non-zero or GA4 drops the session signal too.
+  const eventsWithSession = options.sessionId
+    ? events.map((evt) => ({
+        ...evt,
+        params: {
+          session_id: options.sessionId,
+          engagement_time_msec: 1,
+          ...(evt.params || {}),
+        },
+      }))
+    : events;
+
   const url = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(measurementId)}&api_secret=${encodeURIComponent(apiSecret)}`;
   const body = {
     client_id: clientId,
     ...(options.userId ? { user_id: options.userId } : {}),
-    events,
+    events: eventsWithSession,
   };
 
   try {
@@ -404,18 +485,7 @@ export async function sendMetaCapi(
   }
 }
 
-/**
- * Creates a stable-ish GA4 `client_id` from a fingerprint. GA4 expects a
- * dot-separated random.timestamp shape but accepts any string; we use the
- * fingerprint hex so two server-side hits for the same session share an
- * id.
- */
-export function deriveClientId(fingerprint: string): string {
-  if (fingerprint && fingerprint.length >= 8) {
-    const head = parseInt(fingerprint.slice(0, 8), 16);
-    if (Number.isFinite(head)) {
-      return `${head}.${Math.floor(Date.now() / 1000)}`;
-    }
-  }
-  return `${Math.floor(Math.random() * 1e10)}.${Math.floor(Date.now() / 1000)}`;
-}
+// NOTE: there is intentionally no `deriveClientId()` / fingerprint helper.
+// A synthetic GA4 `client_id` creates an unattributed (not set)/(not set)
+// session — see INVARIANT #17. Read the real `_ga` cookie id with
+// `readGa4IdsFromCookie()` instead, and skip the MP send when it's absent.

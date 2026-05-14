@@ -28,7 +28,7 @@
 
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { deriveClientId, sendGA4MP, type ServerEnv } from '@/lib/tracking/server';
+import { readGa4IdsFromCookie, sendGA4MP, type ServerEnv } from '@/lib/tracking/server';
 
 export const prerender = false;
 
@@ -47,23 +47,40 @@ export const POST: APIRoute = async ({ request }) => {
   // === Your domain logic here: persist the lead, send the email,
   //     etc. — exactly as before. The tracking call goes after. ===
 
-  // Server-side GA4 MP mirror.
+  // Server-side GA4 MP mirror. The client_id + session_id come from the
+  // visitor's REAL `_ga` / `_ga_<container>` cookies — this endpoint is
+  // same-origin so the form POST carries them automatically. Never
+  // substitute a synthetic id here (see INVARIANT #17): it would file the
+  // conversion under a zombie (not set)/(not set) session that GA4 can't
+  // dedup against the browser event and that poisons Ads imports.
   try {
-    const ip = request.headers.get('CF-Connecting-IP') || '';
-    const ua = request.headers.get('User-Agent') || '';
-    const clientId = deriveClientId(`${ip}${ua}`.replace(/[^a-f0-9]/gi, '').padEnd(32, '0'));
+    const serverEnv = env as ServerEnv;
+    const { clientId, sessionId } = readGa4IdsFromCookie(
+      request.headers.get('cookie'),
+      serverEnv.GA4_MEASUREMENT_ID,
+    );
 
-    await sendGA4MP(env as ServerEnv, clientId, [
-      {
-        name: 'primary_conversion_complete',
-        params: {
-          event_id: body.event_id, // shared dedup key with the browser
-          service: body.service,
-          value: body.total,
-          currency: body.currency || 'EUR',
-        },
-      },
-    ]);
+    if (clientId) {
+      await sendGA4MP(
+        serverEnv,
+        clientId,
+        [
+          {
+            name: 'primary_conversion_complete',
+            params: {
+              event_id: body.event_id, // shared dedup key with the browser
+              service: body.service,
+              value: body.total,
+              currency: body.currency || 'EUR',
+            },
+          },
+        ],
+        { sessionId },
+      );
+    }
+    // No `_ga` cookie → fresh visitor or analytics consent denied. Skip
+    // the send rather than fabricate a client_id; the browser-side event
+    // is the only source of truth in that case.
   } catch {
     // best-effort
   }
