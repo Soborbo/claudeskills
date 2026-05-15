@@ -24,6 +24,7 @@ will rename a few events and add one or two.
 | `primary_first_view` | First primary completion in this browser, ever | GA4 + Meta `ViewContent` |
 | `primary_conversion` | The actual conversion. Fires on upgrade OR window timeout | GA4 + Google Ads + Meta `Lead` |
 | `callback_conversion` | Callback form submitted | GA4 + Google Ads + Meta `Lead` |
+| `contact_form_submit` | Stand-alone contact-us form submitted | GA4 + Meta `Contact` |
 | `phone_conversion` | tel: click | GA4 + Google Ads + Meta `Contact` |
 | `email_conversion` | mailto: click | GA4 + Meta `Contact` |
 | `whatsapp_conversion` | wa.me / whatsapp.com click | GA4 + Meta `Contact` |
