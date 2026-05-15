@@ -4,8 +4,33 @@
   "private": true,
   "description": "Portable browser+server tracking pipeline (GTM + GA4 + Google Ads + Meta CAPI). See README.md.",
   "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "test:api": "vitest run tests/api",
+    "test:cloudflare": "vitest run tests/cloudflare",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install --with-deps chromium",
+    "test:coverage": "vitest run --coverage",
+    "test:security": "tsx tests/security/scan-forbidden-patterns.ts && tsx tests/security/scan-secrets.ts",
+    "test:all": "npm run test:security && npm run test:unit && npm run test:api && npm run test:cloudflare && npm run test:e2e",
+    "test:ci": "npm run test:security && npm run test:unit && npm run test:api && npm run test:cloudflare",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json"
+  },
   "dependencies": {
     "@noble/hashes": "^1.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "fast-glob": "^3.3.2",
+    "jsdom": "^25.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
   },
   "peerDependencies": {
     "astro": ">=4 <7",
