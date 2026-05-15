@@ -1,4 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// The upgrade-flow describe block tests behavior gated behind
+// ENABLE_UPGRADE_WINDOW; flip the flag here so resetConversionState
+// actually persists state and getActiveConversionState returns it.
+vi.mock('../../src/lib/tracking/config', async () => {
+  const actual =
+    await vi.importActual<typeof import('../../src/lib/tracking/config')>(
+      '../../src/lib/tracking/config',
+    );
+  return { ...actual, ENABLE_UPGRADE_WINDOW: true };
+});
+
 import { initGlobalListeners } from '../../src/lib/tracking/global-listeners';
 import { resetConversionState } from '../../src/lib/tracking/conversion-state';
 import { grantConsent } from '../setup/vitest.setup';

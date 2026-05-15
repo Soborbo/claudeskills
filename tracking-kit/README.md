@@ -66,7 +66,7 @@ key Meta uses to pair browser Pixel + server CAPI hits.
 | `form_abandonment`        | tab close / hide / navigate-away with unsubmitted form | `form_name`, `last_step`, `last_field`, `time_spent_seconds`, `exit_page_path` |
 | `primary_conversion_complete` | engagement signal, fires every primary completion | `value`, `currency`, `service`, `event_id` |
 | `primary_first_view`      | first primary completion in this browser → triggers Meta `ViewContent` | `service` (NO value, intentionally) |
-| `primary_conversion`      | upgrade window elapses without upgrade (LATE conversion) | `value`, `currency`, `service`, `late_conversion: true` if past timer |
+| `primary_conversion`      | fired by form-success handler after the lead is persisted (default) — or, when `ENABLE_UPGRADE_WINDOW = true`, on phone/email/WA upgrade or after the timer | `value`, `currency`, `service`, optional `late_conversion: true` |
 | `callback_conversion`     | callback form submitted | `value`, `currency`, `service`, `source` |
 | `phone_conversion`        | tel: click OR programmatic phone dial after primary | `value`, `currency`, `service`, `source`, `tel_target` |
 | `email_conversion`        | mailto: click | `source` |
@@ -75,35 +75,67 @@ key Meta uses to pair browser Pixel + server CAPI hits.
 
 PII is NEVER pushed to dataLayer. See "PII handling" in INVARIANTS.md.
 
-## The upgrade window
+## Conversions fire immediately (default)
 
-The core insight: a primary conversion (form completion, free trial signup,
-quote request) ≠ a real lead until the user takes a higher-intent action.
-We don't fire `primary_conversion` immediately. Instead, on completion we
-record state in `localStorage` and start a timer.
+The kit's default is to fire `primary_conversion` directly from your
+form-success handler with a stable `event_id`. The platforms dedupe
+browser vs. server using that id (Meta CAPI `event_id`, Google Ads
+`orderId`).
 
-- If the user clicks `tel:`, `mailto:`, `wa.me`, or submits the callback
-  form within the window → that action becomes the conversion with the
-  same `event_id`. The state is marked `upgraded` and the timer cancelled.
-  Google Ads and Meta dedup against `event_id` so it counts as one
-  conversion, not two.
-- If the timer elapses without an upgrade → `primary_conversion` fires
-  automatically. If the user closed the tab and re-opened the site within
-  `LATE_CATCHUP_MS` of the timeout, it fires on the next page-load with
-  `late_conversion: true`.
+This wasn't always the default. The kit used to ship with an
+**upgrade window** — `conversion-state.ts` holds the primary completion
+in `localStorage` and only fires `primary_conversion` once the user
+either takes a higher-intent action (phone click / callback) or the
+timer elapses. The pattern looks attractive: fewer, better signals to
+Smart Bidding.
 
-Cross-tab: a `BroadcastChannel` notifies other tabs when an upgrade
-happens, so they cancel their pending timers. If `BroadcastChannel` isn't
-available, multiple tabs may fire the late conversion — Meta's `event_id`
-dedup catches it for Pixel/CAPI; Google Ads does NOT dedup on `orderId`
-for Search/Display by default, so accept this as a known minor over-count
-edge case.
+In a real production deployment, that pattern lost **~87% of quote
+conversions** because most users do not return within the 25h catch-up
+window. The "high-intent upgrade" funnel is the exception in
+lead-gen, not the rule.
 
-**When to use the upgrade window**: lead-gen funnels where the primary
-form completion is followed by a higher-intent action you can observe
-(phone click, callback, chat). For pure e-commerce checkout (where the
-purchase IS the conversion) skip this module entirely — fire
-`purchase` directly from your post-checkout page.
+`conversion-state.ts` is preserved in the kit but **gated behind
+`ENABLE_UPGRADE_WINDOW` in `config.ts` (default `false`)**:
+
+- When `false` (default): every exported function in the module is a
+  no-op. `global-listeners.ts` falls through to firing
+  `phone_conversion` / `email_conversion` / `whatsapp_conversion`
+  standalone. Your form-success handler should call
+  `trackEvent('primary_conversion', { event_id, value, currency,
+  service })` directly. See INVARIANT #3.
+- When `true`: the original behavior. The first invocation per session
+  emits a loud `console.warn` so the choice is visible. Only flip this
+  on if you have measured (not assumed) that your funnel's in-window
+  upgrade rate is high enough (≥80%) to justify the lost late-fires.
+
+## Conversion → navigation
+
+A plain
+
+```ts
+trackEvent('primary_conversion', { ... });
+window.location.href = '/thanks';
+```
+
+silently drops the conversion on most browsers: GTM tags fire
+asynchronously, and the browser tears down pending beacons on unload
+before they go out. Use the kit's helper instead:
+
+```ts
+import { trackConversionAndNavigate } from '@/lib/tracking';
+
+trackConversionAndNavigate(
+  'primary_conversion',
+  { event_id, value, currency, service },
+  '/thanks',
+);
+```
+
+It pushes the event, waits for GTM to settle (`gtag` `event_callback`
+when available), then navigates — with a hard-timeout fallback so the
+form still works if GTM is slow or blocked. The same trap exists with
+`history.pushState`, programmatic `<form>.submit()`, `<a>.click()`,
+and `router.push()`. See INVARIANT #19.
 
 ## PII handling
 
@@ -217,8 +249,16 @@ helpers in `server.ts` to SubtleCrypto and drop the dependency.
 - `SETUP.md` — step-by-step bring-up. Follow top to bottom for a new
   project.
 - `EVENTS.md` — guidance on adapting the event taxonomy to your funnel.
+- `CHECKLIST.md` — pre-merge / post-deploy / monitoring / migration
+  checklist. Use on every tracking-touching PR.
+- `MONITORING.md` — conversion-volume watchdog (Cloudflare Worker +
+  GA4 Data API + Resend). Catches silent regressions within 24h.
+- `scripts/check-event-contract.mjs` — CI script. Enforces code ↔
+  EVENTS.md ↔ GTM container parity. Run via `npm run check:events`.
 - `src/` — the actual code. Drop `src/lib/tracking/` into your repo as-is
   after editing `config.ts`.
+- `src/watchdog/` — the conversion-volume watchdog Worker. Deploy
+  separately from your app.
 - `package.json` — minimal dependencies the kit needs.
 
 ## Hardening on the server endpoints

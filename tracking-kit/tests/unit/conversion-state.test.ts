@@ -1,4 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// conversion-state is gated behind ENABLE_UPGRADE_WINDOW (default false).
+// These tests exercise the enabled-path behavior; flip the flag here.
+// Default-path tests live in conversion-state-default.test.ts.
+vi.mock('../../src/lib/tracking/config', async () => {
+  const actual =
+    await vi.importActual<typeof import('../../src/lib/tracking/config')>(
+      '../../src/lib/tracking/config',
+    );
+  return { ...actual, ENABLE_UPGRADE_WINDOW: true };
+});
+
 import {
   CONVERSION_STATE_KEY,
   LATE_CATCHUP_MS,

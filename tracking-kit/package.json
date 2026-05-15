@@ -16,7 +16,8 @@
     "test:security": "tsx tests/security/scan-forbidden-patterns.ts && tsx tests/security/scan-secrets.ts",
     "test:all": "npm run test:security && npm run test:unit && npm run test:api && npm run test:cloudflare && npm run test:e2e",
     "test:ci": "npm run test:security && npm run test:unit && npm run test:api && npm run test:cloudflare",
-    "typecheck": "tsc --noEmit -p tsconfig.test.json"
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "check:events": "node scripts/check-event-contract.mjs --src ./src --events ./EVENTS.md --gtm ./gtm/container.json"
   },
   "dependencies": {
     "@noble/hashes": "^1.4.0"

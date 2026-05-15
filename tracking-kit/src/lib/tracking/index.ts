@@ -7,6 +7,7 @@
 
 export {
   trackEvent,
+  trackConversionAndNavigate,
   setUserDataOnDOM,
   clearUserDataOnDOM,
   readUserDataFromDOM,
@@ -46,4 +47,4 @@ export { mirrorMetaCapi } from './meta-mirror';
 
 export { generateUUID } from './uuid';
 
-export { DEFAULT_CURRENCY, DEFAULT_COUNTRY, COUNTRY_DIAL_CODES } from './config';
+export { DEFAULT_CURRENCY, DEFAULT_COUNTRY, COUNTRY_DIAL_CODES, ENABLE_UPGRADE_WINDOW } from './config';
