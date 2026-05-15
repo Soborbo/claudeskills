@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Tracking Kit E2E Harness</title>
+    <script>
+      // Bootstrap dataLayer + consent state BEFORE the kit loads so the
+      // PII guard / consent gates can read it. Tests override these by
+      // calling page.evaluate() before navigation.
+      window.dataLayer = window.dataLayer || [];
+      window.__piiLeaks = [];
+      const emailRe = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+      const phoneRe = /(?:\+?\d[\d\s().-]{7,}\d)/;
+      const scan = (obj) => {
+        const text = JSON.stringify(obj);
+        if (emailRe.test(text) || phoneRe.test(text)) {
+          window.__piiLeaks.push(obj);
+        }
+      };
+      const originalPush = window.dataLayer.push.bind(window.dataLayer);
+      window.dataLayer.push = (...items) => {
+        items.forEach(scan);
+        return originalPush(...items);
+      };
+
+      // Default to denied consent. Tests grant it explicitly.
+      window.google_tag_data = {
+        ics: {
+          entries: {
+            ad_storage: { default: 'denied' },
+            ad_user_data: { default: 'denied' },
+            ad_personalization: { default: 'denied' },
+            analytics_storage: { default: 'denied' },
+          },
+        },
+      };
+
+      // Intercepted by Playwright via page.route. We still install a
+      // window.__capiCalls collector for in-page assertions if needed.
+      window.__capiCalls = [];
+    </script>
+  </head>
+  <body>
+    <h1>Tracking Kit Harness</h1>
+
+    <p>
+      <a id="tel-link" href="tel:+447700900123">Call us</a> ·
+      <a id="mailto-link" href="mailto:hello@example.com">Email</a> ·
+      <a id="wa-link" href="https://wa.me/447700900123">WhatsApp</a>
+    </p>
+
+    <form id="quote-form">
+      <input id="email-field" type="email" name="email" autocomplete="email" />
+      <input id="phone-field" type="tel" name="phone" autocomplete="tel" />
+      <button type="button" id="step-1">Complete step 1</button>
+      <button type="button" id="submit-btn">Submit</button>
+    </form>
+
+    <script type="module" src="./harness.ts"></script>
+  </body>
+</html>
