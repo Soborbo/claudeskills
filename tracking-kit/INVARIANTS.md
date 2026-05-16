@@ -43,16 +43,33 @@ conversion.
 produce two distinct conversions in Meta Events Manager — your reported
 volume doubles and Smart Bidding optimization gets noisy data.
 
-## 3. The primary conversion fires once, on upgrade or after the window
+## 3. Conversions fire immediately; dedup at the platform, not in client state
 
-Use `resetConversionState()` when the primary funnel completes; let
-`markConversionUpgraded()` consume the state when the user takes a
-higher-intent action (phone/email/whatsapp click, callback form). Don't
-fire `primary_conversion` directly — `conversion-state.ts` owns it.
+The kit's default (and the only mode supported without an explicit
+opt-in flag) is: fire `primary_conversion` directly from your
+form-success handler. Pass an `event_id` (UUID v4); the platforms
+dedupe browser vs. server via Meta `event_id` and Google Ads `orderId`.
 
-**Why:** double-firing the primary conversion floods Smart Bidding with
-fake conversion-credit. The state machine guarantees exactly-once
-behavior across tabs, page closes, and the late-fire timer.
+Do **NOT** hold conversions in `localStorage` waiting for a possible
+"upgrade" (a phone click or callback that becomes the canonical Lead).
+This pattern lost ~87% of quote conversions in a real production
+deployment of this kit because most users do not return within the 25h
+catch-up window.
+
+`conversion-state.ts` is preserved in the kit but **gated behind
+`ENABLE_UPGRADE_WINDOW` in `config.ts` (default `false`)**. Every
+exported function in that module is a no-op when the flag is off, and
+the first invocation when the flag is on emits a loud console warning.
+Do not re-introduce client-side conversion hold timers without
+measuring (not assuming) that your funnel's upgrade rate within the
+window justifies the lost late-fires.
+
+**Why:** a primary completion that lives only in `localStorage` is
+invisible to the platforms until either an upgrade fires or the
+late-catchup timer runs on a return visit. In aggregate that's a huge
+drop in raw signal. The correct primitive for "don't count the same
+lead twice" is platform-side dedup on a stable id, not a client-side
+state machine.
 
 ## 4. Server-side mirrors run from one place per type
 
@@ -267,3 +284,111 @@ The Meta CAPI side has the identical trap on `_fbp` / `_fbc` cookies
 (and the `fbclid` URL param). `meta-mirror.ts` already does this right —
 it parses the click-id cookies back out and shape-validates them. Use it
 as the reference pattern when wiring any new server-side mirror.
+
+## 18. A tracking event is never silently dropped
+
+If a payload field looks wrong (out-of-range value, missing currency,
+unexpected shape), **clamp or omit the field and emit the event without
+it**. Never `return` from a tracking function without pushing the
+event.
+
+What happened on a real production deploy of this kit's lineage: a
+`trackEvent()` wrapper had a `value > 2_100_000 HUF` guard that
+`return`-ed before the `dataLayer.push()`. Every quote above that
+threshold disappeared from GA4, Google Ads, **and** Meta — not only
+from value-based bidding. The most valuable customers were the most
+invisible.
+
+The current `trackEvent()` in `tracking.ts` strips PII keys but always
+pushes — preserve that contract for any wrapper, gate, or pre-validation
+layer you add around it. A field can be omitted; the event cannot.
+
+## 19. Conversion → navigation MUST go through `trackConversionAndNavigate`
+
+Never call `window.location` / `history.pushState` / programmatic
+`<form>.submit()` / `<a>.click()` directly after a `trackEvent` that
+represents a conversion. GTM tags fire asynchronously and the browser
+tears down pending beacons on unload, so the conversion silently drops
+— usually on the exact submits you wanted to attribute.
+
+Use `trackConversionAndNavigate(name, params, url)` from
+`@/lib/tracking` instead; it pushes the event, waits for GTM to settle
+(via `gtag` `event_callback` when available), and navigates with a
+hard-timeout fallback so the form still works if GTM is slow or blocked.
+
+The Meta CAPI mirror (`mirrorMetaCapi`) already uses
+`navigator.sendBeacon` with a `fetch(..., { keepalive: true })`
+fallback for the same reason. Do not regress to a plain `fetch` "for
+simplicity" — both paths must be unload-safe.
+
+## 20. `wait_for_update` in `GTMHead` must match the CMP's load time
+
+The kit's Consent Mode v2 default block sets `wait_for_update: 2000`.
+That is a floor, not a target. If your CMP advertises a longer
+`waitForTime` (some OneTrust configs go 3000-5000 ms), set
+`wait_for_update` to at least that value.
+
+What goes wrong with a too-low value: a returning consented visitor's
+stored choice is still loading when GTM evaluates the default tag
+gates. The tags fire under the *denied* default and the conversion is
+lost. This is invisible — there is no error; the visitor just doesn't
+appear in conversion-attribution data, and they are precisely the most
+attributable visitors (you have their consent and they came back).
+
+Verify in DevTools after deploy: `window.google_tag_data.ics.entries.ad_storage.update`
+must become defined after the visitor's choice is restored. If it stays
+undefined past `wait_for_update` ms, your CMP isn't wiring through.
+
+## 21. Server-side mirrors do not fail silently on missing config
+
+`sendGA4MP()` and `sendMetaCapi()` are allowed to no-op when their
+required env vars (`GA4_API_SECRET`, `GA4_MEASUREMENT_ID`,
+`META_CAPI_ACCESS_TOKEN`, `META_PIXEL_ID`) are missing — secret
+rotations and Preview deploys shouldn't 500. But the no-op MUST emit a
+**loud, structured warning the first time each missing secret is hit
+per process**, not at `debug` level.
+
+The kit's `warnMissingSecretOnce()` helper in `server.ts` does this;
+keep the `__pipeline: 'error'` field on the meta object so your tail
+worker / log routing forwards the warning to the operator.
+
+What happened: `GA4_API_SECRET` was unset for the full audit window of
+a production deployment. The server-side mirror was the only safety
+net for events that lost the client-side race, and nobody knew it was
+off — the `debug` line drowned in production log volume. 2.5 weeks
+later, conversions were down ~90% and we were diagnosing the wrong
+thing.
+
+## 22. The GTM container is a committed artifact
+
+Commit your GTM container export to the consuming repo, recommended
+path `gtm/container.json`, on the same PR as any code change that
+touches `trackEvent` call sites. Do NOT `.gitignore` it.
+
+`scripts/check-event-contract.mjs` enforces this in CI:
+
+1. Every `trackEvent('X')` call site appears in `EVENTS.md`.
+2. Every `EVENTS.md` event has a `CE - X` custom-event trigger in the
+   committed GTM container JSON.
+3. Every `CE - X` trigger fires at least one non-paused tag.
+
+A code-only PR that breaks the implicit contract with the container is
+the most common way this kit fails in production. In a past audit, a
+`trackEvent('quote_request')` was emitting ~600 events/month and
+**zero** reached GA4 because no GTM trigger consumed it. The drift went
+undetected for the lifetime of the integration.
+
+## 23. Migrate by running in parallel, not by switching
+
+When replacing a legacy tracking implementation, run the old and the
+new emitters **in parallel for at least 7 days**. Verify in each
+destination (GA4 + Google Ads + Meta) that the new path's volume
+matches the old path within ±10% before removing the legacy emitters,
+in a separate PR.
+
+What happened on a real production cutover: day-2 removal of a "legacy
+thank-you push" took out the last safety net (the new path had a
+latent CMP timing bug that masked itself when the legacy push was
+still running) and dropped the conversion floor to ~12% of normal.
+Same-day cutover hides exactly the failure modes the parallel run is
+designed to surface.

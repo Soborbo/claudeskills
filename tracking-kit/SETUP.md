@@ -58,9 +58,14 @@ Open [src/lib/tracking/config.ts](src/lib/tracking/config.ts) and update:
 - `META_EVENT_NAMES` → which internal event names mirror to Meta CAPI,
   and what Meta event-name they map to.
 
-If your funnel doesn't have an upgrade-window pattern, you can ignore
-`UPGRADE_WINDOW_MS` and stop importing `conversion-state.ts` —
-`trackEvent` and `mirrorMetaCapi` work standalone.
+- `ENABLE_UPGRADE_WINDOW` → leave at `false` (the default). The
+  upgrade-window pattern is gated behind this flag because, in a
+  production deployment, it lost ~87% of quote conversions. Flip to
+  `true` only if you've measured your funnel's in-window upgrade rate
+  is high enough (≥80%) to justify the lost late-fires. See
+  INVARIANTS.md → "Conversions fire immediately; dedup at the
+  platform". When `true`, the first invocation per session emits a
+  loud `console.warn`.
 
 ## 3. Wire the GTM components
 
@@ -127,7 +132,12 @@ Store the secrets (`GA4_API_SECRET`, `META_CAPI_ACCESS_TOKEN`,
 platform. The rest can be plaintext.
 
 Without `GA4_API_SECRET` / `META_CAPI_ACCESS_TOKEN` the server-side
-mirrors silently no-op. Browser-side tracking keeps working.
+mirrors no-op (so Preview deploys without secrets don't 500) — but
+they emit a loud structured warning the first time each missing
+secret is hit per process. Watch for `[GA4MP] GA4_API_SECRET is
+missing` and `[MetaCAPI] META_CAPI_ACCESS_TOKEN is missing` in your
+log tail; ensure your routing forwards entries with
+`__pipeline: 'error'` to the operator. See INVARIANT #21.
 
 ## 5. Configure GTM
 
@@ -260,16 +270,52 @@ In Google Ads Tag Assistant:
    late-conversion timer (or upgrade) with the right value and that
    "User-Provided Data: Provided" appears.
 
-## 9. Go live
+## 9. Commit the GTM container & wire CI
+
+Export the GTM container as JSON (GTM UI → Admin → Export Container) and
+commit it to the consuming repo at `gtm/container.json`. **Do not
+`.gitignore` it.** Code changes that affect `trackEvent` call sites must
+ship in the same PR as the corresponding container update — INVARIANT
+#22.
+
+Wire the contract checker into CI:
+
+```bash
+npm run check:events
+```
+
+The script (`scripts/check-event-contract.mjs`) enforces three rules:
+
+1. Every `trackEvent('X')` call site appears in `EVENTS.md`.
+2. Every `EVENTS.md` event has a `CE - X` custom-event trigger in
+   `gtm/container.json`.
+3. Every such trigger fires at least one non-paused tag.
+
+Run it locally before pushing and gate merges on it in your CI
+(GitHub Actions, etc.). If the GTM container is missing the script
+skips checks (2) and (3) with a notice, but you should always commit
+it.
+
+## 10. Deploy the conversion-volume watchdog
+
+See [MONITORING.md](MONITORING.md). A Cloudflare Worker queries GA4
+daily, compares each `KEY_EVENT` against a 7-day baseline, and alerts
+the operator via Resend if any event drops below 60% of baseline. This
+is the safety net for the failure mode where a silent tracking
+regression goes undetected for weeks.
+
+## 11. Go live
 
 Once validation is green:
 
 - **Remove `META_CAPI_TEST_EVENT_CODE`** from your env.
 - Submit the GTM container — publish a new version with a description
-  pointing to the commit / ticket.
+  pointing to the commit / ticket. Commit the published export.
 - Mark conversions in Google Ads (if you're running Ads).
 - Wait 24-48h before drawing any conclusions from the data — GA4 and
   Ads have a delay.
+- Walk through [CHECKLIST.md](CHECKLIST.md) → "Post-deploy
+  verification (within 24h)".
 
 ## Adding a new event later
 

@@ -1,9 +1,15 @@
 # Event taxonomy guide
 
 The kit ships with a default event taxonomy designed for a
-**lead-generation funnel with an upgrade window** (form completion →
-phone/email/whatsapp click). Adapt it to your funnel — most projects
+**lead-generation funnel**. Adapt it to your funnel — most projects
 will rename a few events and add one or two.
+
+The default mode (since `ENABLE_UPGRADE_WINDOW` defaults to `false`)
+is: fire `primary_conversion` directly from the form-success handler;
+platform-side dedup handles "don't count the same lead twice" via
+`event_id` / `orderId`. If you opt into the upgrade window, the
+`primary_conversion_complete` / `primary_conversion` split becomes
+relevant — see INVARIANT #3 and the README for the trade-offs.
 
 ## Naming convention
 
@@ -20,9 +26,9 @@ will rename a few events and add one or two.
 | `form_start` | First focus on a tracked form | GA4 only |
 | `form_step_complete` | Step advance | GA4 only |
 | `form_abandonment` | Tab close / hide with unsubmitted form | GA4 (browser + MP backstop) |
-| `primary_conversion_complete` | Engagement signal — every primary completion, immediate | GA4 (browser + MP backstop) |
+| `primary_conversion` | The conversion. Fires immediately from form-success handler (default) or — when `ENABLE_UPGRADE_WINDOW = true` — on upgrade OR window timeout | GA4 + Google Ads + Meta `Lead` |
+| `primary_conversion_complete` | Engagement signal — every primary completion, immediate. **Only fired when `ENABLE_UPGRADE_WINDOW = true`** (it's the "we've started a window, here's an engagement ping" event). When the flag is off, omit it and just fire `primary_conversion` once. | GA4 (browser + MP backstop) |
 | `primary_first_view` | First primary completion in this browser, ever | GA4 + Meta `ViewContent` |
-| `primary_conversion` | The actual conversion. Fires on upgrade OR window timeout | GA4 + Google Ads + Meta `Lead` |
 | `callback_conversion` | Callback form submitted | GA4 + Google Ads + Meta `Lead` |
 | `contact_form_submit` | Stand-alone contact-us form submitted | GA4 + Meta `Contact` |
 | `phone_conversion` | tel: click | GA4 + Google Ads + Meta `Contact` |

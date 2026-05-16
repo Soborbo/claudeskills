@@ -35,18 +35,43 @@ export const COUNTRY_DIAL_CODES = {
 export type CountryCode = keyof typeof COUNTRY_DIAL_CODES;
 
 // ---------------------------------------------------------------------------
-// Upgrade-window timings — only relevant if you use conversion-state.ts
+// Upgrade-window timings — only relevant if ENABLE_UPGRADE_WINDOW = true
 // ---------------------------------------------------------------------------
+
+/**
+ * Opt-in flag for the `conversion-state.ts` upgrade-window pattern.
+ *
+ * **Default: false.** Primary conversions fire immediately, and platform
+ * dedup (Google Ads `orderId` / Meta `event_id`) handles "don't count
+ * the same lead twice".
+ *
+ * Why default OFF: a production deployment of this kit ran with the
+ * upgrade window enabled and lost ~87% of quote conversions because
+ * most users do not return within the 25h catch-up window. The "wait
+ * for a higher-intent action" pattern looks attractive in design — feed
+ * Ads/Meta fewer, better signals — and is in practice the single
+ * largest source of silent conversion loss in this kit's production
+ * history. See INVARIANTS.md → "Conversions fire immediately; dedup at
+ * the platform, not in client state".
+ *
+ * When to flip this to true: only if you have measured (not assumed)
+ * that your funnel's upgrade rate within the window is high enough
+ * (≥80%) that the signal-quality gain outweighs the lost late-fires.
+ * Turning it on triggers a loud one-shot runtime warning so the choice
+ * is visible to the next reviewer.
+ */
+export const ENABLE_UPGRADE_WINDOW = false;
 
 /** Window during which a primary completion (e.g. quote, free trial,
  *  account-create) can be "upgraded" by a higher-intent action (phone
  *  click, callback form). After this elapses without an upgrade, we fire
- *  the late conversion. */
+ *  the late conversion. Only relevant when ENABLE_UPGRADE_WINDOW = true. */
 export const UPGRADE_WINDOW_MS = 60 * 60 * 1000;
 
 /** Grace window after `UPGRADE_WINDOW_MS` during which a returning user
  *  still gets the late-conversion fired on next page-load. Beyond this,
- *  the state is dropped entirely. */
+ *  the state is dropped entirely. Only relevant when
+ *  ENABLE_UPGRADE_WINDOW = true. */
 export const LATE_CATCHUP_MS = 24 * 60 * 60 * 1000;
 
 // ---------------------------------------------------------------------------

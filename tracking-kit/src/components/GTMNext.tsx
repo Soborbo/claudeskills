@@ -34,7 +34,13 @@ export function GTMHead(): JSX.Element | null {
               functionality_storage: 'denied',
               personalization_storage: 'denied',
               security_storage: 'granted',
-              wait_for_update: 500,
+              /* Must be >= your CMP's load/restore time. Most production
+                 CMPs (CookieYes, Cookiebot, OneTrust) advertise 2000 ms.
+                 With a lower value, a returning consented visitor's tags
+                 fire under the denied default before their stored choice
+                 loads — silently losing conversions for the most
+                 attributable segment of traffic. */
+              wait_for_update: 2000,
             });
           `,
         }}

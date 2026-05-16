@@ -1,32 +1,36 @@
 /**
- * Primary-conversion state machine ("upgrade window").
+ * Primary-conversion state machine ("upgrade window") — OPT-IN.
  *
- * The pattern: when a user finishes a primary funnel step (calculator,
- * checkout, free-trial signup) we don't fire the conversion event
- * immediately. Instead we record the completion in localStorage with a
- * timer. If the user takes a higher-intent action (phone/email/whatsapp
- * click, callback form submit) within the window, that action becomes
- * the conversion and the state is marked as upgraded — so we never count
+ * **This module is gated behind `ENABLE_UPGRADE_WINDOW` in config.ts and
+ * defaults to OFF.** When the flag is false, every exported function is
+ * a no-op; conversions are expected to fire immediately from your
+ * form-success handler via `trackEvent('primary_conversion', ...)`, and
+ * platform dedup (Google Ads `orderId` / Meta `event_id`) handles
+ * "don't count the same lead twice".
+ *
+ * Why default OFF: a production deployment of this kit ran with the
+ * upgrade window enabled and lost ~87% of quote conversions because
+ * most users do not return within the 25h catch-up window. See
+ * INVARIANTS.md → "Conversions fire immediately; dedup at the platform,
+ * not in client state".
+ *
+ * When the flag IS true, the pattern below applies:
+ *
+ * When a user finishes a primary funnel step (calculator, checkout,
+ * free-trial signup) we don't fire the conversion event immediately.
+ * Instead we record the completion in localStorage with a timer. If the
+ * user takes a higher-intent action (phone/email/whatsapp click,
+ * callback form submit) within the window, that action becomes the
+ * conversion and the state is marked as upgraded — so we never count
  * both. If the window elapses without an upgrade, we fire
- * `primary_conversion` as a late conversion the next time the user is on
- * a page (or in-tab if the timer is still alive).
- *
- * Why this model: a primary completion alone is not always a real
- * commercial signal — many users browse a quote, get a price, and bounce.
- * A phone click after the price is a stronger signal for Smart Bidding.
- * Rolling the completion into the higher-intent action feeds Ads/Meta
- * fewer, better signals. For users who never upgrade, the late-fire
- * still counts (we don't lose them in attribution).
+ * `primary_conversion` as a late conversion the next time the user is
+ * on a page (or in-tab if the timer is still alive).
  *
  * Why localStorage and not sessionStorage: sessionStorage dies when the
  * tab closes, and a non-trivial fraction of users complete the primary
  * step and close the tab before either upgrading or hitting the timeout.
  * localStorage survives that. Cross-tab races are handled with
  * BroadcastChannel.
- *
- * If your funnel has no upgrade window — i.e. you want to fire the
- * conversion immediately — skip this module entirely. Use trackEvent +
- * mirrorMetaCapi directly from your form-success handler.
  */
 
 import { clearUserDataOnDOM, trackEvent } from './tracking';
@@ -34,12 +38,26 @@ import { mirrorMetaCapi } from './meta-mirror';
 import { generateUUID } from './uuid';
 import {
   DEFAULT_CURRENCY,
+  ENABLE_UPGRADE_WINDOW,
   LATE_CATCHUP_MS,
   CONVERSION_STATE_CHANNEL,
   CONVERSION_STATE_KEY,
   UPGRADE_WINDOW_MS,
   VIEW_CONTENT_FIRED_KEY,
 } from './config';
+
+let warnedFlagOn = false;
+function warnFlagOnce(): void {
+  if (warnedFlagOn) return;
+  warnedFlagOn = true;
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[tracking] ENABLE_UPGRADE_WINDOW = true. The upgrade-window pattern ' +
+      'lost ~87% of conversions in production because most users do not ' +
+      'return within the catch-up window. Verify with your funnel data ' +
+      'before keeping this on. See INVARIANTS.md.',
+  );
+}
 
 export interface ConversionState {
   value: number;
@@ -163,8 +181,6 @@ export function resetConversionState(input: {
   service: string;
   eventId?: string;
 }): ConversionState {
-  clearPendingTimer();
-
   const state: ConversionState = {
     value: input.value,
     currency: input.currency || DEFAULT_CURRENCY,
@@ -173,6 +189,15 @@ export function resetConversionState(input: {
     eventId: input.eventId || generateUUID(),
     upgraded: false,
   };
+  if (!ENABLE_UPGRADE_WINDOW) {
+    // Flag off (the default). Return a synthesized state so existing
+    // callers that read eventId / value / currency keep working, but
+    // do NOT persist or start a timer — the caller is expected to fire
+    // `primary_conversion` immediately via trackEvent().
+    return state;
+  }
+  warnFlagOnce();
+  clearPendingTimer();
   writeState(state);
   pendingTimerId = setTimeout(
     () => fireConversionIfStillActive(false),
@@ -188,6 +213,7 @@ export function resetConversionState(input: {
  * standalone conversion.
  */
 export function getActiveConversionState(): ConversionState | null {
+  if (!ENABLE_UPGRADE_WINDOW) return null;
   const state = readState();
   if (!state || state.upgraded) return null;
   if (Date.now() - state.completedAt > UPGRADE_WINDOW_MS) return null;
@@ -200,6 +226,7 @@ export function getActiveConversionState(): ConversionState | null {
  * should not fire `primary_conversion` for it.
  */
 export function markConversionUpgraded(): void {
+  if (!ENABLE_UPGRADE_WINDOW) return;
   const state = readState();
   if (!state) return;
   state.upgraded = true;
@@ -247,9 +274,11 @@ function fireConversionIfStillActive(isLate: boolean): void {
  * period) or drop the state entirely (if it's stale).
  */
 export function resumeConversionTimer(): void {
+  if (!ENABLE_UPGRADE_WINDOW) return;
   const state = readState();
   if (!state || state.upgraded) return;
 
+  warnFlagOnce();
   const elapsed = Date.now() - state.completedAt;
   clearPendingTimer();
 

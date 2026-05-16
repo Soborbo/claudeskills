@@ -66,6 +66,33 @@ const consoleLogger: Logger = {
   error: (scope, msg, meta) => console.error(`[${scope}] ${msg}`, meta || ''),
 };
 
+/**
+ * One-shot loud-warning state for missing server-side secrets.
+ *
+ * A no-op-on-missing-config policy is fine — secret rotations and
+ * Preview deploys shouldn't 500 — but the "no-op" must be visible the
+ * FIRST time it happens per process. A silent `log.debug` line drowns
+ * in production log volume and lets `GA4_API_SECRET` stay unset for
+ * weeks without anyone noticing. That's the failure mode that bit a
+ * real production deploy of this kit for 2.5 weeks. See INVARIANTS.md
+ * → "Server-side mirrors do not fail silently on missing config".
+ *
+ * The structured `__pipeline: 'error'` field on the meta object is so
+ * a tail worker / Logflare / Datadog tag-based routing forwards these
+ * to the operator. Adapt the meta shape to your log pipeline; the
+ * principle is: once per process, loud, structured.
+ */
+const warnedMissingSecret = new Set<string>();
+function warnMissingSecretOnce(log: Logger, scope: string, name: string): void {
+  if (warnedMissingSecret.has(name)) return;
+  warnedMissingSecret.add(name);
+  (log.error || log.warn)(scope, `${name} is missing — server-side mirror is OFF`, {
+    __pipeline: 'error',
+    secret: name,
+    impact: 'silent conversion loss until secret is set',
+  });
+}
+
 // ---------------------------------------------------------------------------
 // SHA-256 hashing for Meta CAPI
 // ---------------------------------------------------------------------------
@@ -354,7 +381,8 @@ export async function sendGA4MP(
   const measurementId = env.GA4_MEASUREMENT_ID;
   const apiSecret = env.GA4_API_SECRET;
   if (!measurementId || !apiSecret) {
-    log.debug('GA4MP', 'Skipping send — measurement_id or api_secret missing');
+    if (!measurementId) warnMissingSecretOnce(log, 'GA4MP', 'GA4_MEASUREMENT_ID');
+    if (!apiSecret) warnMissingSecretOnce(log, 'GA4MP', 'GA4_API_SECRET');
     return;
   }
 
@@ -422,7 +450,8 @@ export async function sendMetaCapi(
   const pixelId = env.META_PIXEL_ID;
   const accessToken = env.META_CAPI_ACCESS_TOKEN;
   if (!pixelId || !accessToken) {
-    log.debug('MetaCAPI', 'Skipping send — pixel_id or access_token missing');
+    if (!pixelId) warnMissingSecretOnce(log, 'MetaCAPI', 'META_PIXEL_ID');
+    if (!accessToken) warnMissingSecretOnce(log, 'MetaCAPI', 'META_CAPI_ACCESS_TOKEN');
     return;
   }
 

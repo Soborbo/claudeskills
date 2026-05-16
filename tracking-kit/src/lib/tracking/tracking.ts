@@ -382,3 +382,77 @@ export function normalizeUserData(
   if (input.postal_code) out.postal_code = input.postal_code.toUpperCase().replace(/\s/g, '');
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// Conversion → navigation
+// ---------------------------------------------------------------------------
+
+/**
+ * Fires a conversion event and then navigates — without losing the
+ * conversion to the unload teardown.
+ *
+ * Why this exists: GTM tags fire asynchronously. A plain
+ *
+ *     trackEvent('primary_conversion', ...);
+ *     window.location.href = '/thanks';
+ *
+ * pushes the event onto the dataLayer, but the browser tears down
+ * pending beacons (GTM → GA4, GTM → Google Ads, GTM → Meta Pixel) on
+ * unload before they've gone out. The conversion silently disappears on
+ * the exact submits you wanted to attribute. The same trap exists with
+ * `history.pushState`, programmatic `<form>.submit()`, and
+ * `<a>.click()`.
+ *
+ * `trackConversionAndNavigate` pushes the event, waits up to
+ * `settleMs` for GTM to settle (one paint-frame at minimum, longer if
+ * `gtag('event', ..., {event_callback})` is available), then navigates.
+ * A hard-timeout fallback fires even if GTM is slow or blocked so the
+ * form still works.
+ *
+ * Use this in: thank-you-page redirects, multi-step funnel transitions,
+ * any place a conversion is followed by `window.location.assign/href`,
+ * `router.push`, programmatic form submit, or `link.click()`.
+ *
+ * Do NOT use this for engagement events that aren't followed by a
+ * navigation — it'll just add 250ms of latency for no reason.
+ */
+export function trackConversionAndNavigate(
+  name: string,
+  params: TrackingParams,
+  url: string,
+  options: { settleMs?: number } = {},
+): string {
+  const settleMs = options.settleMs ?? 800;
+  const eventId = trackEvent(name, params);
+  if (typeof window === 'undefined') return eventId;
+
+  let navigated = false;
+  const go = (): void => {
+    if (navigated) return;
+    navigated = true;
+    window.location.href = url;
+  };
+
+  // Hard timeout — fires even if GTM is blocked, slow, or never settles.
+  // Without it, an adblocker that breaks gtag silently breaks the form.
+  const hardTimer = window.setTimeout(go, settleMs);
+
+  // Best-effort early-settle via gtag's event_callback. Available when
+  // a Google Tag has loaded (which it should have on any page). If
+  // gtag isn't on the page yet, the timer fallback covers it.
+  try {
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', name, {
+        event_callback: () => {
+          window.clearTimeout(hardTimer);
+          go();
+        },
+        event_timeout: settleMs,
+      });
+    }
+  } catch {
+    // ignore — timer fallback handles it
+  }
+
+  return eventId;
+}
