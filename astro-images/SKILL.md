@@ -89,6 +89,44 @@ npx sharp-cli resize 960  --input src.jpg --output img-960w.jpg   --quality 60
 # ... repeat for each width in the pattern
 ```
 
+### Incremental generation (MANDATORY)
+
+A preprocessing script that wipes its output directory on every run is wrong. Adding one image to a project with hundreds of sources should regenerate a handful of variants in seconds, not thousands of variants in minutes.
+
+**Rules every preprocessing script MUST follow:**
+
+1. **Default mode is incremental.** Do not delete the output directory at startup.
+2. **Per-variant freshness check:** for each `(width, format)` output, skip when the output file exists AND `mtime(output) >= mtime(source)`. Regenerate only when the output is missing or the source is newer.
+3. **Force flag for full rebuilds:** expose `--force` (alias `--clean`) for the cases where every variant must be re-emitted — quality changed, format list changed, width ladder changed, codec upgraded.
+4. **Selective logging:** only log a per-source line when at least one variant was actually generated. Silence for fully-skipped sources keeps the log readable.
+5. **Final summary reports both numbers:** `Variants generated: N (skipped M up-to-date)` so it is obvious whether the run did work or was a no-op.
+
+**Sharp incremental pattern (Node):**
+
+```js
+const srcMtimeMs = fs.statSync(srcPath).mtimeMs;
+for (const width of widths) {
+  for (const format of ['avif', 'webp', 'jpeg']) {
+    const outPath = path.join(outDir, `${slug}-${width}w.${format === 'jpeg' ? 'jpg' : format}`);
+    if (fs.existsSync(outPath) && fs.statSync(outPath).mtimeMs >= srcMtimeMs) continue;
+    await sharp(srcPath).resize(width).toFormat(format, { quality: 60 }).toFile(outPath);
+  }
+}
+```
+
+**Why mtime, not content hash:** mtime is a single `stat()` call per output file. Hashing is per-byte and dominates the runtime once the cache is warm — defeats the point. Build-time pipelines do not need cryptographic certainty; "source touched, output didn't" is enough.
+
+**When `--force` is the right answer:**
+
+| Change                              | Incremental sufficient? | Use `--force`? |
+|-------------------------------------|-------------------------|----------------|
+| New source image added              | ✅ yes                  | no             |
+| Existing source replaced (touched)  | ✅ yes                  | no             |
+| Quality constant changed (e.g. 65→60) | ❌ no                 | ✅ yes         |
+| Format list changed (added avif)    | ❌ no                   | ✅ yes         |
+| Width ladder extended (added 2560w) | ⚠️ partially            | ✅ yes (for safety) |
+| Sharp / codec upgraded              | ❌ no                   | ✅ yes         |
+
 ### Verify after build:
 ```bash
 ls dist/_astro/*.avif | head -5  # AVIF files
