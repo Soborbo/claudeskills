@@ -361,3 +361,8 @@ grep -n "_astro" public/robots.txt 2>/dev/null && echo "WARNING: check robots do
 # fetchpriority inside a loop (review — only one LCP per page)
 grep -rn "fetchpriority" src --include="*.astro"
 ```
+
+## Companion docs
+- `TESTS.md` — 60 acceptance tests (the pass/fail spec for an image or pipeline: 🟢 greps + 🔵 build checks + ⚪ manual-judgment items), mapped to every `rules.json` rule.
+- `AUDIT_PROMPT.md` — read-only audit walkthrough for an existing site.
+- `REMEDIATION_PROMPT.md` — guided fix for everything the audit/tests flag.
