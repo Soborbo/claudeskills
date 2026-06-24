@@ -16,7 +16,6 @@ export type ImagePattern =
 
 /**
  * Pattern configuration with exact widths and sizes
- * These arrays are optimized for common viewport widths and DPR combinations
  */
 export interface PatternConfig {
   widths: number[];
@@ -25,8 +24,29 @@ export interface PatternConfig {
 }
 
 /**
- * Complete pattern definitions
- * Includes 480px breakpoint for better mobile coverage
+ * Per-format encode quality.
+ *
+ * AVIF and WebP use DIFFERENT, non-comparable quality scales. Using one value
+ * for both (e.g. 60) makes AVIF LARGER than WebP — the opposite of the point.
+ * AVIF q50 is perceptually ~ WebP q60 but ~25-40% smaller. Encode each format
+ * with its own quality, AVIF deliberately lower.
+ *
+ * Heavy hero images can drop AVIF to 45-48. JPG is the opaque fallback; PNG is
+ * only for transparent sources. (AVIF `effort` is not exposed by Astro
+ * getImage(); it only applies in the manual optimize-images.mjs script.)
+ *
+ * `png` is lossless: its number only bites when sharp quantizes to a palette, so
+ * for typical transparent assets it is effectively a no-op (kept here for parity).
+ */
+export const QUALITY: Record<'avif' | 'webp' | 'jpg' | 'png', number> = {
+  avif: 50,
+  webp: 60,
+  jpg: 62,
+  png: 80,
+} as const;
+
+/**
+ * Complete pattern definitions. Every pattern includes 480w.
  */
 export const PATTERNS: Record<ImagePattern, PatternConfig> = {
   FULL: {
@@ -83,7 +103,6 @@ export const PATTERNS: Record<ImagePattern, PatternConfig> = {
 
 /**
  * Layout to pattern mapping helper
- * Use this to determine the correct pattern for common layouts
  */
 export const LAYOUT_PATTERNS: Record<string, ImagePattern> = {
   'full-bleed': 'FULL',

@@ -1,0 +1,122 @@
+---
+/**
+ * ArtPicture Component (v3.1) — TRUE art direction.
+ *
+ * Use ONLY when mobile and desktop need a DIFFERENT image or crop
+ * (e.g. wide 16:9 desktop hero vs tall 3:4 mobile crop).
+ * Emits <source media> per breakpoint x format, so the browser downloads
+ * EXACTLY ONE image — never both. This replaces the "two <img> + CSS hide"
+ * anti-pattern, where display:none images are still downloaded (double load).
+ *
+ * For same-image-different-size, use <Picture> (already a single download).
+ *
+ * NOTE: art direction means different aspect ratios per breakpoint, so one
+ * width/height can't prevent CLS on both. Set aspect-ratio per breakpoint via
+ * `class` — it is applied to the rendered <img> (the <picture> is display:contents,
+ * so it generates no box), e.g. `aspect-[3/4] md:aspect-video object-cover`.
+ *
+ * @example
+ * <ArtPicture mobileSrc={heroTall} desktopSrc={heroWide} breakpoint={768}
+ *   alt="Painless Removals crew loading a van in Bristol"
+ *   lcp class="w-full aspect-[3/4] md:aspect-video object-cover" />
+ */
+import { getImage } from 'astro:assets';
+import { QUALITY } from '../config/image-patterns';
+
+type Fmt = 'avif' | 'webp';
+type AllFmt = 'avif' | 'webp' | 'jpg' | 'png';
+
+export interface Props {
+  mobileSrc: ImageMetadata;
+  desktopSrc: ImageMetadata;
+  alt: string;
+  /** Mobile applies below this px; desktop at/above. Default 768. */
+  breakpoint?: number;
+  mobileWidths?: number[];
+  desktopWidths?: number[];
+  mobileSizes?: string;
+  desktopSizes?: string;
+  formats?: Array<Fmt | 'jpg' | 'png'>;
+  /** Per-format quality override; a bare number applies to all formats (v3.0 back-compat). */
+  quality?: number | Partial<Record<AllFmt, number>>;
+  transparent?: boolean;
+  lcp?: boolean;
+  aboveFold?: boolean;
+  class?: string;
+}
+
+const {
+  mobileSrc,
+  desktopSrc,
+  alt,
+  breakpoint = 768,
+  mobileWidths = [320, 480, 640, 828],
+  desktopWidths = [768, 1024, 1280, 1600, 1920],
+  mobileSizes = '100vw',
+  desktopSizes = '100vw',
+  formats = ['avif', 'webp'],
+  quality,
+  transparent = false,
+  lcp = false,
+  aboveFold = false,
+  class: className,
+} = Astro.props;
+
+const qOverride =
+  typeof quality === 'number'
+    ? { avif: quality, webp: quality, jpg: quality, png: quality }
+    : quality ?? {};
+const q: Record<AllFmt, number> = { ...QUALITY, ...qOverride };
+const fallbackFormat: 'jpg' | 'png' = transparent ? 'png' : 'jpg';
+// Only avif/webp belong in <source>; jpg/png are the automatic fallback <img>.
+const modernFormats = formats.filter((f): f is Fmt => f === 'avif' || f === 'webp');
+const mq = `(max-width: ${breakpoint - 1}px)`;
+const dq = `(min-width: ${breakpoint}px)`;
+
+async function srcset(src: ImageMetadata, widths: number[], format: AllFmt): Promise<string> {
+  const imgs = await Promise.all(widths.map((w) => getImage({ src, width: w, format, quality: q[format] })));
+  return imgs.map((img, i) => `${img.src} ${widths[i]}w`).join(', ');
+}
+
+// Mobile sources first, then desktop. `media` decides which one the browser fetches.
+const mobileSources = await Promise.all(
+  modernFormats.map(async (f) => ({ media: mq, type: `image/${f}`, srcset: await srcset(mobileSrc, mobileWidths, f), sizes: mobileSizes }))
+);
+const desktopSources = await Promise.all(
+  modernFormats.map(async (f) => ({ media: dq, type: `image/${f}`, srcset: await srcset(desktopSrc, desktopWidths, f), sizes: desktopSizes }))
+);
+
+// Fallback <img>: desktop, largest width, jpg/png.
+const dMax = desktopWidths[desktopWidths.length - 1];
+const fb = await getImage({ src: desktopSrc, width: dMax, format: fallbackFormat, quality: q[fallbackFormat] });
+const ar = desktopSrc.width / desktopSrc.height;
+
+const loading = lcp || aboveFold ? 'eager' : 'lazy';
+const fetchpriority = lcp ? 'high' : undefined;
+const decoding = lcp ? undefined : 'async';
+---
+
+<picture class="art-picture">
+  {mobileSources.map((s) => <source media={s.media} type={s.type} srcset={s.srcset} sizes={s.sizes} />)}
+  {desktopSources.map((s) => <source media={s.media} type={s.type} srcset={s.srcset} sizes={s.sizes} />)}
+  <img
+    class={className}
+    src={fb.src}
+    width={dMax}
+    height={Math.round(dMax / ar)}
+    alt={alt}
+    loading={loading}
+    fetchpriority={fetchpriority}
+    decoding={decoding}
+  />
+</picture>
+
+<style>
+  /* <picture> generates no box of its own, so layout classes (w-full, aspect-*,
+     object-cover) must live on the painted <img>, not the <picture>. display:contents
+     lets the <img>'s width:100% / aspect-ratio resolve against the real parent
+     container, so per-breakpoint aspect-ratio actually prevents CLS. */
+  .art-picture {
+    display: contents;
+  }
+</style>

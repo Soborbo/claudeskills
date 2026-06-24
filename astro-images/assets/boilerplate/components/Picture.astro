@@ -1,73 +1,53 @@
 ---
 /**
- * Picture Component
+ * Picture Component (v3.1)
  *
- * Responsive image component with pattern-based width optimization.
- * Replaces manual widths/sizes calculations with a single pattern prop.
+ * Responsive <picture> with pattern-based widths and PER-FORMAT quality.
+ * AVIF and WebP use different, non-comparable quality scales, so a single
+ * quality value makes AVIF heavier than WebP. This component encodes each
+ * format with its own quality (AVIF lower) via getImage().
+ *
+ * Fallback <img> is alpha-aware: opaque sources -> JPG, transparent -> PNG
+ * (pass `transparent`). Never PNG fallback for opaque photos.
  *
  * @example
- * // Full-bleed hero (LCP)
- * <Picture src={heroImage} pattern="FULL" lcp alt="Hero banner" />
- *
- * // 50/50 split layout
- * <Picture src={featureImage} pattern="HALF" alt="Feature" />
- *
- * // Team grid (4 columns)
- * <Picture src={teamMember} pattern="QUARTER" alt="John Smith" />
+ * <Picture src={hero} pattern="FULL" lcp alt="..." />
+ * <Picture src={logo} pattern="HALF" transparent alt="..." />
+ * <Picture src={img} pattern="FULL" quality={{ avif: 45 }} alt="heavy hero" />
  */
-import { Picture as AstroPicture } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import type { ImagePattern } from '../config/image-patterns';
-import { PATTERNS } from '../config/image-patterns';
+import { PATTERNS, QUALITY } from '../config/image-patterns';
+
+type Fmt = 'avif' | 'webp';
+type AllFmt = 'avif' | 'webp' | 'jpg' | 'png';
 
 export interface Props {
   /** Image source - must be from /src/assets/ */
   src: ImageMetadata;
-
-  /**
-   * Pattern determines rendered width
-   * FULL=100vw, TWO_THIRDS=66vw, LARGE=60vw, HALF=50vw,
-   * SMALL=40vw, THIRD=33vw, QUARTER=25vw, FIFTH=20vw, SIXTH=16vw
-   * Default: HALF (safest default for unknown layouts)
-   */
+  /** Pattern determines rendered width. Default HALF. */
   pattern?: ImagePattern;
-
-  /** Alt text - required for accessibility. Use alt="" only for decorative images */
+  /** Alt text - required. Use alt="" only for decorative images. */
   alt: string;
-
-  /**
-   * LCP (Largest Contentful Paint) flag
-   * Sets loading="eager" and fetchpriority="high"
-   * Only ONE image per page should have this
-   */
+  /** LCP: loading=eager + fetchpriority=high. ONE per page. No fixed-width preload needed. */
   lcp?: boolean;
-
-  /**
-   * Above-fold but not LCP
-   * Sets loading="eager" without fetchpriority
-   * Use for 2-3 images visible on initial load
-   */
+  /** Above-fold but not LCP: loading=eager. */
   aboveFold?: boolean;
-
+  /** Source formats for <source> elements, modern-first. Default ['avif','webp']. ('jpg'/'png' here are ignored — the fallback is automatic and alpha-aware.) */
+  formats?: Array<Fmt | 'jpg' | 'png'>;
   /**
-   * Image quality (1-100). Default: 60
-   * Applied to all formats including JPG fallback.
-   * Astro's Picture component uses a single quality value for all formats.
+   * Per-format quality override, e.g. {avif: 45}. A bare number applies to ALL
+   * formats (back-compat with v3.0 `quality={60}`). Defaults from QUALITY.
    */
-  quality?: number;
-
-  /** Output formats. Default: ['avif', 'webp'] with jpg fallback. PNG forbidden for photos. */
-  formats?: ('avif' | 'webp' | 'jpg')[];
-
-  /** Additional CSS classes */
+  quality?: number | Partial<Record<AllFmt, number>>;
+  /** Keep alpha: PNG fallback instead of JPG. Default false (photos). */
+  transparent?: boolean;
   class?: string;
-
-  /** Custom sizes override (use only when pattern doesn't match layout) */
+  /** Custom sizes override (only when pattern doesn't match layout). */
   sizes?: string;
-
-  /** Custom widths override (use only when pattern doesn't match layout) */
+  /** Custom widths override (only when pattern doesn't match layout). */
   widths?: number[];
-
-  /** Disable aspect-ratio CSS (for art-directed images) */
+  /** Disable aspect-ratio CSS (for art-directed images). */
   noAspectRatio?: boolean;
 }
 
@@ -77,76 +57,90 @@ const {
   alt,
   lcp = false,
   aboveFold = false,
-  quality = 60,
   formats = ['avif', 'webp'],
+  quality,
+  transparent = false,
   class: className,
   sizes: customSizes,
   widths: customWidths,
   noAspectRatio = false,
 } = Astro.props;
 
-// Get pattern configuration
 const config = PATTERNS[pattern];
-
-// Use custom values if provided, otherwise use pattern defaults
 let finalWidths = customWidths ?? [...config.widths];
 const finalSizes = customSizes ?? config.sizes;
 
-// Handle undersized sources: cap widths at source width
-// Exception: FULL pattern for LCP - undersized is an error
 const sourceWidth = src.width;
 const sourceHeight = src.height;
 
+// Undersized source: cap widths. FULL+LCP undersized is an error (warn).
 if (sourceWidth < config.minSourceWidth) {
   if (pattern === 'FULL' && lcp) {
     console.warn(
-      `[Picture] LCP image source (${sourceWidth}px) is smaller than FULL pattern minimum (${config.minSourceWidth}px). ` +
-      `This will cause poor quality on high-DPI displays. Please provide a larger source image.`
+      `[Picture] LCP source (${sourceWidth}px) < FULL minimum (${config.minSourceWidth}px). Provide a larger asset.`
     );
   }
-  // Cap widths array at source width
   finalWidths = finalWidths.filter((w) => w <= sourceWidth);
-  // Ensure at least the source width is included
   if (!finalWidths.includes(sourceWidth)) {
     finalWidths.push(sourceWidth);
     finalWidths.sort((a, b) => a - b);
   }
 }
 
-// Determine loading behavior
+const qOverride =
+  typeof quality === 'number'
+    ? { avif: quality, webp: quality, jpg: quality, png: quality }
+    : quality ?? {};
+const q: Record<AllFmt, number> = { ...QUALITY, ...qOverride };
+const fallbackFormat: 'jpg' | 'png' = transparent ? 'png' : 'jpg';
+
+// Only avif/webp belong in <source>; jpg/png are the automatic fallback <img>.
+const modernFormats = formats.filter((f): f is Fmt => f === 'avif' || f === 'webp');
+
+async function srcsetFor(format: AllFmt): Promise<string> {
+  const imgs = await Promise.all(
+    finalWidths.map((w) => getImage({ src, width: w, format, quality: q[format] }))
+  );
+  return imgs.map((img, i) => `${img.src} ${finalWidths[i]}w`).join(', ');
+}
+
+// Modern <source> elements (avif, webp) — each with its OWN quality.
+const sources = await Promise.all(
+  modernFormats.map(async (f) => ({ type: `image/${f}`, srcset: await srcsetFor(f) }))
+);
+
+// Responsive fallback <img> in jpg (or png if transparent).
+const fallbackImgs = await Promise.all(
+  finalWidths.map((w) => getImage({ src, width: w, format: fallbackFormat, quality: q[fallbackFormat] }))
+);
+const fallbackSrcset = fallbackImgs.map((img, i) => `${img.src} ${finalWidths[i]}w`).join(', ');
+const fallbackWidth = finalWidths[finalWidths.length - 1];
+const fallbackSrc = fallbackImgs[fallbackImgs.length - 1].src;
+
 const loading = lcp || aboveFold ? 'eager' : 'lazy';
 const fetchpriority = lcp ? 'high' : undefined;
 const decoding = lcp ? undefined : 'async';
 
-// Calculate aspect ratio for CLS prevention
 const aspectRatio = sourceWidth / sourceHeight;
-
-// Build CSS classes with aspect-ratio
-const pictureClasses = [
-  className,
-  !noAspectRatio && 'picture-aspect',
-].filter(Boolean).join(' ');
-
-// Style for aspect ratio (inline to avoid global CSS conflicts)
+const pictureClasses = [className, !noAspectRatio && 'picture-aspect'].filter(Boolean).join(' ');
 const aspectStyle = !noAspectRatio ? `--aspect-ratio: ${aspectRatio};` : undefined;
 ---
 
-<div
-  class={pictureClasses}
-  style={aspectStyle}
->
-  <AstroPicture
-    src={src}
-    widths={finalWidths}
-    sizes={finalSizes}
-    formats={formats}
-    fallbackFormat="jpg"
-    quality={quality}
-    alt={alt}
-    loading={loading}
-    fetchpriority={fetchpriority}
-    decoding={decoding}
-  />
+<div class={pictureClasses} style={aspectStyle}>
+  <picture>
+    {sources.map((s) => <source type={s.type} srcset={s.srcset} sizes={finalSizes} />)}
+    <img
+      src={fallbackSrc}
+      srcset={fallbackSrcset}
+      sizes={finalSizes}
+      width={fallbackWidth}
+      height={Math.round(fallbackWidth / aspectRatio)}
+      alt={alt}
+      loading={loading}
+      fetchpriority={fetchpriority}
+      decoding={decoding}
+    />
+  </picture>
 </div>
 
 <style>
@@ -154,7 +148,6 @@ const aspectStyle = !noAspectRatio ? `--aspect-ratio: ${aspectRatio};` : undefin
     aspect-ratio: var(--aspect-ratio);
     overflow: hidden;
   }
-
   .picture-aspect :global(img) {
     width: 100%;
     height: 100%;

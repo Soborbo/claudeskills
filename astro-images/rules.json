@@ -1,7 +1,30 @@
 {
   "name": "astro-images",
-  "version": "3.0.0",
-
+  "version": "3.1.0",
+  "principles": [
+    "All image processing happens locally at build time, never at runtime or on a CDN.",
+    "Pattern = rendered width; aspect ratio is independent.",
+    "Three formats AVIF -> WebP -> (JPG opaque | PNG transparent), each with its OWN quality.",
+    "One download per layout slot; never two <img> + CSS hide.",
+    "480px width mandatory in every pattern."
+  ],
+  "quality": {
+    "avif": 50,
+    "webp": 60,
+    "jpg": 62,
+    "png": 80,
+    "avifHeavyHero": 45,
+    "ogJpg": 80,
+    "note": "AVIF and WebP scales are non-comparable. AVIF must be lower so its output is SMALLER than WebP at the same width. AVIF q50 ~ WebP q60 perceptually, ~25-40% smaller."
+  },
+  "defaults": {
+    "formats": ["avif", "webp"],
+    "fallbackOpaque": "jpg",
+    "fallbackTransparent": "png",
+    "fallbackPattern": "HALF",
+    "avifEffort": 5,
+    "lazySizesAuto": true
+  },
   "widthPresets": {
     "FULL": [480, 640, 750, 828, 1080, 1200, 1920, 2048, 2560],
     "TWO_THIRDS": [384, 480, 640, 768, 1024, 1280, 1706, 2048],
@@ -12,17 +35,8 @@
     "THIRD": [256, 480, 512, 640, 853, 1280],
     "QUARTER": [192, 384, 480, 512, 640, 960],
     "FIFTH": [160, 320, 480, 512, 640, 768],
-    "SIXTH": [128, 256, 427, 480, 512, 640],
-    "FIXED": {
-      "type": "density",
-      "densities": ["1x", "2x"],
-      "quality": { "1x": 80, "2x": 60 },
-      "element": "<img>",
-      "note": "Use FixedImage component. Do not use <Picture>.",
-      "3x": "Allowed only for icons >=64px where fidelity matters. Default to 1x+2x."
-    }
+    "SIXTH": [128, 256, 427, 480, 512, 640]
   },
-
   "sizesPresets": {
     "FULL": "100vw",
     "TWO_THIRDS": "(min-width: 1024px) 66vw, 100vw",
@@ -35,7 +49,6 @@
     "FIFTH": "(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw",
     "SIXTH": "(min-width: 1024px) 16vw, (min-width: 640px) 33vw, 50vw"
   },
-
   "sourceMinWidths": {
     "FULL": 2560,
     "TWO_THIRDS": 2048,
@@ -48,78 +61,75 @@
     "FIFTH": 768,
     "SIXTH": 640
   },
-
-  "defaults": {
-    "quality": 60,
-    "formats": ["avif", "webp"],
-    "fallbackFormat": "jpg",
-    "fallbackPattern": "HALF"
-  },
-
-  "schemaImages": {
-    "ratios": ["1:1", "4:3", "16:9"],
-    "minWidth": 1200,
-    "sizes": {
-      "1:1": "1200x1200",
-      "4:3": "1200x900",
-      "16:9": "1200x675"
-    }
-  },
-
   "ogImages": {
-    "variants": [
-      { "suffix": "og",        "width": 1200, "height": 630  },
-      { "suffix": "twitter",   "width": 1200, "height": 600  },
-      { "suffix": "schema-16", "width": 1200, "height": 675  },
-      { "suffix": "schema-4",  "width": 1200, "height": 900  },
-      { "suffix": "schema-1",  "width": 1200, "height": 1200 }
-    ],
     "format": "jpg",
-    "quality": 80
+    "quality": 80,
+    "progressive": true,
+    "mustExist": true,
+    "requireTypeMeta": true,
+    "variants": [
+      { "name": "og", "ratio": "1.91:1", "width": 1200, "height": 630, "tag": "og:image" },
+      { "name": "twitter", "ratio": "2:1", "width": 1200, "height": 600, "tag": "twitter:image" },
+      { "name": "schema-16x9", "ratio": "16:9", "width": 1200, "height": 675, "tag": "schema.image" },
+      { "name": "schema-4x3", "ratio": "4:3", "width": 1200, "height": 900, "tag": "schema.image" },
+      { "name": "schema-1x1", "ratio": "1:1", "width": 1200, "height": 1200, "tag": "schema.image" }
+    ]
   },
-
+  "schemaImages": {
+    "coordinateWith": "schema-audit",
+    "heroInImageObject": true
+  },
   "rules": {
-    "require-pattern": { "severity": "error" },
-    "require-dimensions": { "severity": "error" },
-    "require-alt": { "severity": "error" },
-    "no-public-images": { "severity": "error" },
-    "no-svg-through-picture": { "severity": "error" },
-    "no-animated-images": { "severity": "error" },
-    "no-lcp-backgrounds": { "severity": "error" },
-    "no-dynamic-widths": { "severity": "error" },
-    "no-upscaling": { "severity": "error" },
-    "single-fetchpriority": { "severity": "error", "max": 1 },
-    "no-fetchpriority-in-loops": { "severity": "error" },
-    "pattern-matches-layout": { "severity": "error" },
-    "aspect-ratio-preserved": { "severity": "error" },
-    "mandatory-480w": { "severity": "error", "message": "Every pattern must include 480w for mobile coverage." },
-    "three-formats": { "severity": "error", "formats": ["avif", "webp", "jpg"], "message": "Three formats always: AVIF > WebP > JPG. Never PNG as fallback." },
-    "alt-intent": { "severity": "warning" },
-    "default-pattern": { "severity": "info", "fallback": "HALF" },
-    "undersized-source-fallback": {
-      "severity": "warning",
-      "behavior": "cap-widths",
-      "message": "Source smaller than pattern requires. Widths capped at source size. Flag for replacement."
-    },
-    "undersized-lcp": {
-      "pattern": "FULL",
-      "severity": "error",
-      "message": "LCP/FULL image source is smaller than required. Must provide larger asset."
-    },
-    "cloudflare-adapter-config": {
-      "severity": "error",
-      "check": "astro.config",
-      "require": {
-        "adapter.imageService": "compile",
-        "image.service.entrypoint": "astro/assets/services/sharp"
-      },
-      "message": "Cloudflare does not support Sharp at runtime. Use imageService:'compile' for build-time optimization. Works with both output:'static' and output:'server'."
-    }
+    "use-picture-with-pattern": "error: content images use <Picture> with a pattern (ArtPicture for art direction).",
+    "per-format-quality": "error: AVIF must use a lower quality than WebP; never one shared quality for all formats.",
+    "avif-lighter-than-webp": "error: AVIF output must be SMALLER than WebP at the same width; if not, lower AVIF quality and regen --force.",
+    "alpha-aware-fallback": "error: fallback is JPG for opaque sources, PNG only for transparent; never PNG fallback for opaque photos.",
+    "three-formats": "error: serve AVIF -> WebP -> JPG/PNG.",
+    "single-download-per-slot": "error: never two <img> + CSS hide; use ArtPicture for per-breakpoint art direction.",
+    "art-direction-single-download": "error: different image/crop per breakpoint uses ArtPicture <source media>, one download only.",
+    "no-artpicture-for-resize": "error: same image different size uses <Picture>, not ArtPicture.",
+    "width-480-mandatory": "error: every pattern includes 480w.",
+    "dimensions-required": "error: every image needs width/height (explicit or from asset import).",
+    "assets-location": "error: images in /src/assets/, or /public/ only when processed by optimize-images.mjs.",
+    "single-lcp": "error: only one lcp per page.",
+    "no-fixed-width-preload": "error: never preload a fixed-width image file; rely on fetchpriority (lcp). Responsive imagesrcset preload only if hero is discovered late.",
+    "sizes-required": "error: sizes must match layout; lazy images may use sizes=auto.",
+    "face-focus": "error: object-position center 20% for people; ASK if ambiguous.",
+    "checkerboard-image-first": "error: checkerboard image first in DOM, reordered via CSS order.",
+    "og-format-jpg": "error: OG images must be JPG, must exist, and require og:image:type meta; never WebP/AVIF or non-generated width.",
+    "seo-filename": "error: source filename = kebab-case keyword-locality slug; forbid IMG_*, spaces, accents, generic hero.jpg.",
+    "alt-seo-quality": "error: alt is accurate + natural keyword, no stuffing, no 'image of', decorative empty; ASK if content/keyword/locality unknown.",
+    "no-single-size-content": "error: content images must have a responsive srcset.",
+    "no-raw-raster-img": "error: raw <img> only for FixedImage output, SVG, or external URLs; no raster content <img>.",
+    "delivered-dimensions": "error: width/height are delivered dimensions, not source.",
+    "unknown-layout-half": "error: unknown layout -> HALF.",
+    "hero-not-lazy": "error: hero never lazy; below-fold never eager.",
+    "robots-allow-astro": "error: robots.txt must not block /_astro/ or the image dir.",
+    "no-png-opaque": "error: no PNG output for opaque photos.",
+    "no-gif-apng": "error: no animated GIF/APNG; use <video>.",
+    "no-upscaling": "error: never upscale beyond source width."
   },
-
+  "incremental": {
+    "default": "incremental (mtime); never wipe output at startup",
+    "skipWhen": "output exists AND mtime(output) >= mtime(source)",
+    "forceFlags": ["--force", "--clean"],
+    "forceRequiredOn": [
+      "quality changed",
+      "format list changed",
+      "width ladder extended",
+      "Sharp/codec upgraded"
+    ],
+    "summary": "Variants generated: N (skipped M up-to-date)"
+  },
   "validation": [
-    "find public -type f \\( -name '*.jpg' -o -name '*.png' -o -name '*.webp' \\) 2>/dev/null",
-    "grep -r '<Picture' src --include='*.astro' | grep -v 'pattern='",
-    "grep -r 'fetchpriority' src --include='*.astro' | grep -E '\\.(map|forEach)\\('"
+    "grep -rn \"<Picture\" src --include=\"*.astro\" | grep -v \"pattern=\"",
+    "grep -rn \"preloadImage\" src --include=\"*.astro\"",
+    "grep -rn 'rel=\"preload\"' dist --include=\"*.html\" | grep 'as=\"image\"' | grep -v \"imagesrcset\"",
+    "find dist -name \"*.png\" -not -path \"*/icons/*\" -not -path \"*/svg/*\"",
+    "grep -rEn 'ogImage\\s*[:=].*\\.(webp|avif)' src --include=\"*.astro\"",
+    "grep -rn 'og:image:type' src --include=\"*.astro\" || echo 'MISSING og:image:type'",
+    "grep -rEn '<img[^>]+\\.(png|jpe?g)' src --include=\"*.astro\" | grep -v \"FixedImage\"",
+    "grep -n \"_astro\" public/robots.txt 2>/dev/null && echo 'WARNING: ensure robots does not Disallow /_astro/'",
+    "# (manual spot-check, not auto-runnable) ls -l dist/_astro/<hero>*1600*.avif dist/_astro/<hero>*1600*.webp   # AVIF must be smaller"
   ]
 }
