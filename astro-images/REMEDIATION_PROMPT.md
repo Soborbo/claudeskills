@@ -37,10 +37,12 @@ Do this first:
 ## 2. OG images → JPG + fix 404s + type meta (audit B)
 **Cause:** per-page `ogImage` overrides in WebP/AVIF (blank social previews); some 404.
 - Set every page's `ogImage` to a **JPG at a generated width** (or a dedicated
-  1200×630 JPG per page). The default `og-default.png` is fine — only the overrides are wrong.
+  1200×630 JPG per page). A `og-default.png` fallback is fine (PNG renders everywhere) —
+  only the per-page WebP/AVIF overrides are wrong.
 - Fix any `ogImage` pointing at a non-generated width/file (404).
-- In the layout, ensure: `og:image` (jpg), `og:image:type` = `image/jpeg`,
-  `og:image:width`/`height`, `twitter:image` (jpg).
+- In the layout, ensure `og:image` / `twitter:image` are JPG with `og:image:width`/`height`,
+  and that **`og:image:type` matches the actual file** — `image/jpeg` for a JPG OG,
+  `image/png` for pages still on the `og-default.png` fallback.
 - **Verify:** `grep -rEn 'ogImage.*\.(webp|avif)' src` → empty; each `ogImage` file exists.
 
 ## 3. Photo-PNG → JPG fallback, alpha-aware (audit C)
