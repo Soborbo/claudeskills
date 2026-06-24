@@ -14,6 +14,16 @@ every image component that exists (`Picture`, `ArtPicture`, `FixedImage`,
 (`scripts/optimize-images.mjs` or similar), `public/robots.txt`, and 2–3
 representative pages. List **every** image pipeline in use and which files feed each.
 
+## 0.5 Protect the source images — BEFORE any regen (fix 1 & 3 regenerate)
+The regen steps assume a source-master directory exists, separate from the output:
+- `IMG_SRC` (default `src/assets/preprocess`) = source masters (input; script only READS it).
+- `IMG_OUT` (default `public/img`) = generated output (disposable, public, reproducible).
+
+Do this first:
+1. Confirm **every** image in `public/img` has a master in the source dir. If the site historically dropped optimized images straight into `public/img` with **no** masters, treat the current `public/img` as the de-facto masters: **back it up**, then move the best-available originals into `src/assets/preprocess`.
+2. **Commit the source dir** to the (private) repo — Astro never publishes `src/`, so it stays non-public and any size/format can be regenerated later.
+3. For regen prefer `npm run images:force` (regenerates in place, **never deletes**). Use `npm run images:clean` (wipes `public/img` first) **only** once full source coverage is confirmed — otherwise un-sourced images are permanently lost.
+
 ## 1. AVIF quality — the biggest byte win (audit A)
 **Cause:** one shared quality for AVIF and WebP. AVIF must use its OWN, lower quality.
 - In the preprocessor (`optimize-images.mjs` / build script): set AVIF quality **~48–50**,
@@ -88,10 +98,13 @@ section needing human review. Facts only — no "opportunity" framing.
 - **Never** add a fixed-width image preload.
 - When unsure whether something is the LCP, which crop is intended, or what alt to
   write → **FLAG, don't guess**.
+- Never run `images:clean` unless every `public/img` image has a master in the source dir; back up `public/img` first. Default to `images:force`.
+- Keep `public/img` 100% script-generated — never hand-place files there.
 
 ## Quick command reference
 ```bash
-npm run images:force     # regenerate /public/ sets after AVIF quality is lowered (fix 1 & 3)
+npm run images:force     # DEFAULT regen — in place, never deletes (fix 1 & 3)
+npm run images:clean     # wipes public/img first — ONLY with full source coverage in src/assets/preprocess
 npm run build            # must pass
 # then run the Validation block from SKILL.md
 ```

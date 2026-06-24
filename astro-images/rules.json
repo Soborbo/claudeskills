@@ -91,6 +91,7 @@
     "width-480-mandatory": "error: every pattern includes 480w.",
     "dimensions-required": "error: every image needs width/height (explicit or from asset import).",
     "assets-location": "error: images in /src/assets/, or /public/ only when processed by optimize-images.mjs.",
+    "source-masters-preserved": "error: keep one master per image in IMG_SRC (src/assets/preprocess) and commit it privately; IMG_OUT (public/img) is generated/disposable and 100% script-generated. --clean wipes IMG_OUT only and is safe only with full source coverage; otherwise prefer --force (never deletes).",
     "single-lcp": "error: only one lcp per page.",
     "no-fixed-width-preload": "error: never preload a fixed-width image file; rely on fetchpriority (lcp). Responsive imagesrcset preload only if hero is discovered late.",
     "sizes-required": "error: sizes must match layout; lazy images may use sizes=auto.",

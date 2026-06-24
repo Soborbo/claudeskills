@@ -108,6 +108,15 @@ IMG_SRC=src/assets/preprocess IMG_OUT=public/img npm run images        # increme
 npm run images:force                                                    # after quality/format/ladder/codec change
 ```
 
+#### Source masters vs. output — keep sources private and durable
+The preprocessor uses two distinct dirs:
+- `IMG_SRC` (default `src/assets/preprocess`) — **source masters** (input). The script only READS here; never deleted.
+- `IMG_OUT` (default `public/img`) — **generated output** (disposable, public, reproducible).
+
+- Keep **one master per image** in `IMG_SRC` and **commit `IMG_SRC` to the (private) repo.** Astro never publishes `src/` verbatim, so sources stay non-public and any size/format can be regenerated from them at any time.
+- Treat `IMG_OUT` as throwaway and **100% script-generated** — never hand-place files in `public/img`.
+- `--clean` deletes the **whole `IMG_OUT`** before regenerating (the only way to purge stale variants) and **never touches `IMG_SRC`.** Safe only when every image in `IMG_OUT` has a master in `IMG_SRC`; otherwise un-sourced images are lost. (Guard: the script exits before deleting if `IMG_SRC` is empty — partial coverage is the real danger.) Until source coverage is complete on an existing site, use `--force` (regenerates in place, never deletes).
+
 ### Incremental rules (any preprocessing script MUST follow)
 1. Default incremental — never wipe output at startup.
 2. Per-variant freshness: skip when output exists AND `mtime(output) >= mtime(source)`.
@@ -311,6 +320,8 @@ Raw `<img>` allowed ONLY for: FixedImage component output, SVGs, external URLs. 
 - SEO-poor source filenames (`IMG_*`, spaces, generic `hero.jpg`)
 - `<Picture>` for SVGs; animated GIF/APNG; CSS backgrounds for LCP
 - Images in `/public/` without `optimize-images.mjs`; upscaling; dynamic width arrays
+- Hand-placing files in `public/img` (IMG_OUT) — `--clean` wipes it wholesale
+- Running `--clean` without a complete source-master set in `IMG_SRC`
 - `loading="lazy"` on hero; `loading="eager"` on below-fold
 - Missing `object-position` on cropped images with faces
 - Blocking `/_astro/` in robots.txt; heading hierarchy skips
