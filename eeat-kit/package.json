@@ -1,0 +1,37 @@
+{
+  "name": "eeat-kit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone, test-backed auditor for visible E-E-A-T signals + AI-search (GEO) readiness on Astro lead-gen sites. Schema generation/validation is delegated to schema-entity-graph + schema-audit. See README.md and BOUNDARIES.md.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:security": "tsx tests/security/scan-forbidden-eeat.ts",
+    "test:coverage": "vitest run --coverage",
+    "test:ci": "npm run typecheck && npm run test:security && npm run test:unit && npm run test:integration",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "audit": "tsx scripts/eeat-audit.ts"
+  },
+  "dependencies": {
+    "fast-glob": "^3.3.2",
+    "jsdom": "^25.0.1"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  },
+  "peerDependencies": {
+    "astro": ">=4 <7"
+  },
+  "peerDependenciesMeta": {
+    "astro": { "optional": true }
+  }
+}

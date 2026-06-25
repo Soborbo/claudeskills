@@ -1,0 +1,60 @@
+name: EEAT Kit Tests
+
+# Copy this file to .github/workflows/eeat-kit-tests.yml in the claudeskills repo.
+
+on:
+  pull_request:
+    paths:
+      - 'eeat-kit/**'
+      - '.github/workflows/eeat-kit-tests.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'eeat-kit/**'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Typecheck · Security · Unit · Integration · Coverage
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: eeat-kit
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: eeat-kit/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Security scanner (forbidden patterns)
+        run: npm run test:security
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Coverage report
+        run: npm run test:coverage
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eeat-kit-coverage
+          path: eeat-kit/coverage
+          if-no-files-found: ignore
