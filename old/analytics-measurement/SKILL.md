@@ -1,7 +1,10 @@
 ---
 name: analytics-measurement
-description: Analytics and conversion tracking for lead generation websites. Use when implementing GTM, GA4, or any measurement. Works with astro-architecture for GTM setup. No CRO mérés nélkül vakrepülés.
+description: DEPRECATED (legacy, in old/) — use the `soborbo-tracking` skill instead for GA4 + Meta + Google Ads tracking on Astro. Kept for reference only.
 ---
+
+> **⚠️ DEPRECATED — használd helyette a `soborbo-tracking` skillt.** (Ez a `old/`
+> alatti legacy mérés-doktrína, csak referenciának.)
 
 # Analytics & Measurement Skill
 

@@ -1,4 +1,11 @@
-# Tracking kit
+# Tracking kit — ⚠️ DEPRECATED
+
+> **⚠️ DEPRECATED — használd helyette a `soborbo-tracking` skillt.**
+> A szerver-oldal (in-app Meta CAPI + GA4 MP route-ok) elavult: a kanonikus
+> megoldásban a szerver az **event-gateway worker** (Meta CAPI + GA4 MP +
+> Google Ads uploadClickConversions, Cloudflare Queues retry). A hasznos
+> assetek (INVARIANTS, CHECKLIST, EVENTS, MONITORING doktrína, watchdog,
+> check-event-contract) átemelve a `soborbo-tracking/`-be. Lásd: `./DEPRECATED.md`.
 
 Portable browser+server tracking pipeline. Drop the `src/lib/tracking/` folder
 into your project and wire the GTM components, API routes, and consent

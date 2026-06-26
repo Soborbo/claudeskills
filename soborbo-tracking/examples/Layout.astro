@@ -1,0 +1,23 @@
+---
+// Példa layout — másold és igazítsd. A tracking 3 sorból áll.
+import Tracking from '../components/Tracking.astro';
+import TrackingNoscript from '../components/TrackingNoscript.astro';
+import Turnstile from '../components/Turnstile.astro';
+
+const GTM_ID = 'GTM-XXXXXXX';
+const COOKIEYES_ID = 'abcdef123456';
+---
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Tracking gtmId={GTM_ID} cookieYesId={COOKIEYES_ID} />
+    <slot name="head" />
+  </head>
+  <body>
+    <TrackingNoscript gtmId={GTM_ID} />
+    <Turnstile />
+    <slot />
+  </body>
+</html>

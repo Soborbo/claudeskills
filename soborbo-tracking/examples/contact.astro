@@ -1,0 +1,21 @@
+---
+// Példa kapcsolati oldal TrackedForm-mal. Submitkor: dataLayer push (GTM) +
+// gateway POST (contact_form_submit), azonos event_id-vel. PII NEM megy
+// dataLayer-be — csak a gateway POST body-jában (a gateway hasheli).
+import Layout from './Layout.astro';
+import TrackedForm from '../components/TrackedForm.astro';
+import PhoneLink from '../components/PhoneLink.astro';
+---
+<Layout>
+  <main>
+    <h1>Kapcsolat</h1>
+
+    <TrackedForm action="/api/lead" eventType="lead" contentName="Kapcsolati űrlap">
+      <label>Email <input name="email" type="email" required /></label>
+      <label>Telefon <input name="phone" type="tel" /></label>
+      <button type="submit">Ajánlatot kérek</button>
+    </TrackedForm>
+
+    <p>Vagy hívj: <PhoneLink phone="+36301234567" /></p>
+  </main>
+</Layout>

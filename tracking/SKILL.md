@@ -1,6 +1,9 @@
 ---
-name: soborbo-tracking
+name: soborbo-tracking-legacy
 description: >-
+  DEPRECATED — use the `soborbo-tracking` skill instead (server-side is now the
+  event-gateway worker: Meta CAPI + GA4 MP + Google Ads + Queues). This is the
+  legacy Meta-only /api/track version, kept for reference only.
   Lead gen tracking for Astro.js on Cloudflare Workers. Drop-in components:
   <Tracking />, <TrackedForm />, <PhoneLink />, <CallbackButton />.
   GA4, Meta Pixel + CAPI (server-side via Worker endpoint), Google Ads
@@ -10,7 +13,13 @@ description: >-
   No Zaraz, no Stape. £0/month.
 ---
 
-# Soborbo Lead Gen Tracking v4
+# Soborbo Lead Gen Tracking v4 — ⚠️ DEPRECATED
+
+> **⚠️ DEPRECATED — használd helyette a `soborbo-tracking` skillt.**
+> Ez a régi, **Meta-only** `/api/track` verzió. A kanonikus megoldásban a
+> szerver-oldal az **event-gateway worker** (Meta CAPI + GA4 MP + Google Ads +
+> Cloudflare Queues). A kliens-komponensek átkerültek a `soborbo-tracking/`-be.
+> Csak referenciának marad.
 
 ## When To Use
 

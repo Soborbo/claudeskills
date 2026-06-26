@@ -1,0 +1,11 @@
+# A SERVERSIDE (event-gateway) wrangler.toml-jába kerül — NEM az Astro site-éba.
+# A site domainjén a /api/event/* a gateway workerre irányít (same-origin a
+# tracking-hívásokhoz). A generate-site.mjs ezt automatikusan kiadja (routes.toml).
+
+[[routes]]
+pattern = "example.hu/api/event/*"
+zone_name = "example.hu"
+
+[[routes]]
+pattern = "www.example.hu/api/event/*"
+zone_name = "example.hu"

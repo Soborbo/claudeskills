@@ -1,0 +1,14 @@
+---
+/**
+ * Turnstile invisible widget — az event-gateway worker KÖTELEZŐ turnstile_token-jéhez.
+ *
+ * A gateway.ts getTurnstileToken()-je ezt a #cf-turnstile-invisible konténert
+ * render-eli/execute-álja, a sitekey-t a PUBLIC_TURNSTILE_SITE_KEY env-ből veszi.
+ *
+ * Tedd a layout <body>-jába (egyszer az oldalon). Astro env kell:
+ *   PUBLIC_TURNSTILE_SITE_KEY=0x4AAAA...
+ */
+---
+
+<div id="cf-turnstile-invisible" style="display:none"></div>
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
