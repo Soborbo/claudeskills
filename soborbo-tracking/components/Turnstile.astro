@@ -1,0 +1,14 @@
+---
+/**
+ * Turnstile invisible widget — for the event-gateway worker's REQUIRED turnstile_token.
+ *
+ * gateway.ts getTurnstileToken() renders/executes this #cf-turnstile-invisible
+ * container, taking the sitekey from the PUBLIC_TURNSTILE_SITE_KEY env.
+ *
+ * Put it in the layout <body> (once per page). Astro env required:
+ *   PUBLIC_TURNSTILE_SITE_KEY=0x4AAAA...
+ */
+---
+
+<div id="cf-turnstile-invisible" style="display:none"></div>
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>

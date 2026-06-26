@@ -1,0 +1,21 @@
+---
+// Example contact page with TrackedForm. On submit: dataLayer push (GTM) +
+// gateway POST (contact_form_submit), with the same event_id. PII does NOT go
+// into the dataLayer — only in the gateway POST body (the gateway hashes it).
+import Layout from './Layout.astro';
+import TrackedForm from '../components/TrackedForm.astro';
+import PhoneLink from '../components/PhoneLink.astro';
+---
+<Layout>
+  <main>
+    <h1>Contact</h1>
+
+    <TrackedForm action="/api/lead" eventType="lead" contentName="Contact form">
+      <label>Email <input name="email" type="email" required /></label>
+      <label>Phone <input name="phone" type="tel" /></label>
+      <button type="submit">Request a quote</button>
+    </TrackedForm>
+
+    <p>Or call us: <PhoneLink phone="+36301234567" /></p>
+  </main>
+</Layout>

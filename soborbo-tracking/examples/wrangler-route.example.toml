@@ -1,0 +1,11 @@
+# Goes into the SERVERSIDE (event-gateway) wrangler.toml — NOT the Astro site's.
+# On the site domain, /api/event/* routes to the gateway worker (same-origin for
+# the tracking calls). generate-site.mjs emits this automatically (routes.toml).
+
+[[routes]]
+pattern = "example.hu/api/event/*"
+zone_name = "example.hu"
+
+[[routes]]
+pattern = "www.example.hu/api/event/*"
+zone_name = "example.hu"
