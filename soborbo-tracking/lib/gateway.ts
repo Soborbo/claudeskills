@@ -17,7 +17,7 @@ declare global {
       execute: (container?: string | HTMLElement) => void;
       getResponse: (widgetId?: string) => string | undefined;
     };
-    dataLayer: unknown[];
+    dataLayer: Record<string, unknown>[];
     fbq?: (...args: unknown[]) => void;
   }
 }
@@ -147,6 +147,17 @@ export async function getTurnstileToken(): Promise<string | undefined> {
       window.turnstile!.execute(container);
     }
   });
+}
+
+/**
+ * Pre-warm the Turnstile token on page load so it's already cached (4 min) before
+ * the first conversion dispatch — removes the invisible-challenge latency from the
+ * critical path (a phone/callback/form click would otherwise wait on it). Wired in
+ * Turnstile.astro. Best-effort and fire-and-forget: getTurnstileToken() never
+ * rejects (it resolves undefined on failure), so the dispatch path still retries.
+ */
+export function prewarmTurnstile(): void {
+  void getTurnstileToken().catch(() => { /* best-effort warm-up */ });
 }
 
 function getCookie(name: string): string | undefined {

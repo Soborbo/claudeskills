@@ -43,16 +43,27 @@ const { gtmId, cookieYesId } = Astro.props;
 </script>
 
 <script>
-  import { initTracking, initScrollTracking, trackPhoneClick } from '@/lib/tracking';
+  import {
+    initTracking, initScrollTracking,
+    trackPhoneConversion, trackEmailConversion, trackWhatsappConversion,
+  } from '@/lib/tracking';
+
+  // Auto-bind tel:/mailto:/WhatsApp links. Each fires BOTH channels (dataLayer +
+  // gateway) with a shared event_id. WhatsApp is matched by wa.me / *.whatsapp.com.
+  function bindClicks(selector: string, handler: () => void) {
+    document.querySelectorAll<HTMLAnchorElement>(selector).forEach(link => {
+      if (link.dataset.trackBound) return;
+      link.dataset.trackBound = '1';
+      link.addEventListener('click', handler);
+    });
+  }
 
   function setup() {
     initTracking();
     initScrollTracking();
-    document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach(link => {
-      if (link.dataset.trackBound) return;
-      link.dataset.trackBound = '1';
-      link.addEventListener('click', () => trackPhoneClick());
-    });
+    bindClicks('a[href^="tel:"]', () => trackPhoneConversion());
+    bindClicks('a[href^="mailto:"]', () => trackEmailConversion());
+    bindClicks('a[href*="wa.me/"], a[href*="whatsapp.com/"], a[href*="api.whatsapp.com"]', () => trackWhatsappConversion());
   }
 
   document.addEventListener('astro:page-load', setup);

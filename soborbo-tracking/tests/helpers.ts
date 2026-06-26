@@ -47,5 +47,8 @@ export function resetAll(): void {
   clearCookies();
   clearCkyConsent();
   (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+  // Enhanced Conversions side-channel (set by setUserDataForEC).
+  delete (window as unknown as { __sbUserData?: unknown }).__sbUserData;
+  document.getElementById('__sb_user_data__')?.remove();
   window.history.pushState({}, '', '/');
 }

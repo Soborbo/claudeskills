@@ -12,3 +12,22 @@
 
 <div id="cf-turnstile-invisible" style="display:none"></div>
 <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+
+<script>
+  import { prewarmTurnstile } from '@/lib/tracking';
+
+  // Pre-warm: obtain a Turnstile token on load so it's cached (4 min) before the
+  // first conversion dispatch. api.js loads async → poll briefly for window.turnstile.
+  function whenTurnstileReady(attempt = 0) {
+    if (typeof (window as unknown as { turnstile?: unknown }).turnstile !== 'undefined') {
+      prewarmTurnstile();
+      return;
+    }
+    if (attempt > 40) return; // give up after ~10s
+    setTimeout(() => whenTurnstileReady(attempt + 1), 250);
+  }
+
+  function start() { whenTurnstileReady(); }
+  document.addEventListener('astro:page-load', start);
+  if (document.readyState !== 'loading') start();
+</script>

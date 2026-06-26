@@ -1,0 +1,41 @@
+name: Soborbo Tracking Tests
+
+on:
+  pull_request:
+    paths:
+      - 'soborbo-tracking/**'
+      - '.github/workflows/soborbo-tracking-tests.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'soborbo-tracking/**'
+
+permissions:
+  contents: read
+
+jobs:
+  unit-and-typecheck:
+    name: Unit · Typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: soborbo-tracking
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: soborbo-tracking/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests (vitest + jsdom)
+        run: npm test
+
+      - name: Type-check
+        run: npm run typecheck

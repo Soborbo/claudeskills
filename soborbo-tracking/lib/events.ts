@@ -6,7 +6,7 @@
  * Conversion events need marketing consent (checked in index.ts).
  */
 
-import { hasAnalyticsConsent } from './consent';
+import { hasAnalyticsConsent, hasMarketingConsent } from './consent';
 import { getSessionId, getDevice, getAttribution, getPageUrl, normalizeEmail, normalizePhone, sanitizeName } from './persistence';
 
 declare global {
@@ -73,14 +73,55 @@ export interface ConversionData {
   eventId?: string;
 }
 
+/**
+ * Hidden side-channel for Google Ads Enhanced Conversions user-provided data.
+ *
+ * Raw PII (email/phone/name) must NOT go into the dataLayer — that's a GDPR /
+ * security red flag (anything in the dataLayer is readable by every other GTM
+ * tag and any script on the page). Instead we write the normalized user data to
+ *   1) a window-scoped object (`window.__sbUserData`), and
+ *   2) a hidden DOM element (`#__sb_user_data__`),
+ * and GTM's "User-Provided Data" variable is a Custom JS variable that reads
+ * from there (see docs/gtm-setup.md). The server (gateway) path is unaffected —
+ * PII goes in the POST body and is hashed server-side.
+ *
+ * Gated on marketing consent: nothing is written without it.
+ */
+export const USER_DATA_ELEMENT_ID = '__sb_user_data__';
+
+declare global {
+  interface Window {
+    __sbUserData?: Record<string, string>;
+  }
+}
+
+export function setUserDataForEC(ud: Record<string, string>): void {
+  if (!hasMarketingConsent()) return;
+  if (typeof window === 'undefined') return;
+  window.__sbUserData = ud;
+  try {
+    let el = document.getElementById(USER_DATA_ELEMENT_ID);
+    if (!el) {
+      el = document.createElement('div');
+      el.id = USER_DATA_ELEMENT_ID;
+      el.hidden = true;
+      (document.body || document.documentElement).appendChild(el);
+    }
+    el.textContent = JSON.stringify(ud);
+  } catch { /* DOM unavailable — the window-scoped object is enough */ }
+}
+
 function buildConversionPayload(data: ConversionData): Record<string, unknown> {
   const ud: Record<string, string> = { email: normalizeEmail(data.email) };
   if (data.phone && data.phone.length >= 8) ud.phone_number = normalizePhone(data.phone);
   if (data.firstName) ud.first_name = sanitizeName(data.firstName);
   if (data.lastName) ud.last_name = sanitizeName(data.lastName);
 
+  // PII → hidden side-channel for Enhanced Conversions (NOT the dataLayer).
+  setUserDataForEC(ud);
+
+  // dataLayer payload is PII-free: event_id + value + currency + attribution.
   return {
-    user_provided_data: ud,
     event_id: data.eventId,
     session_id: getSessionId(),
     device: getDevice(),
@@ -120,16 +161,37 @@ function markClickFired(name: string): void {
   }
 }
 
-export function trackPhoneClick(): void {
-  if (!hasAnalyticsConsent()) return;
-  if (hasClickFired('phone')) return;
+/**
+ * Click trackers push to the dataLayer (browser channel). They accept an optional
+ * `eventId` so the caller (index.ts) can use the SAME id for the gateway dispatch
+ * → Meta Pixel↔CAPI dedup. They return `true` when an event was actually pushed
+ * (false = blocked by consent or session dedup), so the caller knows whether to
+ * also dispatch server-side.
+ */
+export function trackPhoneClick(eventId?: string): boolean {
+  if (!hasAnalyticsConsent()) return false;
+  if (hasClickFired('phone')) return false;   // session dedup — phone only
   markClickFired('phone');
-  push({ event: 'phone_click', session_id: getSessionId(), device: getDevice() });
+  push({ event: 'phone_click', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
+  return true;
 }
 
-export function trackCallbackClick(): void {
-  if (!hasAnalyticsConsent()) return;
-  push({ event: 'callback_click', session_id: getSessionId(), device: getDevice() });
+export function trackCallbackClick(eventId?: string): boolean {
+  if (!hasAnalyticsConsent()) return false;
+  push({ event: 'callback_click', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
+  return true;
+}
+
+export function trackEmailClick(eventId?: string): boolean {
+  if (!hasAnalyticsConsent()) return false;
+  push({ event: 'email_click', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
+  return true;
+}
+
+export function trackWhatsappClick(eventId?: string): boolean {
+  if (!hasAnalyticsConsent()) return false;
+  push({ event: 'whatsapp_click', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
+  return true;
 }
 
 // ── Form abandonment — returns cleanup function ────────────────────

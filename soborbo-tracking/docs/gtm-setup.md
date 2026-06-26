@@ -8,18 +8,35 @@
 
 ## Variables (Data Layer)
 
-DLV: `event_id`, `user_provided_data`, `value`, `currency`, `step_id`, `step_index`,
+DLV: `event_id`, `value`, `currency`, `step_id`, `step_index`,
 `calculator_name`, `scroll_percentage`, `session_id`, `device`, `form_id`,
 `last_field`, `first_utm_source`, `first_utm_medium`, `last_utm_source`,
 `last_utm_medium`.
 
+> **No PII in the dataLayer.** Raw email/phone are deliberately NOT pushed to the
+> dataLayer (GDPR / security — everything in the dataLayer is readable by every tag
+> and any page script). `events.ts` writes the normalized user data to a hidden
+> side-channel instead (`window.__sbUserData` + `#__sb_user_data__`), gated on
+> marketing consent. The User-Provided Data variable below reads from THERE.
+
 ### User-Provided Data Variable (Google Ads Enhanced Conversions)
+
+Use a **Custom JavaScript** variable that reads the side-channel (NOT a Data Layer
+Variable). Name it `CJS - User Provided Data`:
+```js
+function () {
+  try {
+    // Written by setUserDataForEC() — keys: email, phone_number, first_name, last_name.
+    return window.__sbUserData || {};
+  } catch (e) {
+    return {};
+  }
+}
 ```
-Type: User-Provided Data → Manual
-Email: {{DLV - user_provided_data}}.email
-Phone: {{DLV - user_provided_data}}.phone_number
-Name:  UPD - User Data
-```
+Then in the Google Ads / GA4 tags set **User-Provided Data → Manual → Variable** to
+`{{CJS - User Provided Data}}` (it already has `email` / `phone_number` /
+`first_name` / `last_name` keys in the shape Google expects). The Custom JS variable
+runs in the tag's context, so the PII never enters the dataLayer.
 
 ## Triggers (Custom Event)
 One each for the dataLayer events: `calculator_start`, `calculator_step`,
@@ -68,7 +85,7 @@ from index.ts) → Meta Pixel↔CAPI dedup.
 
 ## Google Ads Conversion tag
 Conversion Value: {{DLV - value}}. Transaction ID: {{DLV - event_id}}.
-User-provided data: {{UPD - User Data}}. ad_storage + ad_user_data.
+User-provided data: {{CJS - User Provided Data}}. ad_storage + ad_user_data.
 Trigger: the conversion CEs (lead_submit/callback_click/phone_click/calculator_complete).
 **Don't set a fixed value default of 1+currency** — it poisons the bidding (see INVARIANTS).
 
