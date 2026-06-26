@@ -14,7 +14,7 @@
 <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 
 <script>
-  import { prewarmTurnstile } from '@/lib/tracking';
+  import { prewarmTurnstile } from '../lib';
 
   // Pre-warm: obtain a Turnstile token on load so it's cached (4 min) before the
   // first conversion dispatch. api.js loads async → poll briefly for window.turnstile.

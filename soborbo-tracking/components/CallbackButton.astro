@@ -8,7 +8,7 @@ const { class: cls, type = 'button', ...rest } = Astro.props;
 </button>
 
 <script>
-  import { trackCallbackConversion } from '@/lib/tracking';
+  import { trackCallbackConversion } from '../lib';
   function bind() {
     document.querySelectorAll<HTMLButtonElement>('[data-tracking-callback]').forEach(btn => {
       if (btn.dataset.trackBound) return;

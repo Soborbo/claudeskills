@@ -54,7 +54,7 @@ Suggested alerts (any of these firing across many sessions = act):
 ## API
 
 ```ts
-import { report, getDiagnostics, clearDiagnostics, TRACKING_CODES } from '@/lib/tracking';
+import { report, getDiagnostics, clearDiagnostics, TRACKING_CODES } from '@/lib';
 report('GATEWAY_NETWORK_FAIL', { event_name });  // emit a coded diagnostic
 getDiagnostics();   // TrackingDiagnostic[] (the ring, newest last)
 clearDiagnostics(); // reset the ring

@@ -3,8 +3,11 @@
 No need to generate anything, just copy + swap 3 identifiers.
 
 ## Client (Astro site)
-1. `components/` + `lib/` → into the site's `src/` (using the `@/lib/tracking` alias, or
-   adjust the imports).
+1. `components/` + `lib/` → into the site's `src/` as **siblings** (`src/components/` +
+   `src/lib/`). The components import the library via a relative path (`../lib`), so
+   **no alias setup is needed** — it just works with that layout. (Your own page/form
+   code can import from wherever you copied `lib/`, e.g. `@/lib` if you use the `@→src`
+   alias, or a relative path.)
 2. `Layout.astro` → into the site layout (swap: `GTM_ID`, `COOKIEYES_ID`).
 3. `.env.example` → `.env` (swap: `PUBLIC_TURNSTILE_SITE_KEY`).
 4. `contact.astro` → a sample page with `<TrackedForm/>`.

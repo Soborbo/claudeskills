@@ -46,7 +46,7 @@ const { gtmId, cookieYesId } = Astro.props;
   import {
     initTracking, initScrollTracking,
     trackPhoneConversion, trackEmailConversion, trackWhatsappConversion,
-  } from '@/lib/tracking';
+  } from '../lib';
 
   // Auto-bind tel:/mailto:/WhatsApp links. Each fires BOTH channels (dataLayer +
   // gateway) with a shared event_id. WhatsApp is matched by wa.me / *.whatsapp.com.

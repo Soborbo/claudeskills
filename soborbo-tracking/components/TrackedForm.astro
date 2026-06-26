@@ -73,7 +73,7 @@ const {
     trackLeadSubmit, trackContactSubmit,
     populateHiddenFields, waitForTracking,
     initFormAbandonTracking,
-  } from '@/lib/tracking';
+  } from '../lib';
 
   function setupTrackedForms() {
     document.querySelectorAll<HTMLFormElement>('[data-tracked-form]').forEach((form) => {
