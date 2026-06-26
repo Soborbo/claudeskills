@@ -44,6 +44,14 @@ describe('trackLeadSubmit', () => {
     expect(mockSend.mock.calls[0][0].event_name).toBe('quote_calculator_conversion');
   });
 
+  it('deviza a market-configból jön default-ban (HU → HUF), de hívásonként felülírható', () => {
+    trackLeadSubmit({ email: 'a@b.com', value: 5000 }); // nincs currency → config default
+    expect(mockSend.mock.calls[0][0].currency).toBe('HUF');
+    mockSend.mockClear();
+    trackLeadSubmit({ email: 'a@b.com', value: 100, currency: 'GBP' }); // explicit UK
+    expect(mockSend.mock.calls[0][0].currency).toBe('GBP');
+  });
+
   it('consent nélkül: NINCS dispatch, NINCS dataLayer push', () => {
     setCkyConsent({ analytics: true, marketing: false });
     const r = trackLeadSubmit({ email: 'a@b.com' });

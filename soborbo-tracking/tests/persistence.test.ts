@@ -20,18 +20,22 @@ describe('normalizeEmail', () => {
   });
 });
 
-describe('normalizePhone', () => {
-  it('UK 07… → +447…', () => {
+describe('normalizePhone — bilingual UK + HU', () => {
+  it('UK 07… → +447… (auto-detect, regardless of config)', () => {
     expect(normalizePhone('07123 456789')).toBe('+447123456789');
   });
-  it('HU 06… → +366…', () => {
+  it('HU 06… → +36… (auto-detect, regardless of config)', () => {
     expect(normalizePhone('06 20 123 4567')).toBe('+36201234567');
   });
-  it('keeps already-international', () => {
+  it('keeps already-international (+)', () => {
     expect(normalizePhone('+44 7123 456789')).toBe('+447123456789');
+    expect(normalizePhone('+36 20 123 4567')).toBe('+36201234567');
   });
-  it('strips letters/formatting', () => {
-    expect(normalizePhone('(030) 123-456 ext')).toBe('030123456');
+  it('ambiguous bare number uses the configured country', () => {
+    // HU site
+    expect(normalizePhone('20 123 4567', 'HU')).toBe('+36201234567');
+    // UK site
+    expect(normalizePhone('7123 456789', 'GB')).toBe('+447123456789');
   });
   it('caps length at 20', () => {
     expect(normalizePhone('0'.repeat(40)).length).toBeLessThanOrEqual(20);

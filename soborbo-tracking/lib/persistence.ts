@@ -8,6 +8,7 @@
  */
 
 import { hasMarketingConsent, hasAnalyticsConsent } from './consent';
+import { trackingConfig, type Market } from './config';
 
 const TRACKING_KEY = 'sb_tracking';
 const FIRST_TOUCH_KEY = 'sb_first_touch';
@@ -65,15 +66,30 @@ export function normalizeEmail(email: string): string {
 
 /**
  * Normalize phone to E.164-ish format for consistent hashing.
- * Strips formatting, applies UK/HU country code if missing.
- * Used everywhere: dataLayer, hidden fields, Meta CAPI, Sheets.
+ * Works for both UK and HU sites:
+ *  - Unambiguous national prefixes auto-detect regardless of config:
+ *      UK `07…` (11 digits) → `+447…` (trunk `0`, 1 char)
+ *      HU `06…` (11 digits) → `+36…`  (trunk `06`, 2 chars — matches server hash.ts)
+ *  - Already-international (`+…`) is kept.
+ *  - Ambiguous numbers (bare national / single-`0` trunk) use the site's
+ *    configured `country` (PUBLIC_TRACKING_COUNTRY).
+ * Used everywhere: dataLayer, hidden fields, Sheets. (The gateway re-normalizes
+ * server-side using the KV `country_code`, so the server path is market-correct too.)
  */
-export function normalizePhone(raw: string): string {
+export function normalizePhone(raw: string, country: Market = trackingConfig.country): string {
   let p = raw.replace(/[\s\-(). ]/g, '');
-  // UK: 07xxx → +447xxx (trunk '0', 1 karakter)
+  if (p.startsWith('+')) return p.replace(/[^\d+]/g, '').slice(0, 20);
   if (p.startsWith('07') && p.length === 11) p = '+44' + p.slice(1);
-  // HU: 06xxx → +36xxx (trunk '06', 2 karakter — a szerver hash.ts-szel egyezően)
   else if (p.startsWith('06') && p.length === 11) p = '+36' + p.slice(2);
+  else if (country === 'HU') {
+    if (p.startsWith('36')) p = '+' + p;
+    else if (p.startsWith('0')) p = '+36' + p.slice(1);
+    else p = '+36' + p;
+  } else {
+    if (p.startsWith('44')) p = '+' + p;
+    else if (p.startsWith('0')) p = '+44' + p.slice(1);
+    else p = '+44' + p;
+  }
   return p.replace(/[^\d+]/g, '').slice(0, 20);
 }
 

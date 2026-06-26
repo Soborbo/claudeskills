@@ -38,6 +38,7 @@ import {
 } from './persistence';
 import { generateEventId, pushLeadConversion, pushContactConversion, enableDebug } from './events';
 import { sendToWorker } from './gateway';
+import { trackingConfig } from './config';
 
 // ── Init ───────────────────────────────────────────────────────────
 
@@ -103,11 +104,13 @@ export function trackLeadSubmit(params: LeadSubmitParams): LeadSubmitResult {
   const gclid = getGclid(), fbclid = getFbclid(), eventId = generateEventId();
   if (!hasMarketingConsent()) return { success: false, consentBlocked: true, eventId, gclid, fbclid };
 
+  const currency = params.currency || trackingConfig.currency;
+
   // 1) Böngésző (GTM) — változatlan
   pushLeadConversion({
     email: params.email, phone: params.phone,
     firstName: params.firstName, lastName: params.lastName,
-    value: params.value, currency: params.currency || 'GBP',
+    value: params.value, currency,
     gclid: gclid || undefined, eventId,
   });
 
@@ -115,7 +118,7 @@ export function trackLeadSubmit(params: LeadSubmitParams): LeadSubmitResult {
   dispatchToGateway(params.eventName || DEFAULT_GATEWAY_EVENT, eventId, {
     email: params.email, phone: params.phone,
     firstName: params.firstName, lastName: params.lastName,
-    value: params.value, currency: params.currency || 'GBP',
+    value: params.value, currency,
   });
 
   return { success: true, consentBlocked: false, eventId, gclid, fbclid };
@@ -177,7 +180,7 @@ export function buildSheetsPayload(data: {
     session_id: getSessionId(), source_type: getSourceType(),
     name: data.name, email: data.email,
     phone: data.phone ? normalizePhone(data.phone) : undefined,
-    value: data.value, currency: data.currency || 'GBP',
+    value: data.value, currency: data.currency || trackingConfig.currency,
     ...getAttribution(),
   };
 }
