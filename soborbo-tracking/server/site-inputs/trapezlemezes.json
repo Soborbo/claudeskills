@@ -1,0 +1,25 @@
+{
+  "site_id": "trapezlemezes",
+  "hostnames": ["trapezlemezes.hu", "www.trapezlemezes.hu"],
+  "country_code": "HU",
+  "currency": "HUF",
+  "require_consent": true,
+  "meta": {
+    "pixel_id": "1190487559035660",
+    "access_token": "REPLACE_ME_META_CAPI_SYSTEM_USER_TOKEN"
+  },
+  "ga4": {
+    "measurement_id": "REPLACE_ME_GA4_MEASUREMENT_ID",
+    "api_secret": "REPLACE_ME_GA4_API_SECRET"
+  },
+  "gads": {
+    "customer_id": "3415114700",
+    "login_customer_id": null,
+    "conversion_actions": {
+      "quote_calculator_conversion": "6926598604",
+      "callback_conversion": "7176297115",
+      "contact_form_submit": "7591648016",
+      "phone_conversion": "6926366138"
+    }
+  }
+}

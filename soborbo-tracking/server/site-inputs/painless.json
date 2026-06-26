@@ -1,0 +1,24 @@
+{
+  "site_id": "painless",
+  "hostnames": ["painlessremovals.com", "www.painlessremovals.com"],
+  "country_code": "GB",
+  "currency": "GBP",
+  "meta": {
+    "pixel_id": "292656820246446",
+    "access_token": "REPLACE_ME_META_CAPI_SYSTEM_USER_TOKEN"
+  },
+  "ga4": {
+    "measurement_id": "REPLACE_ME_GA4_MEASUREMENT_ID",
+    "api_secret": "REPLACE_ME_GA4_API_SECRET"
+  },
+  "gads": {
+    "customer_id": "4886655031",
+    "login_customer_id": null,
+    "conversion_actions": {
+      "quote_calculator_conversion": "7607796871",
+      "callback_conversion": "7607816151",
+      "contact_form_submit": "7607812689",
+      "phone_conversion": "7607394920"
+    }
+  }
+}
