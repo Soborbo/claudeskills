@@ -92,10 +92,13 @@ lib/          index.ts (entry), config.ts (market), events.ts (dataLayer/GTM),
 server/       generate-site.mjs (onboarding generator), SETUP-SERVER.md,
               check-event-contract.mjs
 examples/     ready-to-copy wiring (Layout + form + .env + route)
+gtm/          container.json (importable GTM container) + gen-container.mjs + README
 docs/         CANONICAL-EVENTS, MIGRATION-existing-sites, gtm-setup,
-              cloudflare-setup, testing, INVARIANTS, CHECKLIST, EVENTS, MONITORING
+              cloudflare-setup, testing, INVARIANTS, CHECKLIST, EVENTS, MONITORING,
+              SERVERSIDE-FOLLOWUP
 monitoring/   watchdog.ts (optional conversion-volume alerting worker)
-tests/        50 client tests (vitest + jsdom). Server tests live in Soborbo/Serverside.
+tests/        67 client tests (vitest + jsdom). Server tests live in Soborbo/Serverside.
+tsconfig.json + env.d.ts (npm run typecheck)
 ```
 
 ## Quick setup (client)
@@ -166,9 +169,12 @@ site (KV config + route + Google Ads OAuth). Gateway tests (156) live there.
 GADS_*, ADMIN_API_TOKEN, and the per-site config KV.
 
 ## Tests
-50 client tests (`npm test`, vitest + jsdom): normalizers (UK + HU phone),
-attribution, consent gating, event-name contract, shared event_id, gateway
-payload, market config. Server-side: 156 tests in Soborbo/Serverside.
+67 client tests (`npm test`, vitest + jsdom): normalizers (UK + HU phone),
+attribution, consent gating, event-name contract, shared event_id (incl. phone/
+callback/email/whatsapp click conversions across both channels), gateway payload,
+no-PII-in-dataLayer + Enhanced-Conversions side-channel, GTM container export,
+Turnstile pre-warm, market config. Also `npm run typecheck` (tsc --noEmit).
+Server-side: 156 tests in Soborbo/Serverside.
 
 ## Reference docs
 `docs/CANONICAL-EVENTS.md`, `docs/MIGRATION-existing-sites.md`,
