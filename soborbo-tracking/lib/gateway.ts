@@ -8,6 +8,7 @@
  */
 
 import { generateUUID } from './uuid';
+import { hasAnalyticsConsent, hasMarketingConsent } from './consent';
 
 declare global {
   interface Window {
@@ -375,6 +376,13 @@ export async function sendToWorker(payload: ConversionPayload): Promise<boolean>
   }
 }
 
+/**
+ * @deprecated Prefer the consent-safe entry points in `index.ts`
+ * (`trackLeadSubmit` / `trackServerEvent` / `trackPhoneConversion` …). This
+ * low-level helper is kept for direct/advanced use. It is now CONSENT-GATED to
+ * match the skill's consent matrix: the dataLayer push needs analytics consent,
+ * the gateway dispatch needs marketing consent. Without either it is a no-op.
+ */
 export async function trackConversion(
   eventName: string,
   params: {
@@ -387,12 +395,16 @@ export async function trackConversion(
     consent?: ConsentState;
   } = {}
 ): Promise<void> {
+  const analytics = hasAnalyticsConsent();
+  const marketing = hasMarketingConsent();
+  if (!analytics && !marketing) return; // no consent → don't push or dispatch
+
   const eventId = params.event_id || generateUUID();
   const eventTime = Math.floor(Date.now() / 1000);
 
-  // 1. Existing client GTM dataLayer push (for Meta Pixel browser-side dedup).
-  // PII does NOT go into the dataLayer — CLAUDE.md #15.
-  if (typeof window !== 'undefined') {
+  // 1. Client GTM dataLayer push (for Meta Pixel browser-side dedup) — analytics consent.
+  // PII does NOT go into the dataLayer.
+  if (analytics && typeof window !== 'undefined') {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       event: eventName,
@@ -404,16 +416,18 @@ export async function trackConversion(
     });
   }
 
-  // 2. Server-side Worker dispatch (PII in the body, hashed in the Worker).
-  await sendToWorker({
-    event_name: eventName,
-    event_id: eventId,
-    event_time: eventTime,
-    value: params.value,
-    currency: params.currency,
-    source: params.source,
-    service: params.service,
-    user_data: params.user_data,
-    consent: params.consent
-  });
+  // 2. Server-side Worker dispatch (PII in the body, hashed in the Worker) — marketing consent.
+  if (marketing) {
+    await sendToWorker({
+      event_name: eventName,
+      event_id: eventId,
+      event_time: eventTime,
+      value: params.value,
+      currency: params.currency,
+      source: params.source,
+      service: params.service,
+      user_data: params.user_data,
+      consent: params.consent
+    });
+  }
 }

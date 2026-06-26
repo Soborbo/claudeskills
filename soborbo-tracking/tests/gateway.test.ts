@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { collectAttribution, sendToWorker, getTurnstileToken } from '../lib/gateway';
-import { setCookie, setUrl, resetAll } from './helpers';
+import { collectAttribution, sendToWorker, getTurnstileToken, trackConversion } from '../lib/gateway';
+import { setCookie, setUrl, resetAll, getDataLayer, setCkyConsent } from './helpers';
 
 // CookieYes consent cookie összeállítása (ad = advertisement, an = analytics).
 function ckyCookie(ad: boolean, an: boolean): void {
@@ -50,6 +50,17 @@ describe('collectAttribution — consent-gated click IDs', () => {
     setCookie('_gcl_aw', 'GCL.1700000000.COOKIEGCLID');
     setUrl('/');
     expect(collectAttribution().gclid).toBe('COOKIEGCLID');
+  });
+});
+
+describe('trackConversion — consent-gated (footgun fix)', () => {
+  it('consent denied → no dataLayer push and no network', async () => {
+    setCkyConsent({ analytics: false, marketing: false });
+    const fetchMock = vi.fn((..._args: unknown[]) => Promise.resolve(new Response(null, { status: 204 })));
+    vi.stubGlobal('fetch', fetchMock);
+    await trackConversion('phone_conversion', { value: 0, user_data: { email: 'a@b.com' } });
+    expect(getDataLayer()).toHaveLength(0);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 

@@ -95,6 +95,19 @@ declare global {
   }
 }
 
+/** How long the EC PII stays readable before the auto-clear sweeps it (ms).
+ *  Long enough for GTM to read it when its tags fire, short enough to limit the
+ *  window where any other script could read it. */
+const EC_CLEAR_DELAY_MS = 5_000;
+let ecClearTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Wipe the Enhanced-Conversions side-channel (window object + hidden element). */
+export function clearUserDataForEC(): void {
+  if (typeof window === 'undefined') return;
+  try { delete window.__sbUserData; } catch { /* */ }
+  try { document.getElementById(USER_DATA_ELEMENT_ID)?.remove(); } catch { /* */ }
+}
+
 export function setUserDataForEC(ud: Record<string, string>): void {
   if (!hasMarketingConsent()) return;
   if (typeof window === 'undefined') return;
@@ -109,6 +122,11 @@ export function setUserDataForEC(ud: Record<string, string>): void {
     }
     el.textContent = JSON.stringify(ud);
   } catch { /* DOM unavailable — the window-scoped object is enough */ }
+  // Defense in depth: don't leave PII readable for the whole page lifetime.
+  // GTM reads it synchronously when its conversion tags fire (right after the
+  // dataLayer push), so a few seconds is ample. Re-arm on each write.
+  if (ecClearTimer) clearTimeout(ecClearTimer);
+  ecClearTimer = setTimeout(() => { clearUserDataForEC(); ecClearTimer = null; }, EC_CLEAR_DELAY_MS);
 }
 
 function buildConversionPayload(data: ConversionData): Record<string, unknown> {
@@ -145,7 +163,12 @@ export function pushContactConversion(data: ConversionData): void {
 
 const memoryClickSet = new Set<string>();
 
-function hasClickFired(name: string): boolean {
+// Exported so the conversion layer (index.ts) can apply the SAME session dedup
+// across BOTH channels (dataLayer + gateway) — see trackPhoneConversion. The
+// memory set always works; sessionStorage is added under analytics consent so
+// dedup survives reloads, and still degrades gracefully (memory-only) when
+// analytics consent is absent but marketing consent is present.
+export function hasClickFired(name: string): boolean {
   const k = `sb_click_${name}_${getSessionId()}`;
   if (memoryClickSet.has(k)) return true;
   if (hasAnalyticsConsent()) {
@@ -153,7 +176,7 @@ function hasClickFired(name: string): boolean {
   }
   return false;
 }
-function markClickFired(name: string): void {
+export function markClickFired(name: string): void {
   const k = `sb_click_${name}_${getSessionId()}`;
   memoryClickSet.add(k);
   if (hasAnalyticsConsent()) {
@@ -168,10 +191,14 @@ function markClickFired(name: string): void {
  * (false = blocked by consent or session dedup), so the caller knows whether to
  * also dispatch server-side.
  */
-export function trackPhoneClick(eventId?: string): boolean {
+export function trackPhoneClick(eventId?: string, dedup = true): boolean {
   if (!hasAnalyticsConsent()) return false;
-  if (hasClickFired('phone')) return false;   // session dedup — phone only
-  markClickFired('phone');
+  // `dedup=false` is passed by the conversion layer (index.ts), which owns the
+  // session dedup so it can cover BOTH channels even when analytics consent is off.
+  if (dedup) {
+    if (hasClickFired('phone')) return false;
+    markClickFired('phone');
+  }
   push({ event: 'phone_click', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
   return true;
 }

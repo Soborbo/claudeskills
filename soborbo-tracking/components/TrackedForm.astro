@@ -3,8 +3,8 @@
  * <TrackedForm /> — Form wrapper with conversion tracking.
  *
  * Handles: validate → track → hidden fields → wait → submit.
- * Uses form.submit() (not requestSubmit) to avoid recursion.
- * Preserves submitter button name/value for multi-button forms.
+ * Re-submits via form.requestSubmit() (guarded against recursion) so OTHER
+ * submit listeners still run and the submitter button is preserved natively.
  *
  * Field mapping: override with props if your form uses non-standard names.
  *
@@ -34,7 +34,7 @@ interface Props {
 let formIdCounter = 0;
 const {
   action, method = 'POST', eventType = 'lead', contentName,
-  currency = 'GBP',
+  currency,  // no default → falls back to PUBLIC_TRACKING_CURRENCY via trackLeadSubmit
   emailField = 'email', phoneField = 'phone',
   firstNameField = 'firstName', lastNameField = 'lastName',
   valueField = 'price', formId = `tracked-form-${++formIdCounter}`,
@@ -47,7 +47,7 @@ const {
   data-tracked-form
   data-event-type={eventType}
   data-content-name={contentName || ''}
-  data-currency={currency}
+  data-currency={currency || ''}
   data-form-id={formId}
   data-abandon-timeout={abandonTimeout.toString()}
   data-f-email={emailField}
@@ -83,7 +83,9 @@ const {
       const cfg = {
         eventType: form.dataset.eventType || 'lead',
         contentName: form.dataset.contentName || document.title,
-        currency: form.dataset.currency || 'GBP',
+        // Empty → undefined so trackLeadSubmit applies the market default
+        // (PUBLIC_TRACKING_CURRENCY): HU site → HUF, UK site → GBP.
+        currency: form.dataset.currency || undefined,
         email: form.dataset.fEmail || 'email',
         phone: form.dataset.fPhone || 'phone',
         firstName: form.dataset.fFname || 'firstName',
@@ -140,15 +142,21 @@ const {
         populateHiddenFields(form, result);
         await waitForTracking(600);
 
-        // Preserve submitter name/value (for multi-button forms)
-        if (lastSubmitter?.name) {
-          const h = document.createElement('input');
-          h.type = 'hidden'; h.name = lastSubmitter.name; h.value = lastSubmitter.value || '';
-          form.appendChild(h);
+        // Re-submit. The isSubmitting guard makes the re-fired submit event a
+        // no-op for our handler (no preventDefault), so the native submission
+        // proceeds AND any other submit listeners run. requestSubmit() preserves
+        // the clicked submitter's name/value natively (multi-button forms).
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit(lastSubmitter || undefined);
+        } else {
+          // Legacy fallback: form.submit() bypasses listeners, so re-add the submitter.
+          if (lastSubmitter?.name) {
+            const h = document.createElement('input');
+            h.type = 'hidden'; h.name = lastSubmitter.name; h.value = lastSubmitter.value || '';
+            form.appendChild(h);
+          }
+          form.submit();
         }
-
-        // Native submit — does NOT fire a new submit event
-        form.submit();
       });
 
       // Cleanup abandon tracking on Astro route change

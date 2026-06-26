@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   generateEventId, trackCalculatorStart, trackCalculatorStep, trackCalculatorComplete,
   trackPhoneClick, trackCallbackClick, trackEmailClick, trackWhatsappClick,
-  pushLeadConversion, pushContactConversion, setUserDataForEC, USER_DATA_ELEMENT_ID,
+  pushLeadConversion, pushContactConversion,
+  setUserDataForEC, clearUserDataForEC, USER_DATA_ELEMENT_ID,
 } from '../lib/events';
 import { setCkyConsent, resetAll, getDataLayer, lastEvent } from './helpers';
 
@@ -115,6 +116,14 @@ describe('setUserDataForEC — marketing-consent gated side-channel', () => {
     // EC side-channel must stay empty even though the dataLayer (analytics) push runs.
     pushLeadConversion({ email: 'a@b.com', phone: '07123456789', eventId: 'E4' });
     expect(readSideChannel()).toBeUndefined();
+  });
+
+  it('clearUserDataForEC wipes the window object and the hidden element', () => {
+    setUserDataForEC({ email: 'a@b.com' });
+    expect(readSideChannel()).toBeTruthy();
+    clearUserDataForEC();
+    expect(readSideChannel()).toBeUndefined();
+    expect(document.getElementById(USER_DATA_ELEMENT_ID)).toBeNull();
   });
 });
 
