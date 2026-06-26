@@ -29,7 +29,7 @@ export {
   type ConversionData,
 } from './events';
 // Gateway dispatch (server side) — also available for direct use.
-export { sendToWorker, getTurnstileToken, collectAttribution, type ConversionPayload, type UserData } from './gateway';
+export { sendToWorker, getTurnstileToken, prewarmTurnstile, collectAttribution, type ConversionPayload, type UserData } from './gateway';
 
 import { hasMarketingConsent, onConsentChange } from './consent';
 import {
