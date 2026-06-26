@@ -180,8 +180,12 @@ export function trackServerEvent(
 // The two gates are INDEPENDENT (this matches the skill's consent matrix): a
 // visitor who grants marketing but not analytics still gets the server-side ad
 // conversion — the money signal — even though the browser GA4 event is withheld.
-// Phone keeps a session dedup that the conversion layer owns, so it covers BOTH
-// channels regardless of which consents are present.
+// Each click type keeps a session dedup that the conversion layer owns (keyed per
+// type: phone/callback/email/whatsapp), so a repeat click in the same session is
+// suppressed on BOTH channels regardless of which consents are present — otherwise
+// a user tapping a tel:/mailto:/wa.me link N times would book N server-side ad
+// conversions (each with a fresh event_id → the worker can't dedup them), poisoning
+// Smart Bidding / Meta optimization.
 
 // Exported so the event-name contract test can assert against the REAL map the code
 // dispatches with (not a copy), guaranteeing they stay in the gateway's allowed set.
@@ -218,22 +222,24 @@ export function trackPhoneConversion(params: { phone?: string } = {}): string | 
   });
 }
 
-/** Callback click → dataLayer `callback_click` + gateway `callback_conversion`. */
+/** Callback click → dataLayer `callback_click` + gateway `callback_conversion` (shared event_id, session-deduped). */
 export function trackCallbackConversion(params: { email?: string; phone?: string } = {}): string | null {
-  return trackClickConversion((id) => { trackCallbackClick(id); }, CLICK_GATEWAY_EVENT.callback, { params });
-}
-
-/** Email (mailto:) click → dataLayer `email_click` + gateway `email_conversion`. */
-export function trackEmailConversion(params: { email?: string } = {}): string | null {
-  return trackClickConversion((id) => { trackEmailClick(id); }, CLICK_GATEWAY_EVENT.email, {
-    params: { email: params.email },
+  return trackClickConversion((id) => { trackCallbackClick(id); }, CLICK_GATEWAY_EVENT.callback, {
+    dedupName: 'callback', params,
   });
 }
 
-/** WhatsApp click → dataLayer `whatsapp_click` + gateway `whatsapp_conversion`. */
+/** Email (mailto:) click → dataLayer `email_click` + gateway `email_conversion` (shared event_id, session-deduped). */
+export function trackEmailConversion(params: { email?: string } = {}): string | null {
+  return trackClickConversion((id) => { trackEmailClick(id); }, CLICK_GATEWAY_EVENT.email, {
+    dedupName: 'email', params: { email: params.email },
+  });
+}
+
+/** WhatsApp click → dataLayer `whatsapp_click` + gateway `whatsapp_conversion` (shared event_id, session-deduped). */
 export function trackWhatsappConversion(params: { phone?: string } = {}): string | null {
   return trackClickConversion((id) => { trackWhatsappClick(id); }, CLICK_GATEWAY_EVENT.whatsapp, {
-    params: { phone: params.phone },
+    dedupName: 'whatsapp', params: { phone: params.phone },
   });
 }
 
