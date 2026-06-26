@@ -1,0 +1,17 @@
+{
+  "name": "soborbo-tracking",
+  "version": "5.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Canonical Astro lead-gen tracking — browser (GTM) + server (event-gateway worker)",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:events": "node server/check-event-contract.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

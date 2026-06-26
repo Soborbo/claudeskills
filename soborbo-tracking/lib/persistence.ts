@@ -70,10 +70,10 @@ export function normalizeEmail(email: string): string {
  */
 export function normalizePhone(raw: string): string {
   let p = raw.replace(/[\s\-(). ]/g, '');
-  // UK: 07xxx → +447xxx
+  // UK: 07xxx → +447xxx (trunk '0', 1 karakter)
   if (p.startsWith('07') && p.length === 11) p = '+44' + p.slice(1);
-  // HU: 06xxx → +36xxx
-  else if (p.startsWith('06') && p.length === 11) p = '+36' + p.slice(1);
+  // HU: 06xxx → +36xxx (trunk '06', 2 karakter — a szerver hash.ts-szel egyezően)
+  else if (p.startsWith('06') && p.length === 11) p = '+36' + p.slice(2);
   return p.replace(/[^\d+]/g, '').slice(0, 20);
 }
 
