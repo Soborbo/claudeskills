@@ -1,0 +1,23 @@
+{
+  "site_id": "beautyflow",
+  "hostnames": ["beautyflow.pro", "www.beautyflow.pro"],
+  "country_code": "HU",
+  "currency": "HUF",
+  "require_consent": true,
+  "meta": {
+    "pixel_id": "REPLACE_ME_16_DIGIT_PIXEL_ID",
+    "access_token": "REPLACE_ME_META_CAPI_SYSTEM_USER_TOKEN"
+  },
+  "ga4": {
+    "measurement_id": "REPLACE_ME_GA4_MEASUREMENT_ID",
+    "api_secret": "REPLACE_ME_GA4_API_SECRET"
+  },
+  "gads": {
+    "customer_id": "9796138635",
+    "login_customer_id": null,
+    "conversion_actions": {
+      "contact_form_submit": "7335562213",
+      "phone_conversion": "7335759042"
+    }
+  }
+}
