@@ -183,12 +183,15 @@ function integrationChecklist(cfg) {
 ${cfg.meta.test_event_code ? '- [ ] ⚠️ test_event_code REMOVED from KV before going live' : ''}
 
 ## Astro site side
-- [ ] client-lib/ (worker-tracking.ts + uuid.ts) copied into the Astro project's src/lib/
+- [ ] components/ + lib/ copied into src/ as siblings (src/components/ + src/lib/);
+      components import the lib via ../lib (no path alias needed)
+- [ ] <Tracking/> + <TrackingNoscript/> + <Turnstile/> placed in the layout
 - [ ] PUBLIC_TURNSTILE_SITE_KEY set (.env) + Turnstile invisible widget on the page
-      (\`<div id="cf-turnstile-invisible">\`)
+      (\`<div id="cf-turnstile-invisible">\`, provided by <Turnstile/>)
 - [ ] CookieYes (from GTM) active → consent comes automatically from the cookieyes-consent cookie
-- [ ] At conversion points: \`trackConversion('<event_name>', { value, currency, user_data })\`
-      Allowed event names: ${[...ALLOWED_EVENT_NAMES].join(', ')}
+- [ ] At conversion points use the documented API: \`trackLeadSubmit({ email, phone, value, currency })\`,
+      \`trackContactSubmit(...)\`, or \`trackServerEvent('<event_name>', { value, currency, email, phone })\`
+      (clicks auto-bind via <Tracking/>). Allowed gateway event names: ${[...ALLOWED_EVENT_NAMES].join(', ')}
 
 ## Verification (after deploy)
 - [ ] curl https://${host}/api/event/health → {"status":"ok"}

@@ -131,19 +131,11 @@ const T_ABANDON = customEventTrigger('form_abandon');
 const T_SCROLL = customEventTrigger('scroll_depth');
 
 // ── Base tags ────────────────────────────────────────────────────────
-tag('Consent - Default (denied)', 'html', [
-  tmpl('html',
-    '<script>\n' +
-    '  window.dataLayer = window.dataLayer || [];\n' +
-    '  function gtag(){dataLayer.push(arguments);}\n' +
-    "  gtag('consent','default',{\n" +
-    "    'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied',\n" +
-    "    'analytics_storage':'denied','functionality_storage':'denied',\n" +
-    "    'personalization_storage':'denied','security_storage':'granted','wait_for_update':2000\n" +
-    '  });\n' +
-    '</script>'),
-  bool('supportDocumentWrite', false),
-], [CONSENT_INIT]);
+// NOTE: the Consent Mode v2 DEFAULT (denied) is intentionally NOT shipped as a GTM
+// tag. It is declared inline in <Tracking/> (Tracking.astro), which runs BEFORE
+// gtm.js loads — the only correct place for the default (a GTM tag on Consent
+// Initialization fires after gtm.js, too late, and duplicating it risks silent
+// divergence). Tracking.astro is the single source of truth for the consent default.
 
 tag('Conversion Linker', 'gclidw', [
   bool('enableCrossDomain', false),

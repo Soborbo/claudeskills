@@ -12,7 +12,7 @@ and [`../docs/CANONICAL-EVENTS.md`](../docs/CANONICAL-EVENTS.md).
 
 | Kind | Items |
 |---|---|
-| **Base tags** | Consent Default (denied, Consent Initialization), Conversion Linker, GA4 Configuration |
+| **Base tags** | Conversion Linker, GA4 Configuration |
 | **GA4 event tags** | `contact_form_submit`, `callback_conversion`, `phone_conversion`, `email_conversion`, `whatsapp_conversion`, `quote_calculator_conversion` (Key Events) + `calculator_start/step/option`, `form_abandon`, `scroll_depth` (engagement) — each emits the **canonical GA4 event name** |
 | **Meta Pixel** | Base (PageView), Lead (`eventID` = `{{DLV - event_id}}`), Contact (`eventID` = `{{DLV - event_id}}`) → Pixel↔CAPI dedup |
 | **Google Ads** | Conversion tag (orderId = `event_id`, value/currency, Enhanced Conversions via the side-channel) |
@@ -21,7 +21,10 @@ and [`../docs/CANONICAL-EVENTS.md`](../docs/CANONICAL-EVENTS.md).
 
 Consent is enforced via per-tag **Additional Consent Checks** (`analytics_storage`
 for GA4; `ad_storage` + `ad_user_data` for Meta/Ads), on top of the denied-by-default
-Consent Default tag.
+consent state. **The Consent Mode v2 default is NOT in this container** — it is
+declared inline in `<Tracking/>` (Tracking.astro), which runs *before* `gtm.js` loads
+(the only correct place; a GTM tag on Consent Initialization fires too late and
+duplicating it risks silent divergence). Keep that the single source of truth.
 
 ## Import
 
