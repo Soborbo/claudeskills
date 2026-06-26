@@ -16,6 +16,10 @@
 - [ ] Invalid form → browser validation, NO tracking
 - [ ] Valid form → hidden fields populated → redirect to action URL
 - [ ] `event_id` is a full UUID format
+- [ ] **No raw PII in the dataLayer** (no `email` / `phone_number` /
+      `user_provided_data`) — PII goes to the hidden side-channel
+      (`window.__sbUserData` / `#__sb_user_data__`), see CANONICAL-EVENTS.md / gtm-setup.md
+- [ ] Same `event_id` on the dataLayer push AND the gateway POST (dedup)
 
 ## 3. Submit — Multi-Button
 
@@ -42,13 +46,17 @@
 - [ ] Submit before 60s → no abandon event
 - [ ] Route change before submit → abandon timer cleaned up
 
-## 7. Phone + Callback
+## 7. Phone + Callback + Email + WhatsApp (both channels)
 
-- [ ] Click tel: → `phone_click` fires
-- [ ] Click again same session → no duplicate
+- [ ] Click tel: → `phone_click` (dataLayer) **and** `phone_conversion` (gateway POST), same `event_id`
+- [ ] Click again same session → no duplicate on EITHER channel (session dedup)
 - [ ] Check sessionStorage `sb_click_phone_*`
 - [ ] Page reload → still deduped within session timeout
-- [ ] Callback button → `callback_click` fires
+- [ ] Callback button → `callback_click` + `callback_conversion`
+- [ ] mailto: link → `email_click` + `email_conversion`
+- [ ] WhatsApp link (wa.me / *.whatsapp.com) → `whatsapp_click` + `whatsapp_conversion`
+- [ ] Marketing-only consent (analytics denied) → gateway conversion STILL fires, no dataLayer event
+- [ ] Analytics-only consent (marketing denied) → dataLayer event fires, NO gateway POST
 
 ## 8. Calculator Funnel
 
@@ -61,22 +69,26 @@
 - [ ] Second visit with different UTM → first touch unchanged, last touch updated
 - [ ] Conversion event includes both first_* and last_* fields
 
-## 10. Meta CAPI
+## 10. Server side — event-gateway worker (Meta CAPI + GA4 MP + Google Ads)
 
-- [ ] `/api/track` returns 200
-- [ ] Meta Events Manager → Test Events shows server event
+> The server side is the `Soborbo/Serverside` event-gateway worker, served
+> same-origin at **`/api/event/conversion`** (not the old in-app `/api/track`).
+
+- [ ] POST `/api/event/conversion` returns 2xx (browser Network tab / `sendBeacon`)
+- [ ] Meta Events Manager → Test Events shows the server event
 - [ ] Event Match Quality 6+/10
 - [ ] Browser Pixel `eventID` = server `event_id` (deduplication)
+- [ ] Google Ads → conversion uploads visible (offline/diagnostics)
+- [ ] GA4: NOT double-counted (browser GA4 + gateway MP — see CANONICAL-EVENTS.md)
 
-## 11. Server Validation
+## 11. Gateway validation (server-side, in Soborbo/Serverside)
 
-- [ ] Invalid JSON → 400
-- [ ] Unknown fields → 400 (strict mode)
-- [ ] Lead without email → 400
-- [ ] Payload >32KB → 413
-- [ ] Wrong origin → 403
-- [ ] Wrong TRACK_TOKEN → 401
-- [ ] >10 requests/min → 429
+- [ ] Missing/invalid Turnstile token → handled per the gateway's policy
+- [ ] `event_name` not in the allowed set → rejected
+- [ ] No marketing consent (EEA `require_consent`) → ad-platform dispatch withheld
+- [ ] Wrong origin → rejected
+- [ ] Rate limit exceeded → 429
+- [ ] PII is hashed server-side (never logged raw)
 
 ## 12. Edge Cases
 
@@ -90,6 +102,9 @@
 ## Debug
 
 **No events**: Console errors? Is dataLayer defined? Consent granted?
-**CAPI not sending**: Check `/api/track` response. Cloudflare Functions logs. Env vars set?
-**Double submit**: Check `isSubmitting` guard. Using `form.submit()` not `requestSubmit()`?
+**Gateway not sending**: Check the `/api/event/conversion` response (Network tab) and
+the gateway worker logs (`wrangler tail`). Turnstile token present? Marketing consent?
+Per-site KV config bound? (Meta/GA4/Ads secrets live in the gateway KV, not the site.)
+**Double submit**: Check the `isSubmitting` guard. `requestSubmit()` re-fires the submit
+event once — the guard makes the second pass a no-op (no `preventDefault`).
 **Attribution missing**: Consent given before URL changed? Check `sb_first_touch`.
