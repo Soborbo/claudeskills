@@ -121,12 +121,31 @@ describe('click conversions — both channels, shared event_id', () => {
     expect(mockSend).toHaveBeenCalledTimes(1);
   });
 
-  it('marketing consent blocked → no gateway dispatch', () => {
+  it('analytics-only consent → dataLayer fires, NO gateway dispatch', () => {
     setCkyConsent({ analytics: true, marketing: false });
     trackPhoneConversion();
-    // dataLayer push still allowed under analytics consent…
+    // dataLayer push allowed under analytics consent…
     expect(getDataLayer().some((e) => e.event === 'phone_click')).toBe(true);
     // …but NO server-side dispatch without marketing consent.
     expect(mockSend).not.toHaveBeenCalled();
+  });
+
+  it('marketing-only consent → server-side conversion STILL fires (decoupled from analytics)', () => {
+    setCkyConsent({ analytics: false, marketing: true });
+    const id = trackPhoneConversion({ phone: '07123456789' });
+    expect(id).toBeTruthy();
+    // No browser GA4 event (analytics withheld)…
+    expect(getDataLayer().some((e) => e.event === 'phone_click')).toBe(false);
+    // …but the money signal (Meta CAPI + Ads) reaches the gateway with the shared id.
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    expect(mockSend.mock.calls[0][0].event_name).toBe('phone_conversion');
+    expect(mockSend.mock.calls[0][0].event_id).toBe(id);
+  });
+
+  it('no consent at all → nothing fires and dedup is not consumed', () => {
+    setCkyConsent({ analytics: false, marketing: false });
+    expect(trackPhoneConversion()).toBeNull();
+    expect(mockSend).not.toHaveBeenCalled();
+    expect(getDataLayer()).toHaveLength(0);
   });
 });

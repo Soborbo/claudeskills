@@ -80,9 +80,10 @@ npx wrangler secret put ALERT_FROM            # optional, verified Resend sender
 
 ## Adapting `KEY_EVENTS`
 
-The kit's default list covers the lead-gen conversion taxonomy
-(`primary_conversion`, `callback_conversion`, `phone_conversion`,
-`email_conversion`, `whatsapp_conversion`, `contact_form_submit`).
+The default list covers the v5 lead-gen conversion taxonomy (the gateway
+`event_name`s — see CANONICAL-EVENTS.md): `contact_form_submit`,
+`quote_calculator_conversion`, `callback_conversion`, `phone_conversion`,
+`email_conversion`, `whatsapp_conversion`.
 
 For e-commerce, swap to `purchase`, `add_to_cart`, `begin_checkout`,
 `view_item`. **Engagement-only events** (`form_start`, `scroll_*`,
@@ -90,9 +91,9 @@ For e-commerce, swap to `purchase`, `add_to_cart`, `begin_checkout`,
 actionable. The watchdog is for the events you'd be willing to wake up
 for at 2am if they crashed.
 
-Every event you put in `KEY_EVENTS` should also appear in `EVENTS.md`
+Every event you put in `KEY_EVENTS` should also appear in `CANONICAL-EVENTS.md`
 and have a GTM trigger + at least one active tag (enforced by
-`scripts/check-event-contract.mjs`).
+`server/check-event-contract.mjs`).
 
 ## Tuning
 
@@ -127,3 +128,19 @@ tracking-touching deploy. Workflow:
    `GA4_API_SECRET` or `META_CAPI_ACCESS_TOKEN` would only show up in
    the structured warning the kit emits on first hit per process (see
    `INVARIANTS.md` → "Server-side mirrors do not fail silently").
+
+## Client diagnostic codes (real-time, complementary)
+
+The watchdog above is **volume-based** (it notices conversions dropped, after the
+fact). The client also emits **real-time** coded diagnostics for the failure modes
+that cause those drops — see `OBSERVABILITY-CODES.md`. The two complement each other:
+
+- **`TRK-1002`** (gateway POST failed) / **`TRK-1001`** (no Turnstile token) tell you
+  *immediately* that server-side dispatch is broken — before the watchdog's daily
+  volume comparison would.
+- **`TRK-3001`** (PII blocked from the dataLayer) flags a GDPR regression the moment
+  it ships.
+
+Forward the `sb-tracking-diagnostic` CustomEvent (or scrape `window.__sbTrackingDiag`)
+to the same alerting sink as the watchdog so both the leading (codes) and lagging
+(volume) signals land in one place.
