@@ -19,9 +19,11 @@ reported by `lib/observability.ts` with a **stable code**, three ways:
 | `TRK-1001` | warn | Gateway dispatch skipped: **no Turnstile token** | Turnstile broke (script blocked / CSP / sitekey), or `<Turnstile/>` removed |
 | `TRK-1002` | error | **Gateway POST failed** (network/transport) | Gateway route/worker down, CORS, DNS, bad `/api/event/*` binding |
 | `TRK-1003` | info | `sendBeacon` unavailable/failed → used `fetch` keepalive | Usually benign (browser/UA), watch if it becomes constant |
+| `TRK-1004` | warn | Gateway dispatch sent **token-less** (degraded: phone/email/whatsapp click) | Turnstile is failing (script blocked / CSP / slow). The money signal is still delivered via the gateway's degraded mode — but fix Turnstile; usually co-occurs with `TRK-2xxx`. |
 | `TRK-2001` | warn | Turnstile script not loaded | `api.js` blocked / not included / slow |
 | `TRK-2002` | warn | Turnstile container `#cf-turnstile-invisible` missing | `<Turnstile/>` not rendered in the layout |
 | `TRK-2003` | warn | Turnstile challenge timed out | Turnstile service issue / interactive challenge on an invisible widget |
+| `TRK-2004` | error | `PUBLIC_TURNSTILE_SITE_KEY` is empty → every server-side dispatch is skipped | The sitekey env var is missing from the build |
 | `TRK-3001` | error | **PII-shaped key blocked from a dataLayer push** | A code change started pushing raw PII — a GDPR regression. Fix the push; route PII via `setUserDataForEC()` |
 
 > `TRK-1xxx` = worker connection, `TRK-2xxx` = Turnstile, `TRK-3xxx` = data integrity.
