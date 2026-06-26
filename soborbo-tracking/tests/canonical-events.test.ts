@@ -4,6 +4,7 @@ import {
   trackPhoneClick, trackCallbackClick, trackEmailClick, trackWhatsappClick,
   pushLeadConversion, pushContactConversion,
 } from '../lib/events';
+import { CLICK_GATEWAY_EVENT, DEFAULT_GATEWAY_EVENT } from '../lib/index';
 import { setCkyConsent, resetAll, getDataLayer } from './helpers';
 
 // A CANONICAL-EVENTS.md mérvadó listái — ha a kód eltér, ez a teszt elbukik.
@@ -47,10 +48,16 @@ describe('contract — böngésző dataLayer event-nevek', () => {
 });
 
 describe('contract — gateway allowed event-nevek', () => {
-  it('a default + override gateway-nevek az engedélyezett halmazban vannak', () => {
-    // index.ts default: contact_form_submit; gyakori override-ok:
-    for (const n of ['contact_form_submit', 'callback_conversion', 'phone_conversion', 'quote_calculator_conversion']) {
+  it('a kód VALÓDI gateway-nevei mind az engedélyezett halmazban vannak', () => {
+    // Assert against the REAL maps the code dispatches with (imported from index.ts),
+    // not a local copy — so a code change to a non-allowed name fails this test.
+    const used = [DEFAULT_GATEWAY_EVENT, ...Object.values(CLICK_GATEWAY_EVENT)];
+    for (const n of used) {
       expect(GATEWAY_ALLOWED).toContain(n);
     }
+    // sanity: the click map covers all four click conversions
+    expect(Object.values(CLICK_GATEWAY_EVENT).sort()).toEqual(
+      ['callback_conversion', 'email_conversion', 'phone_conversion', 'whatsapp_conversion'],
+    );
   });
 });
