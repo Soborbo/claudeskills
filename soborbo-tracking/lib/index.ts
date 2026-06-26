@@ -52,10 +52,19 @@ import { trackingConfig } from './config';
 
 // ── Init ───────────────────────────────────────────────────────────
 
+// initTracking runs on every astro:page-load (and again via the readyState fallback
+// on first load). URL capture must run per navigation, but the consent listener must
+// register ONCE — otherwise each view transition accumulates another onConsentChange
+// handler (a slow leak that re-fires persistTrackingParams N times).
+let consentListenerBound = false;
+
 export function initTracking(): void {
   if (window.location.search.includes('debugTracking=1')) enableDebug();
   captureUrlParams();
-  onConsentChange((c) => { if (c.marketing) persistTrackingParams(); });
+  if (!consentListenerBound) {
+    consentListenerBound = true;
+    onConsentChange((c) => { if (c.marketing) persistTrackingParams(); });
+  }
   if (hasMarketingConsent()) persistTrackingParams();
 }
 

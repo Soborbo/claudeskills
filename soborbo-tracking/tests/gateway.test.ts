@@ -51,6 +51,20 @@ describe('collectAttribution — consent-gated click IDs', () => {
     setUrl('/');
     expect(collectAttribution().gclid).toBe('COOKIEGCLID');
   });
+
+  // Consent-source consistency: when the CookieYes COOKIE is absent, fall back to the
+  // JS API (hasMarketingConsent) instead of stripping click IDs from the server payload.
+  it('no consent cookie but JS-API grants marketing → click IDs are kept (fallback)', () => {
+    setCkyConsent({ analytics: true, marketing: true }); // JS API granted, no cookie
+    setUrl('/?gclid=GJSAPI');
+    expect(collectAttribution().gclid).toBe('GJSAPI');
+  });
+
+  it('no consent cookie and JS-API denies marketing → click IDs are stripped', () => {
+    setCkyConsent({ analytics: true, marketing: false }); // JS API denies, no cookie
+    setUrl('/?gclid=GDENY');
+    expect(collectAttribution().gclid).toBeUndefined();
+  });
 });
 
 describe('trackConversion — consent-gated (footgun fix)', () => {

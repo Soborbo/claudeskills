@@ -26,6 +26,7 @@ export const TRACKING_CODES = {
   TURNSTILE_NOT_LOADED:    { code: 'TRK-2001', severity: 'warn',  message: 'Turnstile script not loaded' },
   TURNSTILE_NO_CONTAINER:  { code: 'TRK-2002', severity: 'warn',  message: 'Turnstile container #cf-turnstile-invisible missing' },
   TURNSTILE_TIMEOUT:       { code: 'TRK-2003', severity: 'warn',  message: 'Turnstile challenge timed out' },
+  TURNSTILE_NO_SITEKEY:    { code: 'TRK-2004', severity: 'error', message: 'PUBLIC_TURNSTILE_SITE_KEY is empty — server-side dispatch will be skipped' },
   // 3xxx — data integrity
   PII_IN_DATALAYER:        { code: 'TRK-3001', severity: 'error', message: 'PII-shaped key blocked from a dataLayer push' },
 } as const satisfies Record<string, CodeDef>;
