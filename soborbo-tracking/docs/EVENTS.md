@@ -1,5 +1,11 @@
 # Event taxonomy guide
 
+> **A nevekre a `CANONICAL-EVENTS.md` a mérvadó** (kanonikus konverziós táblázat +
+> GA4 Key Events + custom dimensions + a GA4-duplázás kezelése). Ez a fájl a
+> funnel-adaptációs útmutató (e-commerce/SaaS/newsletter variánsok). A
+> `primary_conversion` stb. nevek a régi tracking-kit doktrínából valók — a
+> kanonikus gateway-nevekhez lásd CANONICAL-EVENTS.md.
+
 The kit ships with a default event taxonomy designed for a
 **lead-generation funnel**. Adapt it to your funnel — most projects
 will rename a few events and add one or two.

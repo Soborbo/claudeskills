@@ -156,7 +156,15 @@ GADS_*, ADMIN_API_TOKEN, és a site-config KV (pixel/GA4/Ads ID-k + tokenek).
   köti össze a konverziót a lead-rekorddal.
 - `deployment` — Astro v6 + Cloudflare Workers deploy.
 
+## Esemény-taxonómia + GA4 setup
+- **`docs/CANONICAL-EVENTS.md`** — a mérvadó esemény-térkép: böngésző ↔ GA4
+  event-név ↔ gateway ↔ Meta/Ads, a GA4 Key Events és custom dimensions listája,
+  és a **GA4-duplázás** kezelése (GA4 nem dedupol — egy csatorna GA4-re).
+- **`docs/MIGRATION-existing-sites.md`** — már bekötött oldalak: hogyan add hozzá
+  a gateway-t GA4-duplázás és átnevezés nélkül (bolt-on Meta+Ads, GA4 marad böngésző).
+
 ## Referenciák
 `docs/gtm-setup.md`, `docs/cloudflare-setup.md`, `docs/testing.md`,
-`docs/INVARIANTS.md`, `docs/CHECKLIST.md`, `docs/EVENTS.md`, `server/SETUP-SERVER.md`,
-`examples/`.
+`docs/INVARIANTS.md`, `docs/CHECKLIST.md`, `docs/EVENTS.md`,
+`docs/CANONICAL-EVENTS.md`, `docs/MIGRATION-existing-sites.md`,
+`server/SETUP-SERVER.md`, `examples/`.
