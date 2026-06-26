@@ -52,10 +52,19 @@ import { trackingConfig } from './config';
 
 // ── Init ───────────────────────────────────────────────────────────
 
+// initTracking runs on every astro:page-load (and again via the readyState fallback
+// on first load). URL capture must run per navigation, but the consent listener must
+// register ONCE — otherwise each view transition accumulates another onConsentChange
+// handler (a slow leak that re-fires persistTrackingParams N times).
+let consentListenerBound = false;
+
 export function initTracking(): void {
   if (window.location.search.includes('debugTracking=1')) enableDebug();
   captureUrlParams();
-  onConsentChange((c) => { if (c.marketing) persistTrackingParams(); });
+  if (!consentListenerBound) {
+    consentListenerBound = true;
+    onConsentChange((c) => { if (c.marketing) persistTrackingParams(); });
+  }
   if (hasMarketingConsent()) persistTrackingParams();
 }
 
@@ -82,7 +91,7 @@ export interface LeadSubmitResult {
 }
 
 // Internal type → gateway event name (from the worker's ALLOWED_EVENT_NAMES).
-const DEFAULT_GATEWAY_EVENT = 'contact_form_submit';
+export const DEFAULT_GATEWAY_EVENT = 'contact_form_submit';
 
 /**
  * Server-side dispatch to the gateway. Fire-and-forget: the gateway asynchronously
@@ -174,7 +183,9 @@ export function trackServerEvent(
 // Phone keeps a session dedup that the conversion layer owns, so it covers BOTH
 // channels regardless of which consents are present.
 
-const CLICK_GATEWAY_EVENT = {
+// Exported so the event-name contract test can assert against the REAL map the code
+// dispatches with (not a copy), guaranteeing they stay in the gateway's allowed set.
+export const CLICK_GATEWAY_EVENT = {
   phone: 'phone_conversion',
   callback: 'callback_conversion',
   email: 'email_conversion',

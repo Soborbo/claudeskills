@@ -46,13 +46,28 @@ const { gtmId, cookieYesId } = Astro.props;
   import {
     initTracking, initScrollTracking,
     trackPhoneConversion, trackEmailConversion, trackWhatsappConversion,
-  } from '@/lib/tracking';
+  } from '../lib';
 
   // Auto-bind tel:/mailto:/WhatsApp links. Each fires BOTH channels (dataLayer +
-  // gateway) with a shared event_id. WhatsApp is matched by wa.me / *.whatsapp.com.
+  // gateway) with a shared event_id. tel:/mailto: are protocol-anchored (^=).
   function bindClicks(selector: string, handler: () => void) {
     document.querySelectorAll<HTMLAnchorElement>(selector).forEach(link => {
       if (link.dataset.trackBound) return;
+      link.dataset.trackBound = '1';
+      link.addEventListener('click', handler);
+    });
+  }
+
+  // WhatsApp must be matched by the RESOLVED host, not a substring of the href —
+  // otherwise a `mailto:?body=https://wa.me/123` share link (or a blog link that
+  // merely contains "whatsapp.com") would fire a false conversion. The anchor's
+  // .hostname resolves the URL; tel:/mailto: resolve to an empty host, so they're
+  // excluded automatically.
+  function bindWhatsapp(handler: () => void) {
+    document.querySelectorAll<HTMLAnchorElement>('a[href]').forEach(link => {
+      const host = link.hostname;
+      const isWhatsapp = host === 'wa.me' || host === 'whatsapp.com' || host.endsWith('.whatsapp.com');
+      if (!isWhatsapp || link.dataset.trackBound) return;
       link.dataset.trackBound = '1';
       link.addEventListener('click', handler);
     });
@@ -63,7 +78,7 @@ const { gtmId, cookieYesId } = Astro.props;
     initScrollTracking();
     bindClicks('a[href^="tel:"]', () => trackPhoneConversion());
     bindClicks('a[href^="mailto:"]', () => trackEmailConversion());
-    bindClicks('a[href*="wa.me/"], a[href*="whatsapp.com/"], a[href*="api.whatsapp.com"]', () => trackWhatsappConversion());
+    bindWhatsapp(() => trackWhatsappConversion());
   }
 
   document.addEventListener('astro:page-load', setup);

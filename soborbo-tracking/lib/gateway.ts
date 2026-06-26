@@ -87,6 +87,14 @@ export async function getTurnstileToken(): Promise<string | undefined> {
     return cachedTurnstileToken;
   }
 
+  // Hard config error: without a sitekey the widget can't render, so EVERY
+  // server-side dispatch would be silently skipped. Surface it loudly (TRK-2004)
+  // instead of failing as a generic "no token".
+  if (!import.meta.env.PUBLIC_TURNSTILE_SITE_KEY) {
+    report('TURNSTILE_NO_SITEKEY');
+    return undefined;
+  }
+
   if (!window.turnstile) {
     report('TURNSTILE_NOT_LOADED');
     return undefined;
@@ -286,10 +294,18 @@ export function collectAttribution(): AttributionParams {
 
   // Ad-consent gate: click IDs are ad identifiers → we ONLY collect/store/send
   // them with ad consent (ePrivacy/TCF). UTM/landing is analytics metadata.
-  // Without consent (no decision yet) fail-closed → no click ID.
+  //
+  // Consent-source consistency: getConsentState() reads the CookieYes COOKIE, while
+  // the rest of the lib gates on the CookieYes JS API (hasMarketingConsent). If the
+  // cookie isn't present yet but the JS API already says marketing is granted, the
+  // old code stripped all click IDs from the server-side payload even though the
+  // user consented. Fall back to the JS API when the cookie/override is absent so
+  // the two channels agree. (When the cookie IS present we respect its signals,
+  // including an explicit DENIED.) Fail-closed when neither source grants.
   const consent = getConsentState();
-  const adGranted =
-    consent?.ad_user_data === 'GRANTED' || consent?.ad_storage === 'GRANTED';
+  const adGranted = consent
+    ? consent.ad_user_data === 'GRANTED' || consent.ad_storage === 'GRANTED'
+    : hasMarketingConsent();
 
   try {
     const params = new URLSearchParams(window.location.search);

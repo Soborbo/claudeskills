@@ -10,7 +10,7 @@ event volume is missed days later.
 A real production deployment of this pattern dropped **~90% of Google
 Ads conversions** for **2.5 weeks** before anyone noticed.
 
-The watchdog in [`src/watchdog/index.ts`](src/watchdog/index.ts) closes
+The watchdog in [`monitoring/watchdog.ts`](../monitoring/watchdog.ts) closes
 that gap to within 24 hours.
 
 ## What it does
@@ -42,16 +42,16 @@ that.
 ### 2. Deploy the Worker
 
 ```bash
-# from tracking-kit/src/watchdog/
+# from soborbo-tracking/monitoring/
 npx wrangler init --type ts --yes
-# copy index.ts into the generated folder
+# copy watchdog.ts into the generated folder
 ```
 
 Minimal `wrangler.toml`:
 
 ```toml
 name = "tracking-watchdog"
-main = "index.ts"
+main = "watchdog.ts"
 compatibility_date = "2024-12-01"
 
 [triggers]

@@ -73,7 +73,7 @@ const {
     trackLeadSubmit, trackContactSubmit,
     populateHiddenFields, waitForTracking,
     initFormAbandonTracking,
-  } from '@/lib/tracking';
+  } from '../lib';
 
   function setupTrackedForms() {
     document.querySelectorAll<HTMLFormElement>('[data-tracked-form]').forEach((form) => {
@@ -103,10 +103,11 @@ const {
       // Track which submit button was clicked (for multi-button forms)
       let lastSubmitter: HTMLButtonElement | HTMLInputElement | null = null;
       form.addEventListener('click', (e) => {
-        const t = e.target as HTMLElement;
-        if (t.matches('[type="submit"], button:not([type])')) {
-          lastSubmitter = t as HTMLButtonElement;
-        }
+        // closest() so a click on an element INSIDE the button (e.g. <button><span>…)
+        // still resolves to the submitter — otherwise lastSubmitter stays null and the
+        // multi-button name/value is lost.
+        const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[type="submit"], button:not([type])');
+        if (btn) lastSubmitter = btn;
       });
 
       // Submit guard

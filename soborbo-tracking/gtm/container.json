@@ -24,30 +24,6 @@
         "accountId": "0",
         "containerId": "0",
         "tagId": "1",
-        "name": "Consent - Default (denied)",
-        "type": "html",
-        "parameter": [
-          {
-            "type": "TEMPLATE",
-            "key": "html",
-            "value": "<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('consent','default',{\n    'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied',\n    'analytics_storage':'denied','functionality_storage':'denied',\n    'personalization_storage':'denied','security_storage':'granted','wait_for_update':2000\n  });\n</script>"
-          },
-          {
-            "type": "BOOLEAN",
-            "key": "supportDocumentWrite",
-            "value": false
-          }
-        ],
-        "fingerprint": "0",
-        "firingTriggerId": [
-          "2147479572"
-        ],
-        "tagFiringOption": "ONCE_PER_EVENT"
-      },
-      {
-        "accountId": "0",
-        "containerId": "0",
-        "tagId": "2",
         "name": "Conversion Linker",
         "type": "gclidw",
         "parameter": [
@@ -66,7 +42,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "3",
+        "tagId": "2",
         "name": "GA4 - Configuration",
         "type": "gaawc",
         "parameter": [
@@ -102,7 +78,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "4",
+        "tagId": "3",
         "name": "GA4 - contact_form_submit",
         "type": "gaawe",
         "parameter": [
@@ -250,7 +226,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "5",
+        "tagId": "4",
         "name": "GA4 - callback_conversion",
         "type": "gaawe",
         "parameter": [
@@ -337,7 +313,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "6",
+        "tagId": "5",
         "name": "GA4 - phone_conversion",
         "type": "gaawe",
         "parameter": [
@@ -424,7 +400,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "7",
+        "tagId": "6",
         "name": "GA4 - email_conversion",
         "type": "gaawe",
         "parameter": [
@@ -496,7 +472,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "8",
+        "tagId": "7",
         "name": "GA4 - whatsapp_conversion",
         "type": "gaawe",
         "parameter": [
@@ -568,7 +544,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "9",
+        "tagId": "8",
         "name": "GA4 - quote_calculator_conversion",
         "type": "gaawe",
         "parameter": [
@@ -670,7 +646,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "10",
+        "tagId": "9",
         "name": "GA4 - calculator_start",
         "type": "gaawe",
         "parameter": [
@@ -742,7 +718,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "11",
+        "tagId": "10",
         "name": "GA4 - calculator_step",
         "type": "gaawe",
         "parameter": [
@@ -829,7 +805,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "12",
+        "tagId": "11",
         "name": "GA4 - calculator_option",
         "type": "gaawe",
         "parameter": [
@@ -901,7 +877,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "13",
+        "tagId": "12",
         "name": "GA4 - form_abandon",
         "type": "gaawe",
         "parameter": [
@@ -988,7 +964,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "14",
+        "tagId": "13",
         "name": "GA4 - scroll_depth",
         "type": "gaawe",
         "parameter": [
@@ -1060,7 +1036,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "15",
+        "tagId": "14",
         "name": "Meta Pixel - Base",
         "type": "html",
         "parameter": [
@@ -1100,7 +1076,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "16",
+        "tagId": "15",
         "name": "Meta Pixel - Lead",
         "type": "html",
         "parameter": [
@@ -1142,7 +1118,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "17",
+        "tagId": "16",
         "name": "Meta Pixel - Contact",
         "type": "html",
         "parameter": [
@@ -1185,7 +1161,7 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "18",
+        "tagId": "17",
         "name": "Google Ads - Conversion",
         "type": "awct",
         "parameter": [

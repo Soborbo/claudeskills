@@ -104,7 +104,9 @@ tsconfig.json + env.d.ts (npm run typecheck)
 
 ## Quick setup (client)
 
-1. Copy `components/` + `lib/` into the site `src/` (see `examples/`).
+1. Copy `components/` + `lib/` into the site `src/` as siblings
+   (`src/components/` + `src/lib/`) — components import the lib via `../lib`,
+   so no path alias is needed (see `examples/`).
 2. Layout:
    ```astro
    <head><Tracking gtmId="GTM-XXX" cookieYesId="abc123" /></head>
@@ -133,7 +135,10 @@ On submit: dataLayer push (GTM) + gateway POST (`contact_form_submit`) with the
 SAME event_id. The gateway hashes, adds attribution/consent/Turnstile.
 
 ```ts
-import { trackLeadSubmit, trackServerEvent } from '@/lib/tracking';
+// The shipped components import the library via a relative path (`../lib`) — no alias
+// needed when components/ + lib/ are siblings under src/. In YOUR OWN code import from
+// wherever you copied lib/ (e.g. '@/lib' if you have the @→src alias, or a relative path).
+import { trackLeadSubmit, trackServerEvent } from '@/lib';
 trackLeadSubmit({ email, phone, value });            // currency defaults to PUBLIC_TRACKING_CURRENCY
 trackLeadSubmit({ email, value, currency: 'GBP' });  // per-call override
 trackServerEvent('quote_calculator_conversion', { value, currency, email, phone });
