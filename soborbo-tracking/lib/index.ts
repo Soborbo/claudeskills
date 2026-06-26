@@ -30,6 +30,11 @@ export {
 } from './events';
 // Gateway dispatch (server side) — also available for direct use.
 export { sendToWorker, getTurnstileToken, prewarmTurnstile, collectAttribution, type ConversionPayload, type UserData } from './gateway';
+// Observability — stable diagnostic codes (see docs/OBSERVABILITY-CODES.md).
+export {
+  report, getDiagnostics, clearDiagnostics, enableDiagDebug, redactPii,
+  TRACKING_CODES, type TrackingDiagnostic, type TrackingCode, type TrackingCodeKey,
+} from './observability';
 
 import { hasMarketingConsent, hasAnalyticsConsent, onConsentChange } from './consent';
 import {

@@ -9,6 +9,7 @@
 
 import { generateUUID } from './uuid';
 import { hasAnalyticsConsent, hasMarketingConsent } from './consent';
+import { report } from './observability';
 
 declare global {
   interface Window {
@@ -87,14 +88,14 @@ export async function getTurnstileToken(): Promise<string | undefined> {
   }
 
   if (!window.turnstile) {
-    console.warn('[tracking] Turnstile not loaded');
+    report('TURNSTILE_NOT_LOADED');
     return undefined;
   }
 
   return new Promise((resolve) => {
     const container = document.getElementById('cf-turnstile-invisible');
     if (!container) {
-      console.warn('[tracking] Turnstile container not found');
+      report('TURNSTILE_NO_CONTAINER');
       resolve(undefined);
       return;
     }
@@ -110,7 +111,7 @@ export async function getTurnstileToken(): Promise<string | undefined> {
       if (pendingResolver) {
         const r = pendingResolver;
         pendingResolver = undefined;
-        console.warn('[tracking] Turnstile timeout');
+        report('TURNSTILE_TIMEOUT');
         r.resolve(undefined);
       }
     }, 10000);
@@ -331,7 +332,7 @@ export function collectAttribution(): AttributionParams {
 export async function sendToWorker(payload: ConversionPayload): Promise<boolean> {
   const turnstileToken = await getTurnstileToken();
   if (!turnstileToken) {
-    console.warn('[tracking] No Turnstile token, skipping server-side dispatch', payload.event_name);
+    report('GATEWAY_NO_TURNSTILE', { event_name: payload.event_name });
     return false;
   }
 
@@ -356,9 +357,10 @@ export async function sendToWorker(payload: ConversionPayload): Promise<boolean>
     try {
       const blob = new Blob([body], { type: 'application/json' });
       const queued = navigator.sendBeacon('/api/event/conversion', blob);
-      if (queued) return true;
+      if (queued) { report('GATEWAY_OK', { event_name: payload.event_name, transport: 'beacon' }); return true; }
+      report('GATEWAY_BEACON_FALLBACK', { event_name: payload.event_name });
     } catch {
-      // Fall through to fetch
+      report('GATEWAY_BEACON_FALLBACK', { event_name: payload.event_name });
     }
   }
 
@@ -369,9 +371,10 @@ export async function sendToWorker(payload: ConversionPayload): Promise<boolean>
       body,
       keepalive: true
     });
+    report('GATEWAY_OK', { event_name: payload.event_name, transport: 'fetch' });
     return true;
   } catch (err) {
-    console.warn('[tracking] sendToWorker failed', err);
+    report('GATEWAY_NETWORK_FAIL', { event_name: payload.event_name, error: String(err) });
     return false;
   }
 }

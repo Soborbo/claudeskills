@@ -8,6 +8,7 @@
 
 import { hasAnalyticsConsent, hasMarketingConsent } from './consent';
 import { getSessionId, getDevice, getAttribution, getPageUrl, normalizeEmail, normalizePhone, sanitizeName } from './persistence';
+import { report, redactPii, enableDiagDebug } from './observability';
 
 declare global {
   interface Window {
@@ -19,9 +20,14 @@ declare global {
 
 let debugMode = false;
 
-export function enableDebug(): void { debugMode = true; }
+export function enableDebug(): void { debugMode = true; enableDiagDebug(); }
 
 function push(data: Record<string, unknown>): void {
+  // Defense in depth: PII must never reach the dataLayer (it goes to the hidden
+  // side-channel). If a future change leaks a PII-shaped key, strip it AND report
+  // it (TRK-3001) so the regression is visible instead of becoming a GDPR incident.
+  const leaked = redactPii(data);
+  if (leaked.length) report('PII_IN_DATALAYER', { event: data.event, keys: leaked });
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push(data);
   if (debugMode) console.log('[TRACK]', data);

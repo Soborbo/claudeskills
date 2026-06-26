@@ -50,5 +50,7 @@ export function resetAll(): void {
   // Enhanced Conversions side-channel (set by setUserDataForEC).
   delete (window as unknown as { __sbUserData?: unknown }).__sbUserData;
   document.getElementById('__sb_user_data__')?.remove();
+  // Observability diagnostics ring.
+  (window as unknown as { __sbTrackingDiag?: unknown[] }).__sbTrackingDiag = [];
   window.history.pushState({}, '', '/');
 }

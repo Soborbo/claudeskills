@@ -88,16 +88,17 @@ components/   Tracking.astro, TrackingNoscript.astro, TrackedForm.astro,
               PhoneLink.astro, CallbackButton.astro, Turnstile.astro
 lib/          index.ts (entry), config.ts (market), events.ts (dataLayer/GTM),
               persistence.ts (attribution/normalization), consent.ts (CookieYes),
-              gateway.ts (Turnstile + universal gateway dispatch), uuid.ts
+              gateway.ts (Turnstile + universal gateway dispatch),
+              observability.ts (diagnostic codes), uuid.ts
 server/       generate-site.mjs (onboarding generator), SETUP-SERVER.md,
               check-event-contract.mjs
 examples/     ready-to-copy wiring (Layout + form + .env + route)
 gtm/          container.json (importable GTM container) + gen-container.mjs + README
 docs/         CANONICAL-EVENTS, MIGRATION-existing-sites, gtm-setup,
               cloudflare-setup, testing, INVARIANTS, CHECKLIST, EVENTS, MONITORING,
-              SERVERSIDE-FOLLOWUP
+              OBSERVABILITY-CODES, SERVERSIDE-FOLLOWUP
 monitoring/   watchdog.ts (optional conversion-volume alerting worker)
-tests/        71 client tests (vitest + jsdom). Server tests live in Soborbo/Serverside.
+tests/        89 client tests (vitest + jsdom). Server tests live in Soborbo/Serverside.
 tsconfig.json + env.d.ts (npm run typecheck)
 ```
 
@@ -169,7 +170,7 @@ site (KV config + route + Google Ads OAuth). Gateway tests (156) live there.
 GADS_*, ADMIN_API_TOKEN, and the per-site config KV.
 
 ## Tests
-71 client tests (`npm test`, vitest + jsdom): normalizers (UK + HU phone),
+89 client tests (`npm test`, vitest + jsdom): normalizers (UK + HU phone),
 attribution, consent gating, event-name contract, shared event_id (incl. phone/
 callback/email/whatsapp click conversions across both channels), gateway payload,
 no-PII-in-dataLayer + Enhanced-Conversions side-channel, GTM container export,
