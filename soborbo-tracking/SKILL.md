@@ -12,13 +12,18 @@ description: >-
   Bilingual / multi-market: works for HU and UK sites (HUF/GBP, HU/UK phone
   numbers, en/hu) via PUBLIC_TRACKING_* config. Includes a server-side onboarding
   generator (server/generate-site.mjs). Use when a new Astro site needs GA4 +
-  Meta + Google Ads tracking. No Zaraz, no Stape.
+  Meta + Google Ads tracking. No Zaraz, no Stape. To INSTALL end-to-end, follow
+  INSTALL.md (the ordered agent runbook) — it sequences every step below.
 ---
 
 # Soborbo Tracking v5 — canonical
 
 The **canonical** tracking solution. (The old `tracking/` and `tracking-kit/`
 are deprecated — this supersedes them.)
+
+> **Installing? Start at [`INSTALL.md`](INSTALL.md)** — the single ordered runbook
+> an agent follows top-to-bottom (intake gate → client → server binding → OAuth →
+> verification). The sections below are reference; `INSTALL.md` is the spine.
 
 ## Architecture — two channels, SHARED event_id
 
