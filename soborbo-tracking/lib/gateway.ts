@@ -345,11 +345,31 @@ export function collectAttribution(): AttributionParams {
   return merged;
 }
 
+// Token-less degraded dispatch (server-side TASK 2). When Turnstile can't produce a
+// token (slow / blocked / CSP), still dispatch LOW-RISK click conversions
+// (tel:/mailto:/whatsapp) so the gateway's degraded mode can accept them
+// rate-limited — otherwise the #1 lead signal (phone) is silently lost with no
+// retry. Higher-risk events (forms, callback) are still skipped: the gateway
+// HARD-REJECTS token-less forms, so dispatching them would just be a wasted beacon.
+// This set must match the worker's DEGRADED_LOW_RISK_EVENTS (src/lib/degraded.ts)
+// EXACTLY — callback_conversion is deliberately excluded on both sides.
+const DEGRADED_LOW_RISK_EVENTS: ReadonlySet<string> = new Set([
+  'phone_conversion',
+  'email_conversion',
+  'whatsapp_conversion'
+]);
+
 export async function sendToWorker(payload: ConversionPayload): Promise<boolean> {
   const turnstileToken = await getTurnstileToken();
   if (!turnstileToken) {
-    report('GATEWAY_NO_TURNSTILE', { event_name: payload.event_name });
-    return false;
+    if (!DEGRADED_LOW_RISK_EVENTS.has(payload.event_name)) {
+      report('GATEWAY_NO_TURNSTILE', { event_name: payload.event_name });
+      return false;
+    }
+    // Low-risk money signal → dispatch token-less. `turnstile_token` is omitted
+    // from the body below (undefined), so the worker sees `missing_token` and
+    // routes it through the degraded, rate-limited path.
+    report('GATEWAY_DEGRADED_TOKENLESS', { event_name: payload.event_name });
   }
 
   const fbp = getCookie('_fbp');

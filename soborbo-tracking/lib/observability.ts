@@ -22,6 +22,7 @@ export const TRACKING_CODES = {
   GATEWAY_NO_TURNSTILE:    { code: 'TRK-1001', severity: 'warn',  message: 'Gateway dispatch skipped: no Turnstile token' },
   GATEWAY_NETWORK_FAIL:    { code: 'TRK-1002', severity: 'error', message: 'Gateway POST failed (network/transport)' },
   GATEWAY_BEACON_FALLBACK: { code: 'TRK-1003', severity: 'info',  message: 'sendBeacon unavailable/failed; used fetch keepalive' },
+  GATEWAY_DEGRADED_TOKENLESS: { code: 'TRK-1004', severity: 'warn', message: 'Gateway dispatch sent token-less (degraded low-risk) — Turnstile failed but the money signal is preserved' },
   // 2xxx — Turnstile
   TURNSTILE_NOT_LOADED:    { code: 'TRK-2001', severity: 'warn',  message: 'Turnstile script not loaded' },
   TURNSTILE_NO_CONTAINER:  { code: 'TRK-2002', severity: 'warn',  message: 'Turnstile container #cf-turnstile-invisible missing' },

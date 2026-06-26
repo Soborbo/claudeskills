@@ -39,13 +39,16 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe('gateway contract', () => {
   // 1) Runs first while the token cache is empty.
-  it('no Turnstile token → no network, returns false, and TRK-1001 is reported', async () => {
+  it('no Turnstile token → higher-risk event skips: no network, returns false, TRK-1001', async () => {
     // window.turnstile is absent → getTurnstileToken yields undefined.
+    // contact_form_submit is NOT in the degraded low-risk set, so it is still
+    // hard-skipped. (Low-risk click events now dispatch token-less instead —
+    // see gateway-degraded.test.ts for that path.)
     const fetchMock = vi.fn((..._a: unknown[]) => Promise.resolve(new Response(null, { status: 204 })));
     vi.stubGlobal('fetch', fetchMock);
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const ok = await sendToWorker(basePayload());
+    const ok = await sendToWorker({ ...basePayload(), event_name: 'contact_form_submit' });
     expect(ok).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(getDiagnostics().some((d) => d.code === 'TRK-1001')).toBe(true);
