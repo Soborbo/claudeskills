@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   trackCalculatorStart, trackCalculatorStep, trackCalculatorOption, trackCalculatorComplete,
-  trackPhoneClick, trackCallbackClick, pushLeadConversion, pushContactConversion,
+  trackPhoneClick, trackCallbackClick, trackEmailClick, trackWhatsappClick,
+  pushLeadConversion, pushContactConversion,
 } from '../lib/events';
 import { setCkyConsent, resetAll, getDataLayer } from './helpers';
 
@@ -9,7 +10,7 @@ import { setCkyConsent, resetAll, getDataLayer } from './helpers';
 const BROWSER_EVENTS = [
   'calculator_start', 'calculator_step', 'calculator_option', 'calculator_complete',
   'lead_submit', 'contact_submit', 'phone_click', 'callback_click',
-  'form_abandon', 'scroll_depth',
+  'email_click', 'whatsapp_click', 'form_abandon', 'scroll_depth',
 ];
 const GATEWAY_ALLOWED = [
   'quote_calculator_conversion', 'callback_conversion', 'contact_form_submit',
@@ -32,10 +33,12 @@ describe('contract — böngésző dataLayer event-nevek', () => {
     pushContactConversion({ email: 'a@b.com', eventId: 'E2' });
     trackPhoneClick();
     trackCallbackClick();
+    trackEmailClick();
+    trackWhatsappClick();
 
     const emitted = new Set(getDataLayer().map((e) => e.event as string));
     for (const name of ['calculator_start', 'calculator_step', 'calculator_option', 'calculator_complete',
-      'lead_submit', 'contact_submit', 'phone_click', 'callback_click']) {
+      'lead_submit', 'contact_submit', 'phone_click', 'callback_click', 'email_click', 'whatsapp_click']) {
       expect(emitted.has(name)).toBe(true);
     }
     // egyik emittált név sincs a dokumentált listán kívül

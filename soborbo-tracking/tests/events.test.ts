@@ -1,9 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   generateEventId, trackCalculatorStart, trackCalculatorStep, trackCalculatorComplete,
-  trackPhoneClick, trackCallbackClick, pushLeadConversion, pushContactConversion,
+  trackPhoneClick, trackCallbackClick, trackEmailClick, trackWhatsappClick,
+  pushLeadConversion, pushContactConversion, setUserDataForEC, USER_DATA_ELEMENT_ID,
 } from '../lib/events';
 import { setCkyConsent, resetAll, getDataLayer, lastEvent } from './helpers';
+
+function readSideChannel(): Record<string, string> | undefined {
+  return (window as unknown as { __sbUserData?: Record<string, string> }).__sbUserData;
+}
 
 beforeEach(() => {
   resetAll();
@@ -59,17 +64,30 @@ describe('click events — dedup + consent', () => {
 });
 
 describe('conversion events → dataLayer', () => {
-  it('lead_submit carries event_id + value (when >0) + currency', () => {
+  it('lead_submit carries event_id + value (when >0) + currency, NO PII', () => {
     pushLeadConversion({ email: 'a@b.com', phone: '07123456789', value: 380, currency: 'GBP', eventId: 'E1' });
     const e = lastEvent('lead_submit')!;
     expect(e.event_id).toBe('E1');
     expect(e.value).toBe(380);
     expect(e.currency).toBe('GBP');
-    // PII a user_provided_data alatt (GTM Enhanced Conversions), nem sima kulcson
-    const upd = e.user_provided_data as Record<string, string>;
-    expect(upd.email).toBe('a@b.com');
-    expect(upd.phone_number).toBe('+447123456789');
+    // GDPR: NO raw PII anywhere in the dataLayer payload.
+    expect(e.user_provided_data).toBeUndefined();
     expect(e.email).toBeUndefined();
+    expect(e.phone_number).toBeUndefined();
+    expect(JSON.stringify(e)).not.toContain('a@b.com');
+    expect(JSON.stringify(e)).not.toContain('+447123456789');
+  });
+
+  it('writes normalized PII to the hidden side-channel (not the dataLayer)', () => {
+    pushLeadConversion({ email: 'A@B.com', phone: '07123456789', firstName: 'Jo', eventId: 'E1b' });
+    const ud = readSideChannel()!;
+    expect(ud.email).toBe('a@b.com');
+    expect(ud.phone_number).toBe('+447123456789');
+    expect(ud.first_name).toBe('Jo');
+    // Also mirrored to the hidden DOM element for the GTM Custom JS variable.
+    const el = document.getElementById(USER_DATA_ELEMENT_ID)!;
+    expect(el.hidden).toBe(true);
+    expect(JSON.parse(el.textContent!).email).toBe('a@b.com');
   });
 
   it('omits value when 0 (no Smart Bidding poisoning)', () => {
@@ -80,5 +98,46 @@ describe('conversion events → dataLayer', () => {
   it('contact_submit event name', () => {
     pushContactConversion({ email: 'a@b.com', eventId: 'E3' });
     expect(lastEvent('contact_submit')!.event_id).toBe('E3');
+  });
+});
+
+describe('setUserDataForEC — marketing-consent gated side-channel', () => {
+  it('writes nothing without marketing consent', () => {
+    setCkyConsent({ analytics: true, marketing: false });
+    setUserDataForEC({ email: 'a@b.com' });
+    expect(readSideChannel()).toBeUndefined();
+    expect(document.getElementById(USER_DATA_ELEMENT_ID)).toBeNull();
+  });
+
+  it('the conversion path writes nothing to the side-channel without marketing consent', () => {
+    setCkyConsent({ analytics: true, marketing: false });
+    // pushLeadConversion is reachable directly; without marketing consent the
+    // EC side-channel must stay empty even though the dataLayer (analytics) push runs.
+    pushLeadConversion({ email: 'a@b.com', phone: '07123456789', eventId: 'E4' });
+    expect(readSideChannel()).toBeUndefined();
+  });
+});
+
+describe('click events carry the shared event_id', () => {
+  it('phone/callback/email/whatsapp push event_id into the dataLayer', () => {
+    expect(trackPhoneClick('P1')).toBe(true);
+    expect(lastEvent('phone_click')!.event_id).toBe('P1');
+    expect(trackCallbackClick('C1')).toBe(true);
+    expect(lastEvent('callback_click')!.event_id).toBe('C1');
+    expect(trackEmailClick('M1')).toBe(true);
+    expect(lastEvent('email_click')!.event_id).toBe('M1');
+    expect(trackWhatsappClick('W1')).toBe(true);
+    expect(lastEvent('whatsapp_click')!.event_id).toBe('W1');
+  });
+
+  it('phone_click returns false on the deduped second call', () => {
+    expect(trackPhoneClick('P1')).toBe(true);
+    expect(trackPhoneClick('P2')).toBe(false);
+  });
+
+  it('click trackers return false without analytics consent', () => {
+    setCkyConsent({ analytics: false, marketing: false });
+    expect(trackEmailClick('M1')).toBe(false);
+    expect(trackWhatsappClick('W1')).toBe(false);
   });
 });

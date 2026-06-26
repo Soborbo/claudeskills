@@ -23,6 +23,7 @@ export {
 export {
   trackCalculatorStart, trackCalculatorStep, trackCalculatorOption,
   trackCalculatorComplete, trackPhoneClick, trackCallbackClick,
+  trackEmailClick, trackWhatsappClick, setUserDataForEC,
   initScrollTracking, initFormAbandonTracking, enableDebug,
   generateEventId, pushLeadConversion, pushContactConversion,
   type ConversionData,
@@ -36,7 +37,10 @@ import {
   getGclid, getFbclid, getSessionId, getSourceType, getAttribution,
   normalizePhone,
 } from './persistence';
-import { generateEventId, pushLeadConversion, pushContactConversion, enableDebug } from './events';
+import {
+  generateEventId, pushLeadConversion, pushContactConversion, enableDebug,
+  trackPhoneClick, trackCallbackClick, trackEmailClick, trackWhatsappClick,
+} from './events';
 import { sendToWorker } from './gateway';
 import { trackingConfig } from './config';
 
@@ -150,6 +154,54 @@ export function trackServerEvent(
   if (!hasMarketingConsent()) return eventId;
   dispatchToGateway(eventName, eventId, { value: params.value, currency: params.currency, email: params.email, phone: params.phone });
   return eventId;
+}
+
+// ── Click conversions (phone / callback / email / whatsapp) ─────────
+//
+// These are the #1 lead-gen signals. Each fires BOTH channels with ONE shared
+// event_id (Meta Pixel↔CAPI dedup): the browser dataLayer push (events.ts,
+// analytics-consent gated, phone keeps its session dedup) AND the server-side
+// gateway dispatch (marketing-consent gated → Meta CAPI + Google Ads). The
+// gateway dispatch only fires when the dataLayer push actually happened, so the
+// phone session dedup covers both channels.
+
+const CLICK_GATEWAY_EVENT = {
+  phone: 'phone_conversion',
+  callback: 'callback_conversion',
+  email: 'email_conversion',
+  whatsapp: 'whatsapp_conversion',
+} as const;
+
+function trackClickConversion(
+  pushDataLayer: (eventId: string) => boolean,
+  gatewayEvent: string,
+  params: { email?: string; phone?: string } = {},
+): string | null {
+  const eventId = generateEventId();
+  const pushed = pushDataLayer(eventId);
+  if (!pushed) return null; // consent-blocked or deduped → skip the gateway too
+  if (hasMarketingConsent()) dispatchToGateway(gatewayEvent, eventId, params);
+  return eventId;
+}
+
+/** Phone click → dataLayer `phone_click` + gateway `phone_conversion` (shared event_id). */
+export function trackPhoneConversion(params: { phone?: string } = {}): string | null {
+  return trackClickConversion(trackPhoneClick, CLICK_GATEWAY_EVENT.phone, { phone: params.phone });
+}
+
+/** Callback click → dataLayer `callback_click` + gateway `callback_conversion`. */
+export function trackCallbackConversion(params: { email?: string; phone?: string } = {}): string | null {
+  return trackClickConversion(trackCallbackClick, CLICK_GATEWAY_EVENT.callback, params);
+}
+
+/** Email (mailto:) click → dataLayer `email_click` + gateway `email_conversion`. */
+export function trackEmailConversion(params: { email?: string } = {}): string | null {
+  return trackClickConversion(trackEmailClick, CLICK_GATEWAY_EVENT.email, { email: params.email });
+}
+
+/** WhatsApp click → dataLayer `whatsapp_click` + gateway `whatsapp_conversion`. */
+export function trackWhatsappConversion(params: { phone?: string } = {}): string | null {
+  return trackClickConversion(trackWhatsappClick, CLICK_GATEWAY_EVENT.whatsapp, { phone: params.phone });
 }
 
 // ── Hidden fields ──────────────────────────────────────────────────

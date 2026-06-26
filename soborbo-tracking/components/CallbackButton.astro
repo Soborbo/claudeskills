@@ -8,12 +8,13 @@ const { class: cls, type = 'button', ...rest } = Astro.props;
 </button>
 
 <script>
-  import { trackCallbackClick } from '@/lib/tracking';
+  import { trackCallbackConversion } from '@/lib/tracking';
   function bind() {
     document.querySelectorAll<HTMLButtonElement>('[data-tracking-callback]').forEach(btn => {
       if (btn.dataset.trackBound) return;
       btn.dataset.trackBound = '1';
-      btn.addEventListener('click', () => trackCallbackClick());
+      // Fires BOTH channels (dataLayer callback_click + gateway callback_conversion).
+      btn.addEventListener('click', () => trackCallbackConversion());
     });
   }
   document.addEventListener('astro:page-load', bind);
