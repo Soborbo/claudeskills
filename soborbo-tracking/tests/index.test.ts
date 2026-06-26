@@ -121,6 +121,21 @@ describe('click conversions — both channels, shared event_id', () => {
     expect(mockSend).toHaveBeenCalledTimes(1);
   });
 
+  it('callback/email/whatsapp dedup covers BOTH channels too (second click → no dataLayer, no gateway)', () => {
+    const cases: Array<{ fn: () => string | null; dlEvent: string }> = [
+      { fn: () => trackCallbackConversion(), dlEvent: 'callback_click' },
+      { fn: () => trackEmailConversion({ email: 'a@b.com' }), dlEvent: 'email_click' },
+      { fn: () => trackWhatsappConversion({ phone: '07123456789' }), dlEvent: 'whatsapp_click' },
+    ];
+    for (const { fn, dlEvent } of cases) {
+      mockSend.mockClear();
+      expect(fn(), dlEvent).toBeTruthy();      // first click → fires
+      expect(fn(), dlEvent).toBeNull();        // second click same session → suppressed
+      expect(getDataLayer().filter((e) => e.event === dlEvent), dlEvent).toHaveLength(1);
+      expect(mockSend, dlEvent).toHaveBeenCalledTimes(1);
+    }
+  });
+
   it('analytics-only consent → dataLayer fires, NO gateway dispatch', () => {
     setCkyConsent({ analytics: true, marketing: false });
     trackPhoneConversion();
