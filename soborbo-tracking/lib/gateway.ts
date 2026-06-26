@@ -17,7 +17,7 @@ declare global {
       execute: (container?: string | HTMLElement) => void;
       getResponse: (widgetId?: string) => string | undefined;
     };
-    dataLayer: unknown[];
+    dataLayer: Record<string, unknown>[];
     fbq?: (...args: unknown[]) => void;
   }
 }

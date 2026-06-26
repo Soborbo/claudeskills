@@ -34,7 +34,7 @@ export { sendToWorker, getTurnstileToken, collectAttribution, type ConversionPay
 import { hasMarketingConsent, onConsentChange } from './consent';
 import {
   persistTrackingParams, captureUrlParams,
-  getGclid, getFbclid, getSessionId, getSourceType, getAttribution,
+  getGclid, getFbclid, getSessionId, getSourceType, getAttribution, getAllTrackingData,
   normalizePhone,
 } from './persistence';
 import {
@@ -207,7 +207,10 @@ export function trackWhatsappConversion(params: { phone?: string } = {}): string
 // ── Hidden fields ──────────────────────────────────────────────────
 
 export function populateHiddenFields(form: HTMLFormElement, result: LeadSubmitResult): void {
-  const t = getAttribution();
+  // Last-touch UTM/click context for the hidden form fields. getAttribution()
+  // returns first_/last_-prefixed keys (for the Sheets sink), NOT bare utm_*;
+  // getAllTrackingData() is the right source for raw utm_source/medium/... here.
+  const t = getAllTrackingData();
   const fields: Record<string, string | null | undefined> = {
     gclid: result.gclid, fbclid: result.fbclid, event_id: result.eventId,
     utm_source: t.utm_source, utm_medium: t.utm_medium,

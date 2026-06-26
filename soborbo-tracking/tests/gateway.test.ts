@@ -66,7 +66,7 @@ describe('sendToWorker — gateway payload', () => {
     setUrl('/?gclid=G9');
     stubTurnstile('TT');
     Object.defineProperty(navigator, 'sendBeacon', { configurable: true, value: () => false });
-    const fetchMock = vi.fn(() => Promise.resolve(new Response(null, { status: 204 })));
+    const fetchMock = vi.fn((..._args: unknown[]) => Promise.resolve(new Response(null, { status: 204 })));
     vi.stubGlobal('fetch', fetchMock);
 
     const ok = await sendToWorker({
