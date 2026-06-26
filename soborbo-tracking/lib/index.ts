@@ -1,15 +1,15 @@
 /**
  * Soborbo Tracking — Unified Entry Point (v5)
  *
- * Két csatorna, MEGOSZTOTT event_id-vel (dedup):
- *   1) Böngésző: dataLayer push → GTM → GA4 / Google Ads / Meta Pixel (events.ts)
- *   2) Szerver: az event-gateway worker (/api/event/conversion) → Meta CAPI +
+ * Two channels, with a SHARED event_id (dedup):
+ *   1) Browser: dataLayer push → GTM → GA4 / Google Ads / Meta Pixel (events.ts)
+ *   2) Server: the event-gateway worker (/api/event/conversion) → Meta CAPI +
  *      GA4 MP + Google Ads uploadClickConversions (gateway.ts → sendToWorker)
  *
- * A korábbi in-app /api/track (Meta-only) endpoint MEGSZŰNT — a szerver-oldal
- * teljesen a gateway-é (mind a 3 platform + durability). A gateway maga teszi
- * hozzá a turnstile_token / attribution / consent / fbp / fbc / session_id
- * mezőket (lásd gateway.ts).
+ * The earlier in-app /api/track (Meta-only) endpoint is GONE — the server side
+ * belongs entirely to the gateway (all 3 platforms + durability). The gateway
+ * itself adds the turnstile_token / attribution / consent / fbp / fbc / session_id
+ * fields (see gateway.ts).
  */
 
 export { hasMarketingConsent, hasAnalyticsConsent, hasAnyConsent, onConsentChange, waitForConsent, type ConsentCategory } from './consent';
@@ -27,7 +27,7 @@ export {
   generateEventId, pushLeadConversion, pushContactConversion,
   type ConversionData,
 } from './events';
-// Gateway-dispatch (szerver-oldal) — közvetlen használathoz is elérhető.
+// Gateway dispatch (server side) — also available for direct use.
 export { sendToWorker, getTurnstileToken, collectAttribution, type ConversionPayload, type UserData } from './gateway';
 
 import { hasMarketingConsent, onConsentChange } from './consent';
@@ -59,7 +59,7 @@ export interface LeadSubmitParams {
   value?: number;
   currency?: string;
   contentName?: string;
-  /** Gateway event-név felülírása (default: contact_form_submit). */
+  /** Override the gateway event name (default: contact_form_submit). */
   eventName?: string;
 }
 
@@ -71,14 +71,14 @@ export interface LeadSubmitResult {
   fbclid: string | null;
 }
 
-// Belső típus → gateway event-név (a worker ALLOWED_EVENT_NAMES-éből).
+// Internal type → gateway event name (from the worker's ALLOWED_EVENT_NAMES).
 const DEFAULT_GATEWAY_EVENT = 'contact_form_submit';
 
 /**
- * Szerver-oldali dispatch a gateway-re. Fire-and-forget: a gateway aszinkron
- * megszerzi a Turnstile-tokent (cache 4 perc) és hozzárakja az attribution/
- * consent/fbp/fbc/session_id mezőket. A böngésző dataLayer push KÜLÖN megy
- * (events.ts), UGYANAZZAL az event_id-vel → Meta Pixel↔CAPI dedup.
+ * Server-side dispatch to the gateway. Fire-and-forget: the gateway asynchronously
+ * obtains the Turnstile token (cached 4 minutes) and adds the attribution/
+ * consent/fbp/fbc/session_id fields. The browser dataLayer push goes SEPARATELY
+ * (events.ts), with the SAME event_id → Meta Pixel↔CAPI dedup.
  */
 function dispatchToGateway(
   eventName: string,
@@ -106,7 +106,7 @@ export function trackLeadSubmit(params: LeadSubmitParams): LeadSubmitResult {
 
   const currency = params.currency || trackingConfig.currency;
 
-  // 1) Böngésző (GTM) — változatlan
+  // 1) Browser (GTM) — unchanged
   pushLeadConversion({
     email: params.email, phone: params.phone,
     firstName: params.firstName, lastName: params.lastName,
@@ -114,7 +114,7 @@ export function trackLeadSubmit(params: LeadSubmitParams): LeadSubmitResult {
     gclid: gclid || undefined, eventId,
   });
 
-  // 2) Szerver (gateway) — UGYANAZ az event_id
+  // 2) Server (gateway) — the SAME event_id
   dispatchToGateway(params.eventName || DEFAULT_GATEWAY_EVENT, eventId, {
     email: params.email, phone: params.phone,
     firstName: params.firstName, lastName: params.lastName,
@@ -138,9 +138,9 @@ export function trackContactSubmit(
 }
 
 /**
- * Általános szerver-oldali esemény a gateway-re (pl. phone_conversion,
- * callback_conversion, quote_calculator_conversion). A böngésző dataLayer
- * push-t külön kell intézni (events.ts) az azonos event_id-vel, ha kell dedup.
+ * Generic server-side event to the gateway (e.g. phone_conversion,
+ * callback_conversion, quote_calculator_conversion). The browser dataLayer
+ * push must be handled separately (events.ts) with the same event_id if dedup is needed.
  */
 export function trackServerEvent(
   eventName: string,
@@ -168,7 +168,7 @@ export function populateHiddenFields(form: HTMLFormElement, result: LeadSubmitRe
   }
 }
 
-// ── Sheets payload (opcionális CRM/Sheets sink) ────────────────────
+// ── Sheets payload (optional CRM/Sheets sink) ────────────────────
 
 export function buildSheetsPayload(data: {
   eventType: string; name?: string; email: string; phone?: string;

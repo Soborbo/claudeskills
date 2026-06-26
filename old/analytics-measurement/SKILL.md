@@ -3,8 +3,8 @@ name: analytics-measurement
 description: DEPRECATED (legacy, in old/) — use the `soborbo-tracking` skill instead for GA4 + Meta + Google Ads tracking on Astro. Kept for reference only.
 ---
 
-> **⚠️ DEPRECATED — használd helyette a `soborbo-tracking` skillt.** (Ez a `old/`
-> alatti legacy mérés-doktrína, csak referenciának.)
+> **⚠️ DEPRECATED — use the `soborbo-tracking` skill instead.** (This is the
+> legacy measurement doctrine under `old/`, kept for reference only.)
 
 # Analytics & Measurement Skill
 

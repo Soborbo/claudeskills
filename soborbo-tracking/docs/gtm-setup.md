@@ -1,10 +1,10 @@
 # GTM Setup
 
-> A GA4 event-nevekre a **`CANONICAL-EVENTS.md`** a mérvadó. A GTM-tag a böngésző
-> dataLayer-eseményről (pl. `lead_submit`) a **kanonikus GA4 event-nevet** emittálja
-> (pl. `contact_form_submit`) — így a böngésző és (opcionálisan) a gateway GA4 MP
-> UGYANAZT a GA4 eventet adja. **GA4 nem dedupol** → ha a gateway GA4 MP-t is
-> használod, ne tüzelj duplán (lásd CANONICAL-EVENTS.md „GA4-duplázás").
+> For GA4 event names, **`CANONICAL-EVENTS.md`** is authoritative. The GTM tag emits
+> the **canonical GA4 event name** (e.g. `contact_form_submit`) from the browser
+> dataLayer event (e.g. `lead_submit`) — so the browser and (optionally) the gateway
+> GA4 MP produce the SAME GA4 event. **GA4 does not dedup** → if you also use the
+> gateway GA4 MP, don't fire twice (see CANONICAL-EVENTS.md "GA4 double-counting").
 
 ## Variables (Data Layer)
 
@@ -22,20 +22,20 @@ Name:  UPD - User Data
 ```
 
 ## Triggers (Custom Event)
-Egy-egy a dataLayer-eseményekre: `calculator_start`, `calculator_step`,
+One each for the dataLayer events: `calculator_start`, `calculator_step`,
 `calculator_option`, `calculator_complete`, `lead_submit`, `contact_submit`,
 `phone_click`, `callback_click`, `email_click`, `whatsapp_click`, `form_abandon`,
 `scroll_depth`.
 
-## Tags — alap
-- **Consent Default** (Custom HTML, Consent Initialization) — CookieYes kezeli az update-et.
-- **Conversion Linker** — ad_storage, Initialization. Enélkül a Google Ads nem
-  attribútál (gclid → _gcl_aw).
+## Tags — base
+- **Consent Default** (Custom HTML, Consent Initialization) — CookieYes handles the update.
+- **Conversion Linker** — ad_storage, Initialization. Without it, Google Ads does not
+  attribute (gclid → _gcl_aw).
 - **Google Tag (GA4)** — G-XXXXXXXXXX, analytics_storage, All Pages.
 
-## GA4 Event tag-ek — a KANONIKUS event-névvel
+## GA4 Event tags — with the CANONICAL event name
 
-| dataLayer trigger (CE) | **GA4 event-név (a tag emittálja)** | Key Event? | Paraméterek |
+| dataLayer trigger (CE) | **GA4 event name (emitted by the tag)** | Key Event? | Parameters |
 |---|---|:--:|---|
 | `lead_submit` / `contact_submit` | `contact_form_submit` | ✅ | value, currency, event_id, session_id, device, source, service |
 | `callback_click` | `callback_conversion` | ✅ | event_id, session_id, device |
@@ -47,11 +47,11 @@ Egy-egy a dataLayer-eseményekre: `calculator_start`, `calculator_step`,
 | `form_abandon` | `form_abandon` | ❌ | form_id, last_field |
 | `scroll_depth` | `scroll_depth` | ❌ | scroll_percentage |
 
-> A „GA4 event-név" oszlop = a `CANONICAL-EVENTS.md` táblázata. (Ha GA4 ajánlott
-> nevet akarsz használni, pl. `generate_lead`, akkor a gateway oldalon is azt a
-> nevet kell küldeni — különben a böngésző és a szerver MP eltérő néven jelenik meg.)
+> The "GA4 event name" column = the table in `CANONICAL-EVENTS.md`. (If you want to use
+> a GA4 recommended name, e.g. `generate_lead`, then you must send that name on the
+> gateway side too — otherwise the browser and server MP show up under different names.)
 
-## Meta Pixel tag-ek
+## Meta Pixel tags
 - **Base** (Custom HTML): fbevents.js + `fbq('track','PageView')`. ad_storage + ad_user_data. All Pages.
 - **Lead** (CE-`lead_submit` / `callback_click` / `calculator_complete`):
   ```js
@@ -63,20 +63,20 @@ Egy-egy a dataLayer-eseményekre: `calculator_start`, `calculator_step`,
   ```js
   fbq('track', 'Contact', {}, { eventID: '{{DLV - event_id}}' });
   ```
-A `eventID` KÖTELEZŐEN egyezik a szerver CAPI `event_id`-vel (a gateway ugyanazt
-kapja az index.ts-ből) → Meta Pixel↔CAPI dedup.
+The `eventID` MUST match the server CAPI `event_id` (the gateway gets the same one
+from index.ts) → Meta Pixel↔CAPI dedup.
 
 ## Google Ads Conversion tag
 Conversion Value: {{DLV - value}}. Transaction ID: {{DLV - event_id}}.
 User-provided data: {{UPD - User Data}}. ad_storage + ad_user_data.
-Trigger: a konverziós CE-k (lead_submit/callback_click/phone_click/calculator_complete).
-**Ne tegyél fix value default-ot 1+devizát** — fertőzi a biddinget (lásd INVARIANTS).
+Trigger: the conversion CEs (lead_submit/callback_click/phone_click/calculator_complete).
+**Don't set a fixed value default of 1+currency** — it poisons the bidding (see INVARIANTS).
 
 ## Enhanced Conversions
 Google Ads → Tools → Conversions → Enhanced Conversions: ON → Method: GTM.
-Diagnostics ellenőrzés 24-48h múlva. (Szerver-oldalon a gateway külön is feltölti
-a hashelt user_data-t + gclid-et — kiegészítik egymást, dedup orderId/event_id-n.)
+Check Diagnostics after 24-48h. (Server-side, the gateway also uploads the hashed
+user_data + gclid separately — they complement each other, dedup on orderId/event_id.)
 
-## Validáció
-GTM Preview + GA4 DebugView (+ campaign_details ha UTM) + Meta Test Events (dedup
-azonos event_id). Lásd `CANONICAL-EVENTS.md` GA4-admin teendők (Key Events + custom dimensions).
+## Validation
+GTM Preview + GA4 DebugView (+ campaign_details if UTM) + Meta Test Events (dedup on
+the same event_id). See `CANONICAL-EVENTS.md` GA4 admin tasks (Key Events + custom dimensions).

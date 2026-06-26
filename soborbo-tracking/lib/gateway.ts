@@ -1,10 +1,10 @@
 /**
- * Astro client-lib: server-side tracking dispatch a Soborbo Worker-hez.
+ * Astro client-lib: server-side tracking dispatch to the Soborbo Worker.
  *
- * Használat: copy-paste az Astro site src/lib/-jába (Painless, BeautyFlow, stb.).
- * Astro env: PUBLIC_TURNSTILE_SITE_KEY publikus változó kell.
+ * Usage: copy-paste into the Astro site's src/lib/ (Painless, BeautyFlow, etc.).
+ * Astro env: the PUBLIC_TURNSTILE_SITE_KEY public variable is required.
  *
- * Sprint 9 spec a 09-sprint-astro-painless.md-ben.
+ * Sprint 9 spec in 09-sprint-astro-painless.md.
  */
 
 import { generateUUID } from './uuid';
@@ -40,8 +40,8 @@ export interface UserData {
   street?: string;
   postal_code?: string;
   country?: string;
-  // Stabil user/cookie azonosító (Meta external_id → EMQ-javítás). A Worker
-  // hash-eli; ugyanezt az értéket add a böngésző Pixelnek is a dedup miatt.
+  // Stable user/cookie identifier (Meta external_id → EMQ improvement). The Worker
+  // hashes it; pass the same value to the browser Pixel too for deduplication.
   external_id?: string;
 }
 
@@ -160,27 +160,27 @@ function extractGAClientId(gaCookie: string | undefined): string | undefined {
   return parts.length >= 4 ? `${parts[2]}.${parts[3]}` : undefined;
 }
 
-// GA4 session id a `_ga_<STREAM>` cookie-ból. Két formátumot kell kezelni:
+// GA4 session id from the `_ga_<STREAM>` cookie. Two formats must be handled:
 //   GS1: `GS1.1.<session_id>.<...>`
-//   GS2: `GS2.1.s<session_id>$o..$g..`  ← 2025-05-06 óta az új session-ök defaultja
-// A GS2-nél a session_id elé egy literál `s` kerül. Az opcionális `s`-t és a
-// több jegyű verzió/slot szegmenseket is kezeljük. Nélküle az MP-event nem
-// jelenik meg rendesen a GA4 riportokban.
+//   GS2: `GS2.1.s<session_id>$o..$g..`  ← the default for new sessions since 2025-05-06
+// In GS2 a literal `s` precedes the session_id. We handle the optional `s` and the
+// multi-digit version/slot segments too. Without it the MP event does not show up
+// properly in GA4 reports.
 function extractGASessionId(): string | undefined {
   const match = document.cookie.match(/_ga_[A-Z0-9]+=GS\d+\.\d+\.s?(\d+)/);
   return match ? match[1] : undefined;
 }
 
-// Consent Mode v2 állapot. Forrás-sorrend:
-//   1) window.__trackingConsent (explicit override, pl. teszthez)
-//   2) CookieYes `cookieyes-consent` cookie (GTM-ből betöltött CMP)
-// Hiányában undefined → a Worker a SiteConfig.require_consent szerint dönt
-// (EEA-n állítsd require_consent:true-ra → fail-closed cookie/döntés hiányában).
+// Consent Mode v2 state. Source order:
+//   1) window.__trackingConsent (explicit override, e.g. for testing)
+//   2) CookieYes `cookieyes-consent` cookie (CMP loaded from GTM)
+// If absent → undefined → the Worker decides based on SiteConfig.require_consent
+// (on EEA set require_consent:true → fail-closed when the cookie/decision is missing).
 //
-// CookieYes cookie formátum:
+// CookieYes cookie format:
 //   consentid:..,consent:yes,necessary:yes,functional:yes,analytics:yes,
-//   performance:yes,advertisement:yes,other:yes   (elutasításnál :no)
-// Consent Mode v2 leképezés (CookieYes hivatalos):
+//   performance:yes,advertisement:yes,other:yes   (:no when rejected)
+// Consent Mode v2 mapping (CookieYes official):
 //   advertisement → ad_storage + ad_user_data + ad_personalization
 //   analytics     → analytics_storage
 function getConsentState(): ConsentState | undefined {
@@ -197,7 +197,7 @@ function getConsentState(): ConsentState | undefined {
     const idx = part.indexOf(':');
     if (idx > 0) map[part.slice(0, idx).trim()] = part.slice(idx + 1).trim();
   }
-  // Ha nincs kategória-kulcs, nem CookieYes-cookie → ne találgassunk.
+  // If there is no category key, it's not a CookieYes cookie → don't guess.
   if (map.advertisement === undefined && map.analytics === undefined) return undefined;
 
   const sig = (yes: boolean): ConsentSignal => (yes ? 'GRANTED' : 'DENIED');
@@ -210,11 +210,11 @@ function getConsentState(): ConsentState | undefined {
   };
 }
 
-// ── Univerzális attribúció-gyűjtés ──────────────────────────────────────────
-// Minden bevett click ID + UTM, az URL-ből + `_gcl_aw` cookie fallbackkel,
-// localStorage-ban perzisztálva (a konverzió gyakran másik oldalon történik,
-// mint a landing). Last-touch nyer a click ID-knél/UTM-eknél; a landing-kontextus
-// (landing_page, referrer) first-touch.
+// ── Universal attribution collection ────────────────────────────────────────
+// All common click IDs + UTMs, from the URL + a `_gcl_aw` cookie fallback,
+// persisted in localStorage (the conversion often happens on a different page
+// than the landing). Last-touch wins for click IDs/UTMs; the landing context
+// (landing_page, referrer) is first-touch.
 const ATTR_STORAGE_KEY = '__sb_attribution';
 const ATTR_CLICK_PARAMS = [
   'gclid',
@@ -254,12 +254,12 @@ function writeStoredAttribution(a: AttributionParams): void {
   try {
     localStorage.setItem(ATTR_STORAGE_KEY, JSON.stringify(a));
   } catch {
-    // localStorage tiltva (privacy mód) — best-effort, csendben kihagyjuk.
+    // localStorage blocked (privacy mode) — best-effort, silently skip.
   }
 }
 
-// gclid a `_gcl_aw` cookie-ból (formátum: GCL.<ts>.<gclid>) — fallback, ha az
-// URL-ben már nincs gclid (pl. a felhasználó belső oldalon konvertál).
+// gclid from the `_gcl_aw` cookie (format: GCL.<ts>.<gclid>) — fallback when the
+// URL no longer has a gclid (e.g. the user converts on an internal page).
 function gclidFromCookie(): string | undefined {
   const c = getCookie('_gcl_aw');
   if (!c) return undefined;
@@ -271,9 +271,9 @@ export function collectAttribution(): AttributionParams {
   const stored = readStoredAttribution();
   const fresh: AttributionParams = {};
 
-  // Ad-consent kapu: a click ID-k ad-azonosítók → CSAK ad-consent mellett
-  // gyűjtjük/tároljuk/küldjük (ePrivacy/TCF). UTM/landing analitikai metaadat.
-  // Consent hiányában (még nincs döntés) fail-closed → nincs click ID.
+  // Ad-consent gate: click IDs are ad identifiers → we ONLY collect/store/send
+  // them with ad consent (ePrivacy/TCF). UTM/landing is analytics metadata.
+  // Without consent (no decision yet) fail-closed → no click ID.
   const consent = getConsentState();
   const adGranted =
     consent?.ad_user_data === 'GRANTED' || consent?.ad_storage === 'GRANTED';
@@ -299,16 +299,16 @@ export function collectAttribution(): AttributionParams {
     if (g) fresh.gclid = g;
   }
 
-  // Last-touch: a friss URL-jelek felülírják a tároltat.
+  // Last-touch: the fresh URL signals override the stored ones.
   const merged: AttributionParams = { ...stored, ...fresh };
 
-  // Ad-consent visszavonva/hiányzik → a korábban tárolt click ID-ket is dobjuk
-  // (ne perzisztáljon/menjen ad-azonosító consent nélkül).
+  // Ad-consent revoked/missing → drop the previously stored click IDs too
+  // (don't persist/send an ad identifier without consent).
   if (!adGranted) {
     for (const k of ATTR_CLICK_PARAMS) delete merged[k];
   }
 
-  // First-touch landing-kontextus (nem írjuk felül, ha már megvan).
+  // First-touch landing context (don't overwrite if already present).
   if (!merged.landing_page) merged.landing_page = window.location.href;
   if (!merged.referrer && document.referrer) merged.referrer = document.referrer;
 
@@ -379,8 +379,8 @@ export async function trackConversion(
   const eventId = params.event_id || generateUUID();
   const eventTime = Math.floor(Date.now() / 1000);
 
-  // 1. Existing kliens GTM dataLayer push (Meta Pixel browser-side dedup-hoz).
-  // PII NEM kerül dataLayer-be — CLAUDE.md #15.
+  // 1. Existing client GTM dataLayer push (for Meta Pixel browser-side dedup).
+  // PII does NOT go into the dataLayer — CLAUDE.md #15.
   if (typeof window !== 'undefined') {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
@@ -393,7 +393,7 @@ export async function trackConversion(
     });
   }
 
-  // 2. Server-side Worker dispatch (PII a body-ban, hash-elve a Worker-ben).
+  // 2. Server-side Worker dispatch (PII in the body, hashed in the Worker).
   await sendToWorker({
     event_name: eventName,
     event_id: eventId,

@@ -1,30 +1,30 @@
-# Szerver-bekötés — event-gateway worker
+# Server wiring — event-gateway worker
 
-A szerver-oldal a **`Soborbo/Serverside` event-gateway worker**. Egy új site
-bekötése = KV site-config + route + (ha Google Ads) OAuth. A configot a
-`generate-site.mjs` állítja elő determinisztikusan.
+The server side is the **`Soborbo/Serverside` event-gateway worker**. Wiring a new
+site = KV site-config + route + (if Google Ads) OAuth. The config is produced
+deterministically by `generate-site.mjs`.
 
-## 0. Előfeltétel
-- `Soborbo/Serverside` repo elérhető (`git clone https://github.com/Soborbo/Serverside.git`).
+## 0. Prerequisite
+- `Soborbo/Serverside` repo available (`git clone https://github.com/Soborbo/Serverside.git`).
 - SITE_CONFIG KV namespace id: `edd34e28eee847c09c26f9d9e3ea04ab`.
 
-## 1. ID-k összegyűjtése (MCP-connectorokból, ahol lehet)
-- **Meta pixel_id** — Meta Ads connector (`get_pixels`) v. Events Manager.
+## 1. Collect the IDs (from MCP connectors where possible)
+- **Meta pixel_id** — Meta Ads connector (`get_pixels`) or Events Manager.
 - **Meta CAPI access_token** — Events Manager → Conversions API → Generate. **Secret.**
-- **GA4 measurement_id (G-XXXX)** — GA4 connector: web data stream Measurement ID-ja
-  (NEM a property-szám).
+- **GA4 measurement_id (G-XXXX)** — GA4 connector: the web data stream's Measurement ID
+  (NOT the property number).
 - **GA4 api_secret** — GA4 Admin → Data Streams → stream → Measurement Protocol API
   secrets → Create. **Secret.**
-- **Google Ads customer_id** — Ads connector (`list_google_ads_customers`), 10 számjegy
-  kötőjel nélkül; login_customer_id csak MCC alatt.
-- **conversion_actions** — Ads connector: akció-ID-k event-névre képezve.
-- **country_code / currency / require_consent** — piac szerint (EEA → `require_consent: true`).
+- **Google Ads customer_id** — Ads connector (`list_google_ads_customers`), 10 digits
+  without hyphens; login_customer_id only under an MCC.
+- **conversion_actions** — Ads connector: action IDs mapped to event names.
+- **country_code / currency / require_consent** — per market (EEA → `require_consent: true`).
 
-## 2. Generálás
+## 2. Generate
 ```bash
 node server/generate-site.mjs --input /tmp/<site>.json --out /tmp/<site>-out
 ```
-Input (lásd a validátort a scriptben):
+Input (see the validator in the script):
 ```json
 {
   "site_id": "trapezlemez",
@@ -36,21 +36,21 @@ Input (lásd a validátort a scriptben):
             "conversion_actions": { "callback_conversion": "...", "phone_conversion": "..." } }
 }
 ```
-Kimenet: `site-config.json`, `routes.toml`, `kv-put.sh`, `INTEGRATION.md`.
-**Secret SOHA gitbe — csak KV-be.**
+Output: `site-config.json`, `routes.toml`, `kv-put.sh`, `INTEGRATION.md`.
+**Secrets NEVER into git — only into KV.**
 
-## 3. KV feltöltés
-A `kv-put.sh` parancsaival (wrangler) vagy a Cloudflare MCP `kv_put`-tal,
-hostname-enként egy bejegyzés.
+## 3. KV upload
+Using the commands in `kv-put.sh` (wrangler) or the Cloudflare MCP `kv_put`,
+one entry per hostname.
 
 ## 4. Route + deploy
-A `routes.toml` blokkját a Serverside `wrangler.toml`-jához → branch + PR →
-`wrangler deploy`. Ettől a `https://<host>/api/event/*` a gateway workerre megy
-(same-origin a site-tal).
+Add the `routes.toml` block to the Serverside `wrangler.toml` → branch + PR →
+`wrangler deploy`. This makes `https://<host>/api/event/*` go to the gateway worker
+(same-origin with the site).
 
-## 5. Google Ads OAuth (ha van customer_id)
-Egyszer customer_id-nként: `GET /api/event/oauth-init` (X-Admin-Token) → OAUTH_TOKENS KV.
+## 5. Google Ads OAuth (if there is a customer_id)
+Once per customer_id: `GET /api/event/oauth-init` (X-Admin-Token) → OAUTH_TOKENS KV.
 
-## 6. Verifikáció
-`INTEGRATION.md` "Ellenőrzés": health, Meta Test Events (dedup azonos event_id),
-GA4 DebugView (+ campaign_details ha UTM), Google Ads Conversions, Workers Logs 24h.
+## 6. Verification
+`INTEGRATION.md` "Verification": health, Meta Test Events (dedup on the same event_id),
+GA4 DebugView (+ campaign_details if UTM), Google Ads Conversions, Workers Logs 24h.

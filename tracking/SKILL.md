@@ -15,11 +15,11 @@ description: >-
 
 # Soborbo Lead Gen Tracking v4 — ⚠️ DEPRECATED
 
-> **⚠️ DEPRECATED — használd helyette a `soborbo-tracking` skillt.**
-> Ez a régi, **Meta-only** `/api/track` verzió. A kanonikus megoldásban a
-> szerver-oldal az **event-gateway worker** (Meta CAPI + GA4 MP + Google Ads +
-> Cloudflare Queues). A kliens-komponensek átkerültek a `soborbo-tracking/`-be.
-> Csak referenciának marad.
+> **⚠️ DEPRECATED — use the `soborbo-tracking` skill instead.**
+> This is the old, **Meta-only** `/api/track` version. In the canonical solution
+> the server side is the **event-gateway worker** (Meta CAPI + GA4 MP + Google Ads
+> + Cloudflare Queues). The client components moved to `soborbo-tracking/`.
+> Kept for reference only.
 
 ## When To Use
 

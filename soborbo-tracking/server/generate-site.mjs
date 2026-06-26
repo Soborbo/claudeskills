@@ -1,27 +1,27 @@
 #!/usr/bin/env node
 /**
- * generate-site.mjs — determinisztikus per-site bekötés-generátor.
+ * generate-site.mjs — deterministic per-site wiring generator.
  *
- * A repó a "source of truth": ez a script egy site-config inputból előállítja a
- * KV-bejegyzés(eke)t, a wrangler route-blokkot, a `wrangler kv key put`
- * parancsokat és egy integrációs ellenőrzőlistát. Az onboard-site skill ezt
- * hívja, miután az MCP-connectorokból összegyűjtötte az ID-ket.
+ * The repo is the "source of truth": this script takes a site-config input and
+ * produces the KV entry/entries, the wrangler route block, the `wrangler kv key put`
+ * commands and an integration checklist. The onboard-site skill calls this after
+ * it has collected the IDs from the MCP connectors.
  *
- * Használat:
+ * Usage:
  *   node scripts/generate-site.mjs --input site.json [--out dir/] [--kv-namespace-id ID]
  *   cat site.json | node scripts/generate-site.mjs
  *
- * Nincs külső függőség (csak Node built-in). Determinisztikus: ugyanaz az input
- * ugyanazt a kimenetet adja.
+ * No external dependencies (Node built-ins only). Deterministic: the same input
+ * yields the same output.
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { argv, stdin, exit } from 'node:process';
 
-// A wrangler.toml-ban rögzített SITE_CONFIG KV namespace (alapértelmezett).
+// The SITE_CONFIG KV namespace fixed in wrangler.toml (default).
 const DEFAULT_SITE_CONFIG_NS = 'edd34e28eee847c09c26f9d9e3ea04ab';
 
-// A worker által elfogadott event-nevek (src/types.ts ALLOWED_EVENT_NAMES tükre).
+// The event names accepted by the worker (mirror of src/types.ts ALLOWED_EVENT_NAMES).
 const ALLOWED_EVENT_NAMES = new Set([
   'quote_calculator_conversion',
   'callback_conversion',
@@ -62,72 +62,72 @@ function warn(m) {
 }
 
 function validate(cfg) {
-  if (!cfg || typeof cfg !== 'object') return err('Input nem objektum.');
+  if (!cfg || typeof cfg !== 'object') return err('Input is not an object.');
 
-  if (!cfg.site_id || typeof cfg.site_id !== 'string') err('site_id kötelező (string).');
+  if (!cfg.site_id || typeof cfg.site_id !== 'string') err('site_id is required (string).');
   if (!Array.isArray(cfg.hostnames) || cfg.hostnames.length === 0)
-    err('hostnames kötelező (nem üres tömb, pl. ["trapezlemezes.hu","www.trapezlemezes.hu"]).');
+    err('hostnames is required (non-empty array, e.g. ["trapezlemezes.hu","www.trapezlemezes.hu"]).');
   else
     for (const h of cfg.hostnames) {
       if (typeof h !== 'string' || !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(h))
-        err(`Érvénytelen hostname: ${JSON.stringify(h)}`);
+        err(`Invalid hostname: ${JSON.stringify(h)}`);
     }
 
   if (!ALLOWED_COUNTRIES.has(cfg.country_code))
-    err(`country_code érvénytelen (${cfg.country_code}); engedett: ${[...ALLOWED_COUNTRIES].join(', ')}.`);
-  if (!cfg.currency || typeof cfg.currency !== 'string') err('currency kötelező (pl. "HUF", "GBP").');
+    err(`country_code is invalid (${cfg.country_code}); allowed: ${[...ALLOWED_COUNTRIES].join(', ')}.`);
+  if (!cfg.currency || typeof cfg.currency !== 'string') err('currency is required (e.g. "HUF", "GBP").');
 
   // Meta
-  if (!cfg.meta || typeof cfg.meta !== 'object') err('meta blokk kötelező.');
+  if (!cfg.meta || typeof cfg.meta !== 'object') err('meta block is required.');
   else {
     if (!/^\d{5,}$/.test(String(cfg.meta.pixel_id || '')))
-      err(`meta.pixel_id érvénytelen (numerikus pixel ID kell), kapott: ${cfg.meta.pixel_id}`);
-    if (!cfg.meta.access_token) err('meta.access_token kötelező (CAPI token).');
+      err(`meta.pixel_id is invalid (a numeric pixel ID is required), got: ${cfg.meta.pixel_id}`);
+    if (!cfg.meta.access_token) err('meta.access_token is required (CAPI token).');
     if (cfg.meta.test_event_code)
       warn(
-        `meta.test_event_code = "${cfg.meta.test_event_code}" — PRODUCTION-ban KÖTELEZŐ kivenni (különben minden konverzió a Test stream-be megy).`
+        `meta.test_event_code = "${cfg.meta.test_event_code}" — MUST be removed in PRODUCTION (otherwise every conversion goes to the Test stream).`
       );
   }
 
   // GA4
-  if (!cfg.ga4 || typeof cfg.ga4 !== 'object') err('ga4 blokk kötelező.');
+  if (!cfg.ga4 || typeof cfg.ga4 !== 'object') err('ga4 block is required.');
   else {
     if (!/^G-[A-Z0-9]+$/.test(String(cfg.ga4.measurement_id || '')))
-      err(`ga4.measurement_id érvénytelen (G-XXXX formátum kell), kapott: ${cfg.ga4.measurement_id}`);
-    if (!cfg.ga4.api_secret) err('ga4.api_secret kötelező (MP api_secret a GA4 admin felületről).');
+      err(`ga4.measurement_id is invalid (G-XXXX format required), got: ${cfg.ga4.measurement_id}`);
+    if (!cfg.ga4.api_secret) err('ga4.api_secret is required (MP api_secret from the GA4 admin UI).');
   }
 
-  // Google Ads (opcionális — customer_id lehet null)
-  if (!cfg.gads || typeof cfg.gads !== 'object') err('gads blokk kötelező (customer_id lehet null).');
+  // Google Ads (optional — customer_id may be null)
+  if (!cfg.gads || typeof cfg.gads !== 'object') err('gads block is required (customer_id may be null).');
   else {
     const cid = cfg.gads.customer_id;
     if (cid !== null && cid !== undefined) {
       if (!/^\d{10}$/.test(String(cid)))
-        err(`gads.customer_id 10 számjegy KÖTŐJEL NÉLKÜL (UI: 123-456-7890 → 1234567890), kapott: ${cid}`);
+        err(`gads.customer_id must be 10 digits WITHOUT HYPHENS (UI: 123-456-7890 → 1234567890), got: ${cid}`);
     }
     const lcid = cfg.gads.login_customer_id;
     if (lcid !== null && lcid !== undefined && !/^\d{10}$/.test(String(lcid)))
-      err(`gads.login_customer_id 10 számjegy kötőjel nélkül vagy null, kapott: ${lcid}`);
+      err(`gads.login_customer_id must be 10 digits without hyphens or null, got: ${lcid}`);
     if (cfg.gads.conversion_actions) {
       for (const [ev, id] of Object.entries(cfg.gads.conversion_actions)) {
         if (!ALLOWED_EVENT_NAMES.has(ev))
-          err(`gads.conversion_actions ismeretlen event-név: ${ev} (engedett: ${[...ALLOWED_EVENT_NAMES].join(', ')}).`);
+          err(`gads.conversion_actions has an unknown event name: ${ev} (allowed: ${[...ALLOWED_EVENT_NAMES].join(', ')}).`);
         if (!/^\d+$/.test(String(id)))
-          err(`gads.conversion_actions["${ev}"] numerikus conversionAction ID kell, kapott: ${id}`);
+          err(`gads.conversion_actions["${ev}"] requires a numeric conversionAction ID, got: ${id}`);
       }
     }
     if (cid && !cfg.gads.conversion_actions)
-      warn('gads.customer_id meg van adva, de nincs conversion_actions — a Google Ads konverziók kimaradnak.');
+      warn('gads.customer_id is set, but there is no conversion_actions — Google Ads conversions will be skipped.');
   }
 
-  // Consent default ajánlás EEA-ra
+  // Consent default recommendation for EEA
   if (EEA_COUNTRIES.has(cfg.country_code) && cfg.require_consent !== true)
     warn(
-      `country_code=${cfg.country_code} (EEA) — ajánlott require_consent: true (GDPR fail-closed). Jelenleg: ${cfg.require_consent}.`
+      `country_code=${cfg.country_code} (EEA) — require_consent: true is recommended (GDPR fail-closed). Currently: ${cfg.require_consent}.`
     );
 }
 
-/** A worker SiteConfig alakja (src/lib/config.ts) — pontosan ezt tesszük a KV-be. */
+/** The worker's SiteConfig shape (src/lib/config.ts) — this is exactly what we put into KV. */
 function toSiteConfig(cfg) {
   const sc = {
     site_id: cfg.site_id,
@@ -153,7 +153,7 @@ function toSiteConfig(cfg) {
 }
 
 function routeBlock(hostnames) {
-  // A zóna a fő (apex) domain — a www-t is ugyanaz a zóna szolgálja ki.
+  // The zone is the main (apex) domain — the www is served by the same zone.
   const apex = hostnames
     .map((h) => h.replace(/^www\./, ''))
     .reduce((a, b) => (a.length <= b.length ? a : b));
@@ -174,28 +174,28 @@ function kvPutCommands(hostnames, json, nsId) {
 
 function integrationChecklist(cfg) {
   const host = cfg.hostnames[0];
-  return `# Integrációs ellenőrzőlista — ${cfg.site_id} (${host})
+  return `# Integration checklist — ${cfg.site_id} (${host})
 
-## Worker oldal
-- [ ] KV-bejegyzés(ek) feltöltve (lásd kv-put.sh / a fenti parancsok)
-- [ ] wrangler.toml: route-blokk hozzáadva (lásd routes.toml) → \`wrangler deploy\`
-- [ ] (ha Google Ads) OAuth elvégezve a customer_id-ra: GET /api/event/oauth-init (X-Admin-Token)
-${cfg.meta.test_event_code ? '- [ ] ⚠️ test_event_code KIVÉVE a KV-ből élesítés előtt' : ''}
+## Worker side
+- [ ] KV entry/entries uploaded (see kv-put.sh / the commands above)
+- [ ] wrangler.toml: route block added (see routes.toml) → \`wrangler deploy\`
+- [ ] (if Google Ads) OAuth done for the customer_id: GET /api/event/oauth-init (X-Admin-Token)
+${cfg.meta.test_event_code ? '- [ ] ⚠️ test_event_code REMOVED from KV before going live' : ''}
 
-## Astro site oldal
-- [ ] client-lib/ (worker-tracking.ts + uuid.ts) bemásolva az Astro projekt src/lib/-jébe
-- [ ] PUBLIC_TURNSTILE_SITE_KEY beállítva (.env) + Turnstile invisible widget az oldalon
+## Astro site side
+- [ ] client-lib/ (worker-tracking.ts + uuid.ts) copied into the Astro project's src/lib/
+- [ ] PUBLIC_TURNSTILE_SITE_KEY set (.env) + Turnstile invisible widget on the page
       (\`<div id="cf-turnstile-invisible">\`)
-- [ ] CookieYes (GTM-ből) aktív → a consent automatikusan a cookieyes-consent cookie-ból jön
-- [ ] Konverziós pontokon: \`trackConversion('<event_name>', { value, currency, user_data })\`
-      Engedett event-nevek: ${[...ALLOWED_EVENT_NAMES].join(', ')}
+- [ ] CookieYes (from GTM) active → consent comes automatically from the cookieyes-consent cookie
+- [ ] At conversion points: \`trackConversion('<event_name>', { value, currency, user_data })\`
+      Allowed event names: ${[...ALLOWED_EVENT_NAMES].join(', ')}
 
-## Ellenőrzés (deploy után)
+## Verification (after deploy)
 - [ ] curl https://${host}/api/event/health → {"status":"ok"}
-- [ ] Meta Events Manager → Test Events: a böngésző + szerver event AZONOS event_id-vel (dedup)
-- [ ] GA4 DebugView: a konverzió + (ha UTM) campaign_details látszik
-- [ ] Google Ads → Conversions: a feltöltés megjelenik (gclid match vagy Enhanced Conversions)
-- [ ] Cloudflare Workers Logs: nincs TRK-* error 24h-n át
+- [ ] Meta Events Manager → Test Events: the browser + server event with the SAME event_id (dedup)
+- [ ] GA4 DebugView: the conversion + (if UTM) campaign_details is visible
+- [ ] Google Ads → Conversions: the upload shows up (gclid match or Enhanced Conversions)
+- [ ] Cloudflare Workers Logs: no TRK-* error for 24h
 `;
 }
 
@@ -205,13 +205,13 @@ function main() {
   try {
     cfg = JSON.parse(readInput(args.input));
   } catch (e) {
-    console.error('Hibás JSON input:', e.message);
+    console.error('Invalid JSON input:', e.message);
     exit(1);
   }
 
   validate(cfg);
   if (ERRORS.length) {
-    console.error('❌ Validációs hibák:\n' + ERRORS.map((e) => '  - ' + e).join('\n'));
+    console.error('❌ Validation errors:\n' + ERRORS.map((e) => '  - ' + e).join('\n'));
     exit(1);
   }
 
@@ -221,7 +221,7 @@ function main() {
   const kv = kvPutCommands(cfg.hostnames, json, args.kvNamespaceId);
   const checklist = integrationChecklist(cfg);
 
-  if (WARNINGS.length) console.error('⚠️  Figyelmeztetések:\n' + WARNINGS.map((w) => '  - ' + w).join('\n') + '\n');
+  if (WARNINGS.length) console.error('⚠️  Warnings:\n' + WARNINGS.map((w) => '  - ' + w).join('\n') + '\n');
 
   if (args.out) {
     mkdirSync(args.out, { recursive: true });
@@ -229,12 +229,12 @@ function main() {
     writeFileSync(`${args.out}/routes.toml`, routes + '\n');
     writeFileSync(`${args.out}/kv-put.sh`, '#!/usr/bin/env bash\nset -euo pipefail\n' + kv + '\n');
     writeFileSync(`${args.out}/INTEGRATION.md`, checklist);
-    console.error(`✅ Kiírva: ${args.out}/ (site-config.json, routes.toml, kv-put.sh, INTEGRATION.md)`);
+    console.error(`✅ Written: ${args.out}/ (site-config.json, routes.toml, kv-put.sh, INTEGRATION.md)`);
   } else {
     console.log('=== KV site-config (' + cfg.hostnames.join(', ') + ') ===\n' + json);
-    console.log('\n=== wrangler.toml route-blokk ===\n' + routes);
-    console.log('\n=== KV put parancsok ===\n' + kv);
-    console.log('\n=== Integrációs ellenőrzőlista ===\n' + checklist);
+    console.log('\n=== wrangler.toml route block ===\n' + routes);
+    console.log('\n=== KV put commands ===\n' + kv);
+    console.log('\n=== Integration checklist ===\n' + checklist);
   }
 }
 
