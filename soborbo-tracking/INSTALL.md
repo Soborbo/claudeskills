@@ -28,8 +28,10 @@ hands over what is genuinely un-fetchable.
   Measurement ID. NOT the numeric property id.
 - **Google Ads `customer_id`** — Ads connector (`list_google_ads_customers`),
   10 digits, no hyphens. `login_customer_id` only if under an MCC.
-- **Google Ads `conversion_actions`** — Ads connector: action IDs, mapped to the
-  allowed gateway event names (see SKILL.md "Gateway event names").
+- **Google Ads `conversion_actions`** — Ads connector: OFFLINE conversion action IDs
+  for the CRM lifecycle events (Model 2: the server does Google Ads **only offline**,
+  via the Data Manager API), e.g. `lead_qualified`, `booking_confirmed`,
+  `revenue_confirmed`. On-site Google Ads is browser-owned (AWCT + EC).
 
 > If a connector is missing or returns nothing, fall back to asking the user for
 > that specific id — but try the connector first.
@@ -45,10 +47,18 @@ hands over what is genuinely un-fetchable.
 7. **`site_id`** — short slug (e.g. `trapezlemez`).
 8. **Market** — `country_code` + `currency` (e.g. HU/HUF, GB/GBP).
 9. **`require_consent`** — `true` for EEA markets (HU/EU/DE/FR/IT/ES…), else `false`.
-10. **Greenfield or migration?** — is there ALREADY a live browser GA4 on this
-    site? If yes → migration path (see Step 2, "omit the `ga4` block").
-11. **OAuth consent** — confirm they'll approve the one-time Google Ads OAuth
-    (Step 3) when prompted. Only needed if there is a `customer_id`.
+10. **Greenfield or migration?** — is there ALREADY a live browser GA4 on this site?
+    Affects the parallel-run/cutover plan. NOTE (Model 2): the gateway sends **no**
+    on-site GA4 (the browser owns it) → a live browser GA4 does NOT double-count. The
+    `ga4` block is **offline-only** (CRM augment, Step 2) — include it for offline GA4,
+    omit to skip.
+11. **OAuth consent** — confirm they'll approve the one-time Google Ads OAuth (Step 3,
+    `datamanager` scope) when prompted. Only needed if there is a `customer_id`.
+12. **Checkout flow (e-commerce sites only)** — which model: `lead-gen` (forms only) /
+    `lead-style checkout (A)` (order request, price may still change → Meta Lead, never
+    purchase) / `real payment (B)` (fixed price → `purchase`, value-optimizable)? Drives
+    which canonical events the site emits (`view_item`/`add_to_cart`/`begin_checkout` +
+    `order_request_submitted` for A, or `add_payment_info` + `purchase` for B).
 
 > **Guardrail:** secrets (#1, #2) go ONLY into Cloudflare KV, **never** into git or
 > any file committed to a repo. Build the generator input in a temp dir.
@@ -75,8 +85,10 @@ Reference: `examples/README.md`, `docs/cloudflare-setup.md`.
 4. **Astro config**: `output: 'server'` + `@astrojs/cloudflare` adapter. Enable
    Google Tag Gateway (`docs/cloudflare-setup.md`).
 5. **Conversion call sites**: wrap forms in `<TrackedForm …>`; use `<PhoneLink/>` /
-   `<CallbackButton/>` for tel/callback. Custom points: `trackServerEvent(...)`.
-   (See SKILL.md "Usage" + `examples/contact.astro`.)
+   `<CallbackButton/>` for tel/callback. For scraper-hidden contact, use
+   `<RevealContact type="email|phone" value="…" />` (click-to-reveal that also fires
+   `email_address_clicked` / `phone_number_clicked`). Custom points:
+   `trackServerEvent(...)`. (See SKILL.md "Usage" + `examples/contact.astro`.)
 6. **GTM**: import `gtm/container.json` into the user's GTM container and wire the
    GA4 event names per `docs/CANONICAL-EVENTS.md` (`docs/gtm-setup.md`).
 7. **Verify locally**: `npm test` + `npm run typecheck` pass; load a page with
@@ -100,12 +112,15 @@ generator — never hand-write the config JSON.**
      "meta": { "pixel_id": "…", "access_token": "…" },
      "ga4":  { "measurement_id": "G-XXXX", "api_secret": "…" },
      "gads": { "customer_id": "1234567890", "login_customer_id": null,
-               "conversion_actions": { "callback_conversion": "…", "phone_conversion": "…" } }
+               "conversion_actions": { "lead_qualified": "…", "booking_confirmed": "…" } }
    }
    ```
-   **Migration path:** if Step 0 #10 was "yes, live browser GA4 exists", **omit the
-   `ga4` block** so the gateway does NOT double-count GA4 MP alongside the existing
-   browser GA4 (`docs/MIGRATION-existing-sites.md`).
+   **Model 2:** `gads.conversion_actions` keys are the **offline CRM events** (the
+   server does Google Ads only offline, via the Data Manager API — `lead_qualified`,
+   `booking_confirmed`, `revenue_confirmed`, …). On-site Google Ads is browser-owned.
+   The `ga4` block is **offline-only** (CRM GA4 augment); include it for offline GA4,
+   omit to skip — either way on-site GA4 is browser-only, so there is no GA4
+   double-count (`docs/MIGRATION-existing-sites.md`).
 2. **Generate:**
    ```bash
    node server/generate-site.mjs --input /tmp/<site>.json --out /tmp/<site>-out
@@ -125,8 +140,11 @@ generator — never hand-write the config JSON.**
 ## Step 3 — Google Ads OAuth (once per `customer_id`, only if Ads is configured)
 
 `GET /api/event/oauth-init` with the admin token (`X-Admin-Token`) → populates the
-OAUTH_TOKENS KV. Without it, Google Ads uploads fail. Prompt the user to complete
-the one-time consent (Step 0 #11).
+OAUTH_TOKENS KV. The OAuth scope MUST include **`datamanager`** — the offline Google
+Ads leg uploads via the **Data Manager API** (the legacy `uploadClickConversions` is
+closed to new adopters from 2026-06-15; no developer token needed). Without OAuth,
+Google Ads uploads fail. Prompt the user to complete the one-time consent (Step 0 #11).
+Tip: run the gateway with `DATAMANAGER_VALIDATE_ONLY=1` first to dry-run the ingest.
 
 ---
 
@@ -151,8 +169,10 @@ Follow the generated `INTEGRATION.md` "Verification" section and `docs/CHECKLIST
   — otherwise every real conversion lands in Meta Test Events, out of optimization
   (the generator warns about this).
 - **EEA → `require_consent: true`** + CookieYes wired.
-- **Migration:** if a live browser GA4 already fires, omit the gateway `ga4` block;
-  don't rename live GA4 events; run paths in parallel ≥7 days
-  (`docs/MIGRATION-existing-sites.md`, `docs/CHECKLIST.md`).
+- **Migration:** Model 2 means a live browser GA4 does NOT double-count (the gateway
+  sends no on-site GA4); the `ga4` block is offline-only. For existing live sites don't
+  rename live GA4 events mid-stream — use the per-site `event-aliases.json` +
+  `cutover_date` to union old+new in reporting; run paths in parallel ≥7 days
+  (`docs/MIGRATION-existing-sites.md`, `docs/EVENT-MIGRATION.md`, `docs/CHECKLIST.md`).
 - **One generator, one source of truth** — for the config format always run
   `server/generate-site.mjs`; never improvise the JSON.
