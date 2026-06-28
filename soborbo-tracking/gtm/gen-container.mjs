@@ -117,17 +117,18 @@ const V_UPD = (() => {
 })();
 
 // ── Triggers (Custom Event) ──────────────────────────────────────────
-const T_LEAD = customEventTrigger('lead_submit');
-const T_CONTACT = customEventTrigger('contact_submit');
-const T_CALLBACK = customEventTrigger('callback_click');
-const T_PHONE = customEventTrigger('phone_click');
-const T_EMAIL = customEventTrigger('email_click');
-const T_WHATSAPP = customEventTrigger('whatsapp_click');
-const T_CALC_DONE = customEventTrigger('calculator_complete');
-const T_CALC_START = customEventTrigger('calculator_start');
-const T_CALC_STEP = customEventTrigger('calculator_step');
-const T_CALC_OPT = customEventTrigger('calculator_option');
-const T_ABANDON = customEventTrigger('form_abandon');
+// Canonical dataLayer event names (events.json). The lead/quote form AND the
+// calculator completion share quote_calculator_submitted (§2.1) → ONE trigger.
+const T_QUOTE = customEventTrigger('quote_calculator_submitted');
+const T_CONTACT = customEventTrigger('contact_form_submitted');
+const T_CALLBACK = customEventTrigger('callback_request_submitted');
+const T_PHONE = customEventTrigger('phone_number_clicked');
+const T_EMAIL = customEventTrigger('email_address_clicked');
+const T_WHATSAPP = customEventTrigger('whatsapp_button_clicked');
+const T_CALC_OPEN = customEventTrigger('quote_calculator_opened');
+const T_CALC_STEP = customEventTrigger('quote_calculator_step_completed');
+const T_CALC_OPT = customEventTrigger('quote_calculator_option_selected');
+const T_ABANDON = customEventTrigger('form_abandoned');
 const T_SCROLL = customEventTrigger('scroll_depth');
 
 // ── Base tags ────────────────────────────────────────────────────────
@@ -141,16 +142,16 @@ tag('Conversion Linker', 'gclidw', [
   bool('enableCrossDomain', false),
 ], [ALL_PAGES]);
 
-// GA4 Configuration (Google tag)
-const GA4_CONFIG = tag('GA4 - Configuration', 'gaawc', [
-  tmpl('measurementId', GA4_ID),
-  bool('sendPageView', true),
+// Google tag (googtag) — first-party GA4 measurement (Google Tag Gateway).
+// Replaces the legacy GA4 Configuration tag (gaawc) per §5.6.
+tag('Google Tag', 'googtag', [
+  tmpl('tagId', GA4_ID),
 ], [ALL_PAGES], { consentSettings: consent('analytics_storage') });
 
 // ── GA4 event tag factory ────────────────────────────────────────────
 function ga4Event(name, ga4EventName, firing, params) {
   tag(name, 'gaawe', [
-    tagRef('measurementId', 'GA4 - Configuration'),
+    tmpl('measurementId', GA4_ID),
     tmpl('eventName', ga4EventName),
     { type: 'LIST', key: 'eventParameters', list: params.map(([k, v]) => ({
       type: 'MAP', map: [tmpl('name', k), tmpl('value', v)],
@@ -158,37 +159,38 @@ function ga4Event(name, ga4EventName, firing, params) {
   ], firing, { consentSettings: consent('analytics_storage') });
 }
 
-// Conversions — canonical GA4 event names
-ga4Event('GA4 - contact_form_submit', 'contact_form_submit', [T_LEAD, T_CONTACT], [
+// Conversions — canonical GA4 event names (= dataLayer names, = gateway names)
+ga4Event('GA4 - quote_calculator_submitted', 'quote_calculator_submitted', [T_QUOTE], [
+  ['value', V_VALUE], ['currency', V_CURRENCY], ['event_id', V_EVENT_ID], ['calculator_name', V_CALC],
+  ['session_id', V_SESSION], ['device', V_DEVICE], ['source', V_SOURCE], ['service', V_SERVICE],
+]);
+ga4Event('GA4 - contact_form_submitted', 'contact_form_submitted', [T_CONTACT], [
   ['value', V_VALUE], ['currency', V_CURRENCY], ['event_id', V_EVENT_ID],
   ['session_id', V_SESSION], ['device', V_DEVICE], ['source', V_SOURCE], ['service', V_SERVICE],
 ]);
-ga4Event('GA4 - callback_conversion', 'callback_conversion', [T_CALLBACK], [
+ga4Event('GA4 - callback_request_submitted', 'callback_request_submitted', [T_CALLBACK], [
   ['event_id', V_EVENT_ID], ['session_id', V_SESSION], ['device', V_DEVICE],
 ]);
-ga4Event('GA4 - phone_conversion', 'phone_conversion', [T_PHONE], [
+ga4Event('GA4 - phone_number_clicked', 'phone_number_clicked', [T_PHONE], [
   ['event_id', V_EVENT_ID], ['session_id', V_SESSION], ['device', V_DEVICE],
 ]);
-ga4Event('GA4 - email_conversion', 'email_conversion', [T_EMAIL], [
+ga4Event('GA4 - email_address_clicked', 'email_address_clicked', [T_EMAIL], [
   ['event_id', V_EVENT_ID], ['session_id', V_SESSION],
 ]);
-ga4Event('GA4 - whatsapp_conversion', 'whatsapp_conversion', [T_WHATSAPP], [
+ga4Event('GA4 - whatsapp_button_clicked', 'whatsapp_button_clicked', [T_WHATSAPP], [
   ['event_id', V_EVENT_ID], ['session_id', V_SESSION],
-]);
-ga4Event('GA4 - quote_calculator_conversion', 'quote_calculator_conversion', [T_CALC_DONE], [
-  ['value', V_VALUE], ['currency', V_CURRENCY], ['event_id', V_EVENT_ID], ['calculator_name', V_CALC],
 ]);
 // Engagement (regular events, not Key Events)
-ga4Event('GA4 - calculator_start', 'calculator_start', [T_CALC_START], [
+ga4Event('GA4 - quote_calculator_opened', 'quote_calculator_opened', [T_CALC_OPEN], [
   ['calculator_name', V_CALC], ['session_id', V_SESSION],
 ]);
-ga4Event('GA4 - calculator_step', 'calculator_step', [T_CALC_STEP], [
+ga4Event('GA4 - quote_calculator_step_completed', 'quote_calculator_step_completed', [T_CALC_STEP], [
   ['step_id', V_STEP_ID], ['step_index', V_STEP_IDX], ['session_id', V_SESSION],
 ]);
-ga4Event('GA4 - calculator_option', 'calculator_option', [T_CALC_OPT], [
+ga4Event('GA4 - quote_calculator_option_selected', 'quote_calculator_option_selected', [T_CALC_OPT], [
   ['step_id', V_STEP_ID], ['session_id', V_SESSION],
 ]);
-ga4Event('GA4 - form_abandon', 'form_abandon', [T_ABANDON], [
+ga4Event('GA4 - form_abandoned', 'form_abandoned', [T_ABANDON], [
   ['form_id', V_FORM_ID], ['last_field', V_LAST_FIELD], ['session_id', V_SESSION],
 ]);
 ga4Event('GA4 - scroll_depth', 'scroll_depth', [T_SCROLL], [
@@ -218,7 +220,7 @@ tag('Meta Pixel - Lead', 'html', [
     "  fbq('track','Lead', cd, { eventID: '" + V_EVENT_ID + "' });\n" +
     '</script>'),
   bool('supportDocumentWrite', false),
-], [T_LEAD, T_CALLBACK, T_CALC_DONE], { consentSettings: consent('ad_storage', 'ad_user_data') });
+], [T_QUOTE, T_CALLBACK], { consentSettings: consent('ad_storage', 'ad_user_data') });
 
 tag('Meta Pixel - Contact', 'html', [
   tmpl('html',
@@ -239,7 +241,7 @@ tag('Google Ads - Conversion', 'awct', [
   bool('rdp', false),
   bool('enableUserProvidedData', true),
   tmpl('userProvidedData', V_UPD),
-], [T_LEAD, T_CALLBACK, T_PHONE, T_CALC_DONE], {
+], [T_QUOTE, T_CALLBACK, T_PHONE], {
   consentSettings: consent('ad_storage', 'ad_user_data'),
 });
 

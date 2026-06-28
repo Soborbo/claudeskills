@@ -9,14 +9,14 @@ import { setCkyConsent, resetAll, getDataLayer } from './helpers';
 
 // A CANONICAL-EVENTS.md mérvadó listái — ha a kód eltér, ez a teszt elbukik.
 const BROWSER_EVENTS = [
-  'calculator_start', 'calculator_step', 'calculator_option', 'calculator_complete',
-  'lead_submit', 'contact_submit', 'phone_click', 'callback_click',
-  'email_click', 'whatsapp_click', 'form_abandon', 'scroll_depth',
+  'quote_calculator_opened', 'quote_calculator_step_completed', 'quote_calculator_option_selected', 'quote_calculator_submitted',
+  'quote_calculator_submitted', 'contact_form_submitted', 'phone_number_clicked', 'callback_request_submitted',
+  'email_address_clicked', 'whatsapp_button_clicked', 'form_abandoned', 'scroll_depth',
 ];
 const GATEWAY_ALLOWED = [
-  'quote_calculator_conversion', 'callback_conversion', 'contact_form_submit',
-  'phone_conversion', 'email_conversion', 'whatsapp_conversion',
-  'quote_calculator_first_view', 'video_play',
+  'quote_calculator_submitted', 'callback_request_submitted', 'contact_form_submitted',
+  'phone_number_clicked', 'email_address_clicked', 'whatsapp_button_clicked',
+  'quote_calculator_opened', 'video_play',
 ];
 
 beforeEach(() => {
@@ -38,8 +38,8 @@ describe('contract — böngésző dataLayer event-nevek', () => {
     trackWhatsappClick();
 
     const emitted = new Set(getDataLayer().map((e) => e.event as string));
-    for (const name of ['calculator_start', 'calculator_step', 'calculator_option', 'calculator_complete',
-      'lead_submit', 'contact_submit', 'phone_click', 'callback_click', 'email_click', 'whatsapp_click']) {
+    for (const name of ['quote_calculator_opened', 'quote_calculator_step_completed', 'quote_calculator_option_selected', 'quote_calculator_submitted',
+      'quote_calculator_submitted', 'contact_form_submitted', 'phone_number_clicked', 'callback_request_submitted', 'email_address_clicked', 'whatsapp_button_clicked']) {
       expect(emitted.has(name)).toBe(true);
     }
     // egyik emittált név sincs a dokumentált listán kívül
@@ -57,7 +57,7 @@ describe('contract — gateway allowed event-nevek', () => {
     }
     // sanity: the click map covers all four click conversions
     expect(Object.values(CLICK_GATEWAY_EVENT).sort()).toEqual(
-      ['callback_conversion', 'email_conversion', 'phone_conversion', 'whatsapp_conversion'],
+      ['callback_request_submitted', 'email_address_clicked', 'phone_number_clicked', 'whatsapp_button_clicked'],
     );
   });
 });

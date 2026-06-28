@@ -43,18 +43,13 @@
         "accountId": "0",
         "containerId": "0",
         "tagId": "2",
-        "name": "GA4 - Configuration",
-        "type": "gaawc",
+        "name": "Google Tag",
+        "type": "googtag",
         "parameter": [
           {
             "type": "TEMPLATE",
-            "key": "measurementId",
+            "key": "tagId",
             "value": "{{Const - GA4 Measurement ID}}"
-          },
-          {
-            "type": "BOOLEAN",
-            "key": "sendPageView",
-            "value": true
           }
         ],
         "fingerprint": "0",
@@ -79,18 +74,180 @@
         "accountId": "0",
         "containerId": "0",
         "tagId": "3",
-        "name": "GA4 - contact_form_submit",
+        "name": "GA4 - quote_calculator_submitted",
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
             "key": "eventName",
-            "value": "contact_form_submit"
+            "value": "quote_calculator_submitted"
+          },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  {
+                    "type": "TEMPLATE",
+                    "key": "name",
+                    "value": "value"
+                  },
+                  {
+                    "type": "TEMPLATE",
+                    "key": "value",
+                    "value": "{{DLV - value}}"
+                  }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  {
+                    "type": "TEMPLATE",
+                    "key": "name",
+                    "value": "currency"
+                  },
+                  {
+                    "type": "TEMPLATE",
+                    "key": "value",
+                    "value": "{{DLV - currency}}"
+                  }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  {
+                    "type": "TEMPLATE",
+                    "key": "name",
+                    "value": "event_id"
+                  },
+                  {
+                    "type": "TEMPLATE",
+                    "key": "value",
+                    "value": "{{DLV - event_id}}"
+                  }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  {
+                    "type": "TEMPLATE",
+                    "key": "name",
+                    "value": "calculator_name"
+                  },
+                  {
+                    "type": "TEMPLATE",
+                    "key": "value",
+                    "value": "{{DLV - calculator_name}}"
+                  }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  {
+                    "type": "TEMPLATE",
+                    "key": "name",
+                    "value": "session_id"
+                  },
+                  {
+                    "type": "TEMPLATE",
+                    "key": "value",
+                    "value": "{{DLV - session_id}}"
+                  }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  {
+                    "type": "TEMPLATE",
+                    "key": "name",
+                    "value": "device"
+                  },
+                  {
+                    "type": "TEMPLATE",
+                    "key": "value",
+                    "value": "{{DLV - device}}"
+                  }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  {
+                    "type": "TEMPLATE",
+                    "key": "name",
+                    "value": "source"
+                  },
+                  {
+                    "type": "TEMPLATE",
+                    "key": "value",
+                    "value": "{{DLV - source}}"
+                  }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  {
+                    "type": "TEMPLATE",
+                    "key": "name",
+                    "value": "service"
+                  },
+                  {
+                    "type": "TEMPLATE",
+                    "key": "value",
+                    "value": "{{DLV - service}}"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "fingerprint": "0",
+        "firingTriggerId": [
+          "1"
+        ],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "consentSettings": {
+          "consentStatus": "NEEDED",
+          "consentType": {
+            "type": "LIST",
+            "list": [
+              {
+                "type": "TEMPLATE",
+                "value": "analytics_storage"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "4",
+        "name": "GA4 - contact_form_submitted",
+        "type": "gaawe",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "measurementId",
+            "value": "{{Const - GA4 Measurement ID}}"
+          },
+          {
+            "type": "TEMPLATE",
+            "key": "eventName",
+            "value": "contact_form_submitted"
           },
           {
             "type": "LIST",
@@ -206,7 +363,6 @@
         ],
         "fingerprint": "0",
         "firingTriggerId": [
-          "1",
           "2"
         ],
         "tagFiringOption": "ONCE_PER_EVENT",
@@ -226,19 +382,19 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "4",
-        "name": "GA4 - callback_conversion",
+        "tagId": "5",
+        "name": "GA4 - callback_request_submitted",
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
             "key": "eventName",
-            "value": "callback_conversion"
+            "value": "callback_request_submitted"
           },
           {
             "type": "LIST",
@@ -313,19 +469,19 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "5",
-        "name": "GA4 - phone_conversion",
+        "tagId": "6",
+        "name": "GA4 - phone_number_clicked",
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
             "key": "eventName",
-            "value": "phone_conversion"
+            "value": "phone_number_clicked"
           },
           {
             "type": "LIST",
@@ -400,19 +556,19 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "6",
-        "name": "GA4 - email_conversion",
+        "tagId": "7",
+        "name": "GA4 - email_address_clicked",
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
             "key": "eventName",
-            "value": "email_conversion"
+            "value": "email_address_clicked"
           },
           {
             "type": "LIST",
@@ -472,19 +628,19 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "7",
-        "name": "GA4 - whatsapp_conversion",
+        "tagId": "8",
+        "name": "GA4 - whatsapp_button_clicked",
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
             "key": "eventName",
-            "value": "whatsapp_conversion"
+            "value": "whatsapp_button_clicked"
           },
           {
             "type": "LIST",
@@ -544,121 +700,19 @@
       {
         "accountId": "0",
         "containerId": "0",
-        "tagId": "8",
-        "name": "GA4 - quote_calculator_conversion",
-        "type": "gaawe",
-        "parameter": [
-          {
-            "type": "TAG_REFERENCE",
-            "key": "measurementId",
-            "value": "GA4 - Configuration"
-          },
-          {
-            "type": "TEMPLATE",
-            "key": "eventName",
-            "value": "quote_calculator_conversion"
-          },
-          {
-            "type": "LIST",
-            "key": "eventParameters",
-            "list": [
-              {
-                "type": "MAP",
-                "map": [
-                  {
-                    "type": "TEMPLATE",
-                    "key": "name",
-                    "value": "value"
-                  },
-                  {
-                    "type": "TEMPLATE",
-                    "key": "value",
-                    "value": "{{DLV - value}}"
-                  }
-                ]
-              },
-              {
-                "type": "MAP",
-                "map": [
-                  {
-                    "type": "TEMPLATE",
-                    "key": "name",
-                    "value": "currency"
-                  },
-                  {
-                    "type": "TEMPLATE",
-                    "key": "value",
-                    "value": "{{DLV - currency}}"
-                  }
-                ]
-              },
-              {
-                "type": "MAP",
-                "map": [
-                  {
-                    "type": "TEMPLATE",
-                    "key": "name",
-                    "value": "event_id"
-                  },
-                  {
-                    "type": "TEMPLATE",
-                    "key": "value",
-                    "value": "{{DLV - event_id}}"
-                  }
-                ]
-              },
-              {
-                "type": "MAP",
-                "map": [
-                  {
-                    "type": "TEMPLATE",
-                    "key": "name",
-                    "value": "calculator_name"
-                  },
-                  {
-                    "type": "TEMPLATE",
-                    "key": "value",
-                    "value": "{{DLV - calculator_name}}"
-                  }
-                ]
-              }
-            ]
-          }
-        ],
-        "fingerprint": "0",
-        "firingTriggerId": [
-          "7"
-        ],
-        "tagFiringOption": "ONCE_PER_EVENT",
-        "consentSettings": {
-          "consentStatus": "NEEDED",
-          "consentType": {
-            "type": "LIST",
-            "list": [
-              {
-                "type": "TEMPLATE",
-                "value": "analytics_storage"
-              }
-            ]
-          }
-        }
-      },
-      {
-        "accountId": "0",
-        "containerId": "0",
         "tagId": "9",
-        "name": "GA4 - calculator_start",
+        "name": "GA4 - quote_calculator_opened",
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
             "key": "eventName",
-            "value": "calculator_start"
+            "value": "quote_calculator_opened"
           },
           {
             "type": "LIST",
@@ -699,7 +753,7 @@
         ],
         "fingerprint": "0",
         "firingTriggerId": [
-          "8"
+          "7"
         ],
         "tagFiringOption": "ONCE_PER_EVENT",
         "consentSettings": {
@@ -719,18 +773,18 @@
         "accountId": "0",
         "containerId": "0",
         "tagId": "10",
-        "name": "GA4 - calculator_step",
+        "name": "GA4 - quote_calculator_step_completed",
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
             "key": "eventName",
-            "value": "calculator_step"
+            "value": "quote_calculator_step_completed"
           },
           {
             "type": "LIST",
@@ -786,7 +840,7 @@
         ],
         "fingerprint": "0",
         "firingTriggerId": [
-          "9"
+          "8"
         ],
         "tagFiringOption": "ONCE_PER_EVENT",
         "consentSettings": {
@@ -806,18 +860,18 @@
         "accountId": "0",
         "containerId": "0",
         "tagId": "11",
-        "name": "GA4 - calculator_option",
+        "name": "GA4 - quote_calculator_option_selected",
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
             "key": "eventName",
-            "value": "calculator_option"
+            "value": "quote_calculator_option_selected"
           },
           {
             "type": "LIST",
@@ -858,7 +912,7 @@
         ],
         "fingerprint": "0",
         "firingTriggerId": [
-          "10"
+          "9"
         ],
         "tagFiringOption": "ONCE_PER_EVENT",
         "consentSettings": {
@@ -878,18 +932,18 @@
         "accountId": "0",
         "containerId": "0",
         "tagId": "12",
-        "name": "GA4 - form_abandon",
+        "name": "GA4 - form_abandoned",
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
             "key": "eventName",
-            "value": "form_abandon"
+            "value": "form_abandoned"
           },
           {
             "type": "LIST",
@@ -945,7 +999,7 @@
         ],
         "fingerprint": "0",
         "firingTriggerId": [
-          "11"
+          "10"
         ],
         "tagFiringOption": "ONCE_PER_EVENT",
         "consentSettings": {
@@ -969,9 +1023,9 @@
         "type": "gaawe",
         "parameter": [
           {
-            "type": "TAG_REFERENCE",
+            "type": "TEMPLATE",
             "key": "measurementId",
-            "value": "GA4 - Configuration"
+            "value": "{{Const - GA4 Measurement ID}}"
           },
           {
             "type": "TEMPLATE",
@@ -1017,7 +1071,7 @@
         ],
         "fingerprint": "0",
         "firingTriggerId": [
-          "12"
+          "11"
         ],
         "tagFiringOption": "ONCE_PER_EVENT",
         "consentSettings": {
@@ -1094,8 +1148,7 @@
         "fingerprint": "0",
         "firingTriggerId": [
           "1",
-          "3",
-          "7"
+          "3"
         ],
         "tagFiringOption": "ONCE_PER_EVENT",
         "consentSettings": {
@@ -1215,8 +1268,7 @@
         "firingTriggerId": [
           "1",
           "3",
-          "4",
-          "7"
+          "4"
         ],
         "tagFiringOption": "ONCE_PER_EVENT",
         "consentSettings": {
@@ -1242,7 +1294,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "1",
-        "name": "CE - lead_submit",
+        "name": "CE - quote_calculator_submitted",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1256,7 +1308,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "lead_submit"
+                "value": "quote_calculator_submitted"
               }
             ]
           }
@@ -1267,7 +1319,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "2",
-        "name": "CE - contact_submit",
+        "name": "CE - contact_form_submitted",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1281,7 +1333,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "contact_submit"
+                "value": "contact_form_submitted"
               }
             ]
           }
@@ -1292,7 +1344,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "3",
-        "name": "CE - callback_click",
+        "name": "CE - callback_request_submitted",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1306,7 +1358,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "callback_click"
+                "value": "callback_request_submitted"
               }
             ]
           }
@@ -1317,7 +1369,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "4",
-        "name": "CE - phone_click",
+        "name": "CE - phone_number_clicked",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1331,7 +1383,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "phone_click"
+                "value": "phone_number_clicked"
               }
             ]
           }
@@ -1342,7 +1394,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "5",
-        "name": "CE - email_click",
+        "name": "CE - email_address_clicked",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1356,7 +1408,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "email_click"
+                "value": "email_address_clicked"
               }
             ]
           }
@@ -1367,7 +1419,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "6",
-        "name": "CE - whatsapp_click",
+        "name": "CE - whatsapp_button_clicked",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1381,7 +1433,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "whatsapp_click"
+                "value": "whatsapp_button_clicked"
               }
             ]
           }
@@ -1392,7 +1444,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "7",
-        "name": "CE - calculator_complete",
+        "name": "CE - quote_calculator_opened",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1406,7 +1458,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "calculator_complete"
+                "value": "quote_calculator_opened"
               }
             ]
           }
@@ -1417,7 +1469,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "8",
-        "name": "CE - calculator_start",
+        "name": "CE - quote_calculator_step_completed",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1431,7 +1483,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "calculator_start"
+                "value": "quote_calculator_step_completed"
               }
             ]
           }
@@ -1442,7 +1494,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "9",
-        "name": "CE - calculator_step",
+        "name": "CE - quote_calculator_option_selected",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1456,7 +1508,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "calculator_step"
+                "value": "quote_calculator_option_selected"
               }
             ]
           }
@@ -1467,7 +1519,7 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "10",
-        "name": "CE - calculator_option",
+        "name": "CE - form_abandoned",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [
           {
@@ -1481,7 +1533,7 @@
               {
                 "type": "TEMPLATE",
                 "key": "arg1",
-                "value": "calculator_option"
+                "value": "form_abandoned"
               }
             ]
           }
@@ -1492,31 +1544,6 @@
         "accountId": "0",
         "containerId": "0",
         "triggerId": "11",
-        "name": "CE - form_abandon",
-        "type": "CUSTOM_EVENT",
-        "customEventFilter": [
-          {
-            "type": "EQUALS",
-            "parameter": [
-              {
-                "type": "TEMPLATE",
-                "key": "arg0",
-                "value": "{{_event}}"
-              },
-              {
-                "type": "TEMPLATE",
-                "key": "arg1",
-                "value": "form_abandon"
-              }
-            ]
-          }
-        ],
-        "fingerprint": "0"
-      },
-      {
-        "accountId": "0",
-        "containerId": "0",
-        "triggerId": "12",
         "name": "CE - scroll_depth",
         "type": "CUSTOM_EVENT",
         "customEventFilter": [

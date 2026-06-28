@@ -352,11 +352,11 @@ export function collectAttribution(): AttributionParams {
 // retry. Higher-risk events (forms, callback) are still skipped: the gateway
 // HARD-REJECTS token-less forms, so dispatching them would just be a wasted beacon.
 // This set must match the worker's DEGRADED_LOW_RISK_EVENTS (src/lib/degraded.ts)
-// EXACTLY — callback_conversion is deliberately excluded on both sides.
+// EXACTLY — callback_request_submitted is deliberately excluded on both sides.
 const DEGRADED_LOW_RISK_EVENTS: ReadonlySet<string> = new Set([
-  'phone_conversion',
-  'email_conversion',
-  'whatsapp_conversion'
+  'phone_number_clicked',
+  'email_address_clicked',
+  'whatsapp_button_clicked'
 ]);
 
 export async function sendToWorker(payload: ConversionPayload): Promise<boolean> {

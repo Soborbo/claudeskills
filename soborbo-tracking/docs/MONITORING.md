@@ -81,9 +81,9 @@ npx wrangler secret put ALERT_FROM            # optional, verified Resend sender
 ## Adapting `KEY_EVENTS`
 
 The default list covers the v5 lead-gen conversion taxonomy (the gateway
-`event_name`s — see CANONICAL-EVENTS.md): `contact_form_submit`,
-`quote_calculator_conversion`, `callback_conversion`, `phone_conversion`,
-`email_conversion`, `whatsapp_conversion`.
+`event_name`s — see CANONICAL-EVENTS.md): `contact_form_submitted`,
+`quote_calculator_submitted`, `callback_request_submitted`, `phone_number_clicked`,
+`email_address_clicked`, `whatsapp_button_clicked`.
 
 For e-commerce, swap to `purchase`, `add_to_cart`, `begin_checkout`,
 `view_item`. **Engagement-only events** (`form_start`, `scroll_*`,

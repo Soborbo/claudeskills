@@ -11,7 +11,7 @@
 
 ## 2. Submit — Single Event
 
-- [ ] One click = exactly one `lead_submit` in dataLayer
+- [ ] One click = exactly one `quote_calculator_submitted` in dataLayer
 - [ ] No recursion (form submits once, handler runs once)
 - [ ] Invalid form → browser validation, NO tracking
 - [ ] Valid form → hidden fields populated → redirect to action URL
@@ -42,19 +42,19 @@
 
 ## 6. Form Abandonment
 
-- [ ] Focus field → wait 60s → `form_abandon` with `last_field`
+- [ ] Focus field → wait 60s → `form_abandoned` with `last_field`
 - [ ] Submit before 60s → no abandon event
 - [ ] Route change before submit → abandon timer cleaned up
 
 ## 7. Phone + Callback + Email + WhatsApp (both channels)
 
-- [ ] Click tel: → `phone_click` (dataLayer) **and** `phone_conversion` (gateway POST), same `event_id`
+- [ ] Click tel: → `phone_number_clicked` (dataLayer) **and** `phone_number_clicked` (gateway POST), same `event_id`
 - [ ] Click again same session → no duplicate on EITHER channel (session dedup)
 - [ ] Check sessionStorage `sb_click_phone_*`
 - [ ] Page reload → still deduped within session timeout
-- [ ] Callback button → `callback_click` + `callback_conversion`
-- [ ] mailto: link → `email_click` + `email_conversion`
-- [ ] WhatsApp link (wa.me / *.whatsapp.com) → `whatsapp_click` + `whatsapp_conversion`
+- [ ] Callback button → `callback_request_submitted` + `callback_request_submitted`
+- [ ] mailto: link → `email_address_clicked` + `email_address_clicked`
+- [ ] WhatsApp link (wa.me / *.whatsapp.com) → `whatsapp_button_clicked` + `whatsapp_button_clicked`
 - [ ] Marketing-only consent (analytics denied) → gateway conversion STILL fires, no dataLayer event
 - [ ] Analytics-only consent (marketing denied) → dataLayer event fires, NO gateway POST
 

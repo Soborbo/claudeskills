@@ -1,62 +1,78 @@
 # Canonical event map (source of truth for names)
 
-This file is **authoritative** for event names in this skill. (`EVENTS.md` is the
-funnel-adaptation guide; in case of a name conflict, THIS file wins.)
+This file is **authoritative** for browser event names in this skill. The deeper
+source of truth is the engine's `events.json` (vendored at `../events.json`); the
+generators read it and `server/check-event-contract.mjs` guards drift. (`EVENTS.md`
+is the funnel-adaptation guide; in a name conflict THIS file wins.)
 
-## The two channels and the GA4 double-counting (IMPORTANT)
+**One canonical name per event, across all layers** — the browser dataLayer event,
+the GA4 event name, and the gateway `event_name` are now the SAME string. The old
+`lead_submit`(dataLayer)→`contact_form_submit`(GA4) duality is gone.
 
-- **Meta** deduplicates by `event_id` (browser Pixel ↔ server CAPI) → it can safely
-  fire on both channels.
-- **GA4 does NOT deduplicate.** If the browser GTM GA4 tag AND the gateway GA4 MP both
-  fire for the same event → it **double-counts**. So for GA4, pick **one channel**:
-  - **Default (recommended): GA4 = browser (GTM)**, with the gateway GA4 MP **skipped**.
-    How: in the site KV config **omit the `ga4` block** → the gateway does not send
-    GA4 MP. This way Meta CAPI + Google Ads run server-side, while GA4 stays browser-side.
-  - **Or: GA4 = server MP backstop** (for adblock/JS-blocked users), in which case
-    the browser GA4 tag must be handled carefully. Only do this if you deliberately
-    accept the overlap. For most lead-gen sites the default is the right choice.
+## The two channels and GA4 double-counting (Model 2)
+
+- **Meta** deduplicates by `event_id` (browser Pixel ↔ server CAPI) → fire on both.
+- **GA4 does NOT deduplicate** → on-site GA4 is **browser-only** (the GTM Google tag).
+  The gateway sends GA4 MP **only offline** (CRM lead-status augment), never on-site.
+- **Google Ads** on-site is **browser-only** too (AWCT + Enhanced Conversions). The
+  server sends Google Ads **only offline** (Enhanced Conversions for Leads via the
+  Data Manager API). This is **Model 2** — it kills the GA4/Ads on-site double-count
+  and the fragile conversion-action matching.
+- **TikTok / LinkedIn / Microsoft** server forwarders stay on-site (event_id dedup,
+  like Meta) when a click ID is present.
 
 ## Canonical conversion table
 
-| Conversion | Browser dataLayer (events.ts) | **GA4 event name** (emitted by GTM tag) | Gateway `event_name` | Meta | Google Ads (conversion_actions key) | GA4 Key Event? |
-|---|---|---|---|---|---|:--:|
-| Quote/lead form | `lead_submit` | `contact_form_submit` | `contact_form_submit` | Contact | `contact_form_submit` | ✅ |
-| Contact form | `contact_submit` | `contact_form_submit` | `contact_form_submit` | Contact | `contact_form_submit` | ✅ |
-| Callback | `callback_click` | `callback_conversion` | `callback_conversion` | Lead | `callback_conversion` | ✅ |
-| Phone click | `phone_click` | `phone_conversion` | `phone_conversion` | Contact | `phone_conversion` | ✅ |
-| Email click | `email_click` | `email_conversion` | `email_conversion` | Contact | — | ✅ |
-| WhatsApp click | `whatsapp_click` | `whatsapp_conversion` | `whatsapp_conversion` | Contact | — | ✅ |
-| Calculator complete (quote) | `calculator_complete` | `quote_calculator_conversion` | `quote_calculator_conversion` | Lead | `quote_calculator_conversion` | ✅ |
-| Calculator first view | — | `quote_calculator_first_view` | `quote_calculator_first_view` | ViewContent | — | ❌ |
+One name flows through `events.ts` (dataLayer) → GTM trigger → GA4 event → gateway.
 
-**The "GA4 event name" column is the key:** in GTM the browser tag emits THIS name
-(e.g. the GA4 tag firing on the `lead_submit` dataLayer event has GA4 event name
-`contact_form_submit`). If you also use the gateway GA4 MP, it sends the SAME name —
-so reporting stays unified (but see the double-counting warning above).
+| Conversion | Canonical event name | Meta | GA4 Key Event? |
+|---|---|---|:--:|
+| Quote / lead form (the calculator IS the ajánlatkérő) | `quote_calculator_submitted` | **Lead** | ✅ |
+| Contact form | `contact_form_submitted` | Contact | ✅ |
+| Callback request | `callback_request_submitted` | **Lead** | ✅ |
+| Phone click (`tel:`) | `phone_number_clicked` | Contact | ✅ |
+| Email click (`mailto:`) | `email_address_clicked` | Contact | ✅ |
+| WhatsApp click | `whatsapp_button_clicked` | Contact | ✅ |
 
-## Engagement (NOT a conversion, does NOT go to the gateway, NOT a Key Event)
+> **§2.1 change:** the lead/quote form now fires **Meta Lead** (was Contact). The
+> calculator completion and the lead-form submit share `quote_calculator_submitted`
+> — wire ONE of them as your quote conversion per site (the conversion-grade emission
+> with `event_id` + value + PII side-channel + gateway comes from `trackLeadSubmit`
+> / `trackServerEvent`; `trackCalculatorComplete` is the funnel signal that shares
+> the name).
 
-| dataLayer event | Purpose | GA4 |
+## Engagement (NOT a conversion, NOT a Key Event)
+
+| Canonical event name | Purpose | Meta |
 |---|---|---|
-| `calculator_start` / `calculator_step` / `calculator_option` | funnel | regular event |
-| `form_abandon` | form abandonment | regular event |
-| `scroll_depth` (25/50/75/100) | scroll | regular event |
+| `quote_calculator_opened` | calculator opened / started | ViewContent |
+| `quote_calculator_step_completed` | step finished (`step_index`) | — |
+| `quote_calculator_option_selected` | option chosen | — |
+| `form_abandoned` | form abandonment (`form_id`) | — |
+| `scroll_depth` (25/50/75/100) | scroll milestone (≠ GA4 reserved `scroll`) | — |
+
+## Offline (server-only, CRM `/api/event/lead-status`)
+
+`lead_validated`, `lead_qualified`, `quote_sent`, `booking_confirmed`,
+`job_completed`, `revenue_confirmed`, `lead_disqualified`. Uploaded to Google Ads
+(Data Manager API) + GA4 MP (offline augment). The bid-optimization target is
+`lead_qualified` (a real lead), not the raw click.
 
 ## GA4 admin tasks (once per property)
 
 1. **Key Events (Admin → Events → Mark as key event):**
-   `contact_form_submit`, `callback_conversion`, `phone_conversion`,
-   `email_conversion`, `whatsapp_conversion`, `quote_calculator_conversion`.
-2. **Custom dimensions (Admin → Custom definitions → event-scoped):**
-   `event_id`, `session_id`, `source`, `service`, `device`,
-   `calculator_name`, `step_id`. (The campaign parameters — source/medium/campaign —
-   flow natively with the `campaign_details` event, no custom dimension needed.)
+   `quote_calculator_submitted`, `contact_form_submitted`, `callback_request_submitted`,
+   `phone_number_clicked`, `email_address_clicked`, `whatsapp_button_clicked`.
+2. **Custom dimensions (event-scoped):** `event_id`, `session_id`, `source`, `service`,
+   `device`, `calculator_name`, `step_id`, `lead_provenance`. (Campaign params flow
+   natively with the `campaign_details` event.)
 3. **Measurement check:** GA4 DebugView + Meta Test Events + GTM Preview.
 
 ## Adding a new conversion
-1. In `events.ts`, push to the browser dataLayer event (without PII).
-2. GTM: Custom Event trigger + GA4 tag (with the canonical GA4 event name) + optionally
-   a Meta Pixel tag (`eventID` = DLV event_id) + Google Ads tag.
-3. Gateway: extend `ALLOWED_EVENT_NAMES` + `EVENT_NAME_MAP` (Meta) in the Serverside repo,
-   and add the Google Ads action ID in the site KV `conversion_actions`.
-4. GA4: mark as Key Event + register custom dimension as needed.
+1. Add it to the engine `events.json` (canonical source) and re-vendor.
+2. In `events.ts`, push the canonical dataLayer event (without PII).
+3. GTM: Custom Event trigger + GA4 tag (same canonical name) + optionally a Meta
+   Pixel tag (`eventID` = DLV event_id) + Google Ads tag (browser owns on-site Ads).
+4. Gateway: `events.json` already drives `ALLOWED_EVENT_NAMES` + `EVENT_NAME_MAP`;
+   add the offline Google Ads action ID in the site KV `conversion_actions`.
+5. GA4: mark as Key Event + register custom dimension as needed.
