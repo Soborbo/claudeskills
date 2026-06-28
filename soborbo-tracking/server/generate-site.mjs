@@ -16,22 +16,49 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { argv, stdin, exit } from 'node:process';
+import { argv, exit } from 'node:process';
+import { fileURLToPath } from 'node:url';
 
 // The SITE_CONFIG KV namespace fixed in wrangler.toml (default).
 const DEFAULT_SITE_CONFIG_NS = 'edd34e28eee847c09c26f9d9e3ea04ab';
 
-// The event names accepted by the worker (mirror of src/types.ts ALLOWED_EVENT_NAMES).
-const ALLOWED_EVENT_NAMES = new Set([
-  'quote_calculator_conversion',
-  'callback_conversion',
-  'contact_form_submit',
-  'phone_conversion',
-  'email_conversion',
-  'whatsapp_conversion',
-  'quote_calculator_first_view',
-  'video_play'
+// Canonical event source — vendored copy of Serverside/src/events.json (the single
+// source of truth, §1). NO hand list: the generator accepts exactly what the worker does.
+const EVENTS = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../events.json', import.meta.url)), 'utf8')
+);
+// Client-postable (ingress) event names: server-channel, NON-offline.
+const INGRESS_EVENT_NAMES = EVENTS.filter(
+  (e) => e.channels.includes('server') && e.kind !== 'offline'
+).map((e) => e.name);
+// gads.conversion_actions keys may be ANY canonical event (Model 2: typically the
+// OFFLINE CRM events — lead_qualified, booking_confirmed, … — because the server sends
+// Google Ads ONLY offline via the Data Manager API), plus legacy GA4 aliases (migration).
+const VALID_ACTION_EVENTS = new Set([
+  ...EVENTS.map((e) => e.name),
+  ...EVENTS.map((e) => e.legacy_ga4).filter(Boolean)
 ]);
+
+// Formal KV-config schema. Drift guard: the schema's conversion_actions enum MUST
+// match the events.json-derived set (otherwise regenerate the schema).
+const SCHEMA = JSON.parse(
+  readFileSync(fileURLToPath(new URL('./site-config.schema.json', import.meta.url)), 'utf8')
+);
+{
+  const schemaEnum = SCHEMA?.properties?.gads?.properties?.conversion_actions?.propertyNames?.enum;
+  if (Array.isArray(schemaEnum)) {
+    const missing = [...VALID_ACTION_EVENTS].filter((n) => !schemaEnum.includes(n));
+    const extra = schemaEnum.filter((n) => !VALID_ACTION_EVENTS.has(n));
+    if (missing.length || extra.length) {
+      console.error(
+        '❌ site-config.schema.json conversion_actions enum drifted from events.json' +
+          (missing.length ? `\n  missing from schema: ${missing.join(', ')}` : '') +
+          (extra.length ? `\n  extra in schema: ${extra.join(', ')}` : '')
+      );
+      exit(1);
+    }
+  }
+}
 
 const ALLOWED_COUNTRIES = new Set(['GB', 'HU', 'EU', 'US', 'DE', 'FR', 'IT', 'ES']);
 const EEA_COUNTRIES = new Set(['HU', 'EU', 'DE', 'FR', 'IT', 'ES']);
@@ -110,8 +137,8 @@ function validate(cfg) {
       err(`gads.login_customer_id must be 10 digits without hyphens or null, got: ${lcid}`);
     if (cfg.gads.conversion_actions) {
       for (const [ev, id] of Object.entries(cfg.gads.conversion_actions)) {
-        if (!ALLOWED_EVENT_NAMES.has(ev))
-          err(`gads.conversion_actions has an unknown event name: ${ev} (allowed: ${[...ALLOWED_EVENT_NAMES].join(', ')}).`);
+        if (!VALID_ACTION_EVENTS.has(ev))
+          err(`gads.conversion_actions has an unknown event name: ${ev} (allowed: ${[...VALID_ACTION_EVENTS].join(', ')}).`);
         if (!/^\d+$/.test(String(id)))
           err(`gads.conversion_actions["${ev}"] requires a numeric conversionAction ID, got: ${id}`);
       }
@@ -137,6 +164,8 @@ function toSiteConfig(cfg) {
       pixel_id: String(cfg.meta.pixel_id),
       access_token: cfg.meta.access_token
     },
+    // Model 2: ga4 is OFFLINE-ONLY — the worker uses it only for the offline GA4 MP
+    // augment in lead-status.ts. On-site GA4 comes from the browser (Google tag).
     ga4: {
       measurement_id: cfg.ga4.measurement_id,
       api_secret: cfg.ga4.api_secret
@@ -191,7 +220,7 @@ ${cfg.meta.test_event_code ? '- [ ] ⚠️ test_event_code REMOVED from KV befor
 - [ ] CookieYes (from GTM) active → consent comes automatically from the cookieyes-consent cookie
 - [ ] At conversion points use the documented API: \`trackLeadSubmit({ email, phone, value, currency })\`,
       \`trackContactSubmit(...)\`, or \`trackServerEvent('<event_name>', { value, currency, email, phone })\`
-      (clicks auto-bind via <Tracking/>). Allowed gateway event names: ${[...ALLOWED_EVENT_NAMES].join(', ')}
+      (clicks auto-bind via <Tracking/>). Allowed gateway event names: ${INGRESS_EVENT_NAMES.join(', ')}
 
 ## Verification (after deploy)
 - [ ] curl https://${host}/api/event/health → {"status":"ok"}
