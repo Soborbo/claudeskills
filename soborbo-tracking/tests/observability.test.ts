@@ -23,14 +23,14 @@ describe('report()', () => {
     const handler = (e: Event) => events.push((e as CustomEvent).detail);
     window.addEventListener('sb-tracking-diagnostic', handler);
 
-    const d = report('GATEWAY_NETWORK_FAIL', { event_name: 'phone_conversion' });
+    const d = report('GATEWAY_NETWORK_FAIL', { event_name: 'phone_number_clicked' });
     expect(d.code).toBe('TRK-1002');
     expect(d.severity).toBe('error');
     expect(spy).toHaveBeenCalledOnce();
     expect(getDiagnostics().at(-1)?.code).toBe('TRK-1002');
     expect(events).toHaveLength(1);
     expect(events[0].code).toBe('TRK-1002');
-    expect(events[0].context?.event_name).toBe('phone_conversion');
+    expect(events[0].context?.event_name).toBe('phone_number_clicked');
 
     window.removeEventListener('sb-tracking-diagnostic', handler);
   });
@@ -63,7 +63,7 @@ describe('report()', () => {
 describe('redactPii — dataLayer PII guard', () => {
   it('strips PII-shaped keys in place and returns their names', () => {
     const data: Record<string, unknown> = {
-      event: 'lead_submit', value: 380, currency: 'GBP',
+      event: 'quote_calculator_submitted', value: 380, currency: 'GBP',
       email: 'a@b.com', phone_number: '+447…', user_provided_data: {}, em: 'hash',
     };
     const leaked = redactPii(data);
@@ -73,11 +73,11 @@ describe('redactPii — dataLayer PII guard', () => {
     // non-PII survives
     expect(data.value).toBe(380);
     expect(data.currency).toBe('GBP');
-    expect(data.event).toBe('lead_submit');
+    expect(data.event).toBe('quote_calculator_submitted');
   });
 
   it('leaves clean payloads untouched', () => {
-    const data = { event: 'phone_click', event_id: 'E1', session_id: 's', device: 'mobile' };
+    const data = { event: 'phone_number_clicked', event_id: 'E1', session_id: 's', device: 'mobile' };
     expect(redactPii(data)).toEqual([]);
   });
 });

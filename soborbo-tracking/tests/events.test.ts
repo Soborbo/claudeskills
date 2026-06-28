@@ -25,16 +25,16 @@ describe('generateEventId', () => {
 });
 
 describe('calculator events → dataLayer', () => {
-  it('pushes calculator_start / step / complete', () => {
+  it('pushes quote_calculator_opened / step / complete', () => {
     trackCalculatorStart('quote-calc');
-    expect(lastEvent('calculator_start')?.calculator_name).toBe('quote-calc');
+    expect(lastEvent('quote_calculator_opened')?.calculator_name).toBe('quote-calc');
     trackCalculatorStep('size', 2, 8);
-    const step = lastEvent('calculator_step');
+    const step = lastEvent('quote_calculator_step_completed');
     expect(step?.step_id).toBe('size');
     expect(step?.step_index).toBe(2);
     expect(step?.total_steps).toBe(8);
     trackCalculatorComplete('quote-calc');
-    expect(lastEvent('calculator_complete')).toBeTruthy();
+    expect(lastEvent('quote_calculator_submitted')).toBeTruthy();
   });
 
   it('does NOTHING without analytics consent', () => {
@@ -45,19 +45,19 @@ describe('calculator events → dataLayer', () => {
 });
 
 describe('click events — dedup + consent', () => {
-  it('phone_click fires once per session (dedup)', () => {
+  it('phone_number_clicked fires once per session (dedup)', () => {
     trackPhoneClick();
     trackPhoneClick();
-    const count = getDataLayer().filter((e) => e.event === 'phone_click').length;
+    const count = getDataLayer().filter((e) => e.event === 'phone_number_clicked').length;
     expect(count).toBe(1);
   });
-  it('callback_click is NOT deduped (asymmetric by design)', () => {
+  it('callback_request_submitted is NOT deduped (asymmetric by design)', () => {
     trackCallbackClick();
     trackCallbackClick();
-    const count = getDataLayer().filter((e) => e.event === 'callback_click').length;
+    const count = getDataLayer().filter((e) => e.event === 'callback_request_submitted').length;
     expect(count).toBe(2);
   });
-  it('phone_click blocked without analytics consent', () => {
+  it('phone_number_clicked blocked without analytics consent', () => {
     setCkyConsent({ analytics: false, marketing: false });
     trackPhoneClick();
     expect(getDataLayer()).toHaveLength(0);
@@ -65,9 +65,9 @@ describe('click events — dedup + consent', () => {
 });
 
 describe('conversion events → dataLayer', () => {
-  it('lead_submit carries event_id + value (when >0) + currency, NO PII', () => {
+  it('quote_calculator_submitted carries event_id + value (when >0) + currency, NO PII', () => {
     pushLeadConversion({ email: 'a@b.com', phone: '07123456789', value: 380, currency: 'GBP', eventId: 'E1' });
-    const e = lastEvent('lead_submit')!;
+    const e = lastEvent('quote_calculator_submitted')!;
     expect(e.event_id).toBe('E1');
     expect(e.value).toBe(380);
     expect(e.currency).toBe('GBP');
@@ -93,12 +93,12 @@ describe('conversion events → dataLayer', () => {
 
   it('omits value when 0 (no Smart Bidding poisoning)', () => {
     pushLeadConversion({ email: 'a@b.com', value: 0, currency: 'GBP', eventId: 'E2' });
-    expect(lastEvent('lead_submit')!.value).toBeUndefined();
+    expect(lastEvent('quote_calculator_submitted')!.value).toBeUndefined();
   });
 
-  it('contact_submit event name', () => {
+  it('contact_form_submitted event name', () => {
     pushContactConversion({ email: 'a@b.com', eventId: 'E3' });
-    expect(lastEvent('contact_submit')!.event_id).toBe('E3');
+    expect(lastEvent('contact_form_submitted')!.event_id).toBe('E3');
   });
 });
 
@@ -130,16 +130,16 @@ describe('setUserDataForEC — marketing-consent gated side-channel', () => {
 describe('click events carry the shared event_id', () => {
   it('phone/callback/email/whatsapp push event_id into the dataLayer', () => {
     expect(trackPhoneClick('P1')).toBe(true);
-    expect(lastEvent('phone_click')!.event_id).toBe('P1');
+    expect(lastEvent('phone_number_clicked')!.event_id).toBe('P1');
     expect(trackCallbackClick('C1')).toBe(true);
-    expect(lastEvent('callback_click')!.event_id).toBe('C1');
+    expect(lastEvent('callback_request_submitted')!.event_id).toBe('C1');
     expect(trackEmailClick('M1')).toBe(true);
-    expect(lastEvent('email_click')!.event_id).toBe('M1');
+    expect(lastEvent('email_address_clicked')!.event_id).toBe('M1');
     expect(trackWhatsappClick('W1')).toBe(true);
-    expect(lastEvent('whatsapp_click')!.event_id).toBe('W1');
+    expect(lastEvent('whatsapp_button_clicked')!.event_id).toBe('W1');
   });
 
-  it('phone_click returns false on the deduped second call', () => {
+  it('phone_number_clicked returns false on the deduped second call', () => {
     expect(trackPhoneClick('P1')).toBe(true);
     expect(trackPhoneClick('P2')).toBe(false);
   });

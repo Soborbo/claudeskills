@@ -46,24 +46,28 @@ export function generateEventId(): string {
 
 export function trackCalculatorStart(name: string): void {
   if (!hasAnalyticsConsent()) return;
-  push({ event: 'calculator_start', calculator_name: name, session_id: getSessionId(), device: getDevice() });
+  push({ event: 'quote_calculator_opened', calculator_name: name, session_id: getSessionId(), device: getDevice() });
 }
 
 export function trackCalculatorStep(stepId: string, stepIndex: number, totalSteps?: number): void {
   if (!hasAnalyticsConsent()) return;
-  push({ event: 'calculator_step', step_id: stepId, step_index: stepIndex,
+  push({ event: 'quote_calculator_step_completed', step_id: stepId, step_index: stepIndex,
     ...(totalSteps != null && { total_steps: totalSteps }), session_id: getSessionId() });
 }
 
 export function trackCalculatorOption(stepId: string, value: string | string[]): void {
   if (!hasAnalyticsConsent()) return;
-  push({ event: 'calculator_option', step_id: stepId,
+  push({ event: 'quote_calculator_option_selected', step_id: stepId,
     option_value: Array.isArray(value) ? value.join(',') : value, session_id: getSessionId() });
 }
 
 export function trackCalculatorComplete(name: string): void {
   if (!hasAnalyticsConsent()) return;
-  push({ event: 'calculator_complete', calculator_name: name, session_id: getSessionId(), device: getDevice() });
+  // Canonical: the calculator completion IS the quote conversion (quote_calculator_submitted).
+  // NOTE: the conversion-grade emission (event_id + value + PII side-channel + gateway) comes
+  // from trackLeadSubmit/trackServerEvent; this milestone shares the canonical name. Wire ONE
+  // of them as the actual quote conversion per site.
+  push({ event: 'quote_calculator_submitted', calculator_name: name, session_id: getSessionId(), device: getDevice() });
 }
 
 // ── Conversions (PII) ──────────────────────────────────────────────
@@ -157,12 +161,14 @@ function buildConversionPayload(data: ConversionData): Record<string, unknown> {
   };
 }
 
+// §2.1: the lead/quote form = quote_calculator_submitted (Meta Lead — the calculator
+// is the ajánlatkérő). The old lead_submit→contact_form_submit (Contact) duality is gone.
 export function pushLeadConversion(data: ConversionData): void {
-  push({ event: 'lead_submit', ...buildConversionPayload(data) });
+  push({ event: 'quote_calculator_submitted', ...buildConversionPayload(data) });
 }
 
 export function pushContactConversion(data: ConversionData): void {
-  push({ event: 'contact_submit', ...buildConversionPayload(data) });
+  push({ event: 'contact_form_submitted', ...buildConversionPayload(data) });
 }
 
 // ── Clicks — durable session dedup ─────────────────────────────────
@@ -205,25 +211,25 @@ export function trackPhoneClick(eventId?: string, dedup = true): boolean {
     if (hasClickFired('phone')) return false;
     markClickFired('phone');
   }
-  push({ event: 'phone_click', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
+  push({ event: 'phone_number_clicked', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
   return true;
 }
 
 export function trackCallbackClick(eventId?: string): boolean {
   if (!hasAnalyticsConsent()) return false;
-  push({ event: 'callback_click', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
+  push({ event: 'callback_request_submitted', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
   return true;
 }
 
 export function trackEmailClick(eventId?: string): boolean {
   if (!hasAnalyticsConsent()) return false;
-  push({ event: 'email_click', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
+  push({ event: 'email_address_clicked', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
   return true;
 }
 
 export function trackWhatsappClick(eventId?: string): boolean {
   if (!hasAnalyticsConsent()) return false;
-  push({ event: 'whatsapp_click', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
+  push({ event: 'whatsapp_button_clicked', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
   return true;
 }
 
@@ -244,7 +250,7 @@ export function initFormAbandonTracking(
     if (!started) {
       started = true;
       timer = setTimeout(() => {
-        push({ event: 'form_abandon', form_id: formId, last_field: lastField, session_id: getSessionId() });
+        push({ event: 'form_abandoned', form_id: formId, last_field: lastField, session_id: getSessionId() });
       }, timeoutMs);
     }
   };

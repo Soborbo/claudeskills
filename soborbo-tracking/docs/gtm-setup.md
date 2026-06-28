@@ -1,8 +1,8 @@
 # GTM Setup
 
 > For GA4 event names, **`CANONICAL-EVENTS.md`** is authoritative. The GTM tag emits
-> the **canonical GA4 event name** (e.g. `contact_form_submit`) from the browser
-> dataLayer event (e.g. `lead_submit`) — so the browser and (optionally) the gateway
+> the **canonical GA4 event name** (e.g. `contact_form_submitted`) from the browser
+> dataLayer event (e.g. `quote_calculator_submitted`) — so the browser and (optionally) the gateway
 > GA4 MP produce the SAME GA4 event. **GA4 does not dedup** → if you also use the
 > gateway GA4 MP, don't fire twice (see CANONICAL-EVENTS.md "GA4 double-counting").
 
@@ -39,9 +39,9 @@ Then in the Google Ads / GA4 tags set **User-Provided Data → Manual → Variab
 runs in the tag's context, so the PII never enters the dataLayer.
 
 ## Triggers (Custom Event)
-One each for the dataLayer events: `calculator_start`, `calculator_step`,
-`calculator_option`, `calculator_complete`, `lead_submit`, `contact_submit`,
-`phone_click`, `callback_click`, `email_click`, `whatsapp_click`, `form_abandon`,
+One each for the dataLayer events: `quote_calculator_opened`, `quote_calculator_step_completed`,
+`quote_calculator_option_selected`, `quote_calculator_submitted`, `quote_calculator_submitted`, `contact_form_submitted`,
+`phone_number_clicked`, `callback_request_submitted`, `email_address_clicked`, `whatsapp_button_clicked`, `form_abandoned`,
 `scroll_depth`.
 
 ## Tags — base
@@ -54,14 +54,14 @@ One each for the dataLayer events: `calculator_start`, `calculator_step`,
 
 | dataLayer trigger (CE) | **GA4 event name (emitted by the tag)** | Key Event? | Parameters |
 |---|---|:--:|---|
-| `lead_submit` / `contact_submit` | `contact_form_submit` | ✅ | value, currency, event_id, session_id, device, source, service |
-| `callback_click` | `callback_conversion` | ✅ | event_id, session_id, device |
-| `phone_click` | `phone_conversion` | ✅ | event_id, session_id, device |
-| `email_click` | `email_conversion` | ✅ | event_id, session_id |
-| `whatsapp_click` | `whatsapp_conversion` | ✅ | event_id, session_id |
-| `calculator_complete` | `quote_calculator_conversion` | ✅ | value, currency, event_id, calculator_name |
-| `calculator_start/step/option` | `calculator_start` / `_step` / `_option` | ❌ | calculator_name, step_id, step_index |
-| `form_abandon` | `form_abandon` | ❌ | form_id, last_field |
+| `quote_calculator_submitted` / `contact_form_submitted` | `contact_form_submitted` | ✅ | value, currency, event_id, session_id, device, source, service |
+| `callback_request_submitted` | `callback_request_submitted` | ✅ | event_id, session_id, device |
+| `phone_number_clicked` | `phone_number_clicked` | ✅ | event_id, session_id, device |
+| `email_address_clicked` | `email_address_clicked` | ✅ | event_id, session_id |
+| `whatsapp_button_clicked` | `whatsapp_button_clicked` | ✅ | event_id, session_id |
+| `quote_calculator_submitted` | `quote_calculator_submitted` | ✅ | value, currency, event_id, calculator_name |
+| `quote_calculator_opened/step/option` | `quote_calculator_opened` / `_step` / `_option` | ❌ | calculator_name, step_id, step_index |
+| `form_abandoned` | `form_abandoned` | ❌ | form_id, last_field |
 | `scroll_depth` | `scroll_depth` | ❌ | scroll_percentage |
 
 > The "GA4 event name" column = the table in `CANONICAL-EVENTS.md`. (If you want to use
@@ -70,13 +70,13 @@ One each for the dataLayer events: `calculator_start`, `calculator_step`,
 
 ## Meta Pixel tags
 - **Base** (Custom HTML): fbevents.js + `fbq('track','PageView')`. ad_storage + ad_user_data. All Pages.
-- **Lead** (CE-`lead_submit` / `callback_click` / `calculator_complete`):
+- **Lead** (CE-`quote_calculator_submitted` / `callback_request_submitted` / `quote_calculator_submitted`):
   ```js
   var v = {{DLV - value}};
   var cd = (typeof v === 'number' && v > 0) ? { value: v, currency: '{{DLV - currency}}' } : {};
   fbq('track', 'Lead', cd, { eventID: '{{DLV - event_id}}' });
   ```
-- **Contact** (CE-`contact_submit` / `phone_click` / `email_click` / `whatsapp_click`):
+- **Contact** (CE-`contact_form_submitted` / `phone_number_clicked` / `email_address_clicked` / `whatsapp_button_clicked`):
   ```js
   fbq('track', 'Contact', {}, { eventID: '{{DLV - event_id}}' });
   ```
@@ -86,7 +86,7 @@ from index.ts) → Meta Pixel↔CAPI dedup.
 ## Google Ads Conversion tag
 Conversion Value: {{DLV - value}}. Transaction ID: {{DLV - event_id}}.
 User-provided data: {{CJS - User Provided Data}}. ad_storage + ad_user_data.
-Trigger: the conversion CEs (lead_submit/callback_click/phone_click/calculator_complete).
+Trigger: the conversion CEs (quote_calculator_submitted/callback_request_submitted/phone_number_clicked/quote_calculator_submitted).
 **Don't set a fixed value default of 1+currency** — it poisons the bidding (see INVARIANTS).
 
 ## Enhanced Conversions

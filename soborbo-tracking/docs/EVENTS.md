@@ -14,16 +14,16 @@ v5 — that legacy machinery was removed.
 ## Two channels (recap)
 
 - **Browser**: `events.ts` does `push({ event: 'X', ... })` → GTM → GA4 / Meta
-  Pixel / Google Ads. Names: `lead_submit`, `contact_submit`, `phone_click`,
-  `callback_click`, `email_click`, `whatsapp_click`, `calculator_*`,
-  `form_abandon`, `scroll_depth`.
+  Pixel / Google Ads. Names: `quote_calculator_submitted`, `contact_form_submitted`, `phone_number_clicked`,
+  `callback_request_submitted`, `email_address_clicked`, `whatsapp_button_clicked`, `calculator_*`,
+  `form_abandoned`, `scroll_depth`.
 - **Server**: the conversion functions in `index.ts`
   (`trackLeadSubmit` / `trackPhoneConversion` / …) POST to the event-gateway
   worker with the SAME `event_id`. The gateway `event_name` must be in the
   worker's allowed set (`ALLOWED_EVENT_NAMES` + `EVENT_NAME_MAP`, in
-  `Soborbo/Serverside`): `contact_form_submit`, `quote_calculator_conversion`,
-  `callback_conversion`, `phone_conversion`, `email_conversion`,
-  `whatsapp_conversion`, `quote_calculator_first_view`, `video_play`.
+  `Soborbo/Serverside`): `contact_form_submitted`, `quote_calculator_submitted`,
+  `callback_request_submitted`, `phone_number_clicked`, `email_address_clicked`,
+  `whatsapp_button_clicked`, `quote_calculator_opened`, `video_play`.
 
 ## Naming convention
 
@@ -40,8 +40,8 @@ v5 — that legacy machinery was removed.
 ### Lead-gen with calculator (moving quotes, insurance, loans)
 
 Keep the default taxonomy. The calculator-complete browser event
-(`calculator_complete`) maps to GA4 `quote_calculator_conversion` and gateway
-`quote_calculator_conversion`. To rename for clarity in GA4, change the GA4 event
+(`quote_calculator_submitted`) maps to GA4 `quote_calculator_submitted` and gateway
+`quote_calculator_submitted`. To rename for clarity in GA4, change the GA4 event
 name in the GTM tag AND the gateway `event_name` together (so browser and server
 report under the same name) — see CANONICAL-EVENTS.md "Adding a new conversion".
 
@@ -68,9 +68,9 @@ send real value on the upgrade, omit it on the free trial start.
 
 ### Content site with newsletter signups
 
-Keep `calculator_*` off; keep `form_abandon` / `scroll_depth`. Add a
-`newsletter_subscribe` browser event (direct conversion). Drop `phone_click` /
-`email_click` / `whatsapp_click` bindings if you don't surface those channels.
+Keep `calculator_*` off; keep `form_abandoned` / `scroll_depth`. Add a
+`newsletter_subscribe` browser event (direct conversion). Drop `phone_number_clicked` /
+`email_address_clicked` / `whatsapp_button_clicked` bindings if you don't surface those channels.
 
 ## Adding a new event
 

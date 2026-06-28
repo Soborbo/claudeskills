@@ -41,11 +41,11 @@ interface Env {
  */
 const KEY_EVENTS = [
   'primary_conversion',
-  'callback_conversion',
-  'phone_conversion',
-  'email_conversion',
-  'whatsapp_conversion',
-  'contact_form_submit',
+  'callback_request_submitted',
+  'phone_number_clicked',
+  'email_address_clicked',
+  'whatsapp_button_clicked',
+  'contact_form_submitted',
 ];
 
 /** Alert if yesterday's count < this fraction of the 7-day daily average. */

@@ -23,19 +23,19 @@ beforeEach(() => {
 });
 
 describe('trackLeadSubmit', () => {
-  it('pushes dataLayer lead_submit AND dispatches to gateway with the SAME event_id', () => {
+  it('pushes dataLayer quote_calculator_submitted AND dispatches to gateway with the SAME event_id', () => {
     const r = trackLeadSubmit({ email: 'a@b.com', phone: '07123456789', value: 380, currency: 'GBP' });
     expect(r.success).toBe(true);
     expect(r.consentBlocked).toBe(false);
 
-    const dlEvent = lastEvent('lead_submit')!;
+    const dlEvent = lastEvent('quote_calculator_submitted')!;
     expect(mockSend).toHaveBeenCalledTimes(1);
     const payload = mockSend.mock.calls[0][0];
     // megosztott event_id → Meta Pixel↔CAPI dedup
     expect(payload.event_id).toBe(dlEvent.event_id);
     expect(payload.event_id).toBe(r.eventId);
-    // kanonikus gateway event-név
-    expect(payload.event_name).toBe('contact_form_submit');
+    // kanonikus gateway event-név (§2.1: a lead/quote űrlap = Lead = quote_calculator_submitted)
+    expect(payload.event_name).toBe('quote_calculator_submitted');
     // user_data nyersen (a gateway hashel)
     expect(payload.user_data.email).toBe('a@b.com');
     expect(payload.value).toBe(380);
@@ -43,8 +43,8 @@ describe('trackLeadSubmit', () => {
   });
 
   it('event-név felülírható', () => {
-    trackLeadSubmit({ email: 'a@b.com', value: 1000, currency: 'HUF', eventName: 'quote_calculator_conversion' });
-    expect(mockSend.mock.calls[0][0].event_name).toBe('quote_calculator_conversion');
+    trackLeadSubmit({ email: 'a@b.com', value: 1000, currency: 'HUF', eventName: 'quote_calculator_submitted' });
+    expect(mockSend.mock.calls[0][0].event_name).toBe('quote_calculator_submitted');
   });
 
   it('deviza a market-configból jön default-ban (HU → HUF), de hívásonként felülírható', () => {
@@ -61,55 +61,55 @@ describe('trackLeadSubmit', () => {
     expect(r.success).toBe(false);
     expect(r.consentBlocked).toBe(true);
     expect(mockSend).not.toHaveBeenCalled();
-    expect(getDataLayer().some((e) => e.event === 'lead_submit')).toBe(false);
+    expect(getDataLayer().some((e) => e.event === 'quote_calculator_submitted')).toBe(false);
   });
 });
 
 describe('trackContactSubmit', () => {
-  it('contact_form_submit-ra dispatchol, contact_submit dataLayer-rel', () => {
+  it('contact_form_submitted-ra dispatchol, contact_form_submitted dataLayer-rel', () => {
     const r = trackContactSubmit({ email: 'a@b.com', phone: '0620123456' });
-    expect(lastEvent('contact_submit')!.event_id).toBe(r.eventId);
-    expect(mockSend.mock.calls[0][0].event_name).toBe('contact_form_submit');
+    expect(lastEvent('contact_form_submitted')!.event_id).toBe(r.eventId);
+    expect(mockSend.mock.calls[0][0].event_name).toBe('contact_form_submitted');
     expect(mockSend.mock.calls[0][0].event_id).toBe(r.eventId);
   });
 });
 
 describe('trackServerEvent', () => {
   it('tetszőleges gateway eseményt küld, consent mellett', () => {
-    const id = trackServerEvent('phone_conversion', { value: 0 });
+    const id = trackServerEvent('phone_number_clicked', { value: 0 });
     expect(mockSend).toHaveBeenCalledTimes(1);
-    expect(mockSend.mock.calls[0][0].event_name).toBe('phone_conversion');
+    expect(mockSend.mock.calls[0][0].event_name).toBe('phone_number_clicked');
     expect(mockSend.mock.calls[0][0].event_id).toBe(id);
   });
   it('consent nélkül nem küld', () => {
     setCkyConsent({ marketing: false });
-    trackServerEvent('phone_conversion');
+    trackServerEvent('phone_number_clicked');
     expect(mockSend).not.toHaveBeenCalled();
   });
 });
 
 describe('click conversions — both channels, shared event_id', () => {
-  it('trackPhoneConversion pushes phone_click AND dispatches phone_conversion with the SAME event_id', () => {
+  it('trackPhoneConversion pushes phone_number_clicked AND dispatches phone_number_clicked with the SAME event_id', () => {
     const id = trackPhoneConversion({ phone: '07123456789' });
     expect(id).toBeTruthy();
-    const dl = lastEvent('phone_click')!;
+    const dl = lastEvent('phone_number_clicked')!;
     expect(dl.event_id).toBe(id);
     expect(mockSend).toHaveBeenCalledTimes(1);
     const payload = mockSend.mock.calls[0][0];
-    expect(payload.event_name).toBe('phone_conversion');
+    expect(payload.event_name).toBe('phone_number_clicked');
     expect(payload.event_id).toBe(id);
     expect(payload.user_data.phone_number).toBe('07123456789'); // raw → gateway hashes
   });
 
   it('maps callback/email/whatsapp to the canonical gateway event names', () => {
     trackCallbackConversion();
-    expect(mockSend.mock.calls[0][0].event_name).toBe('callback_conversion');
+    expect(mockSend.mock.calls[0][0].event_name).toBe('callback_request_submitted');
     mockSend.mockClear();
     trackEmailConversion({ email: 'a@b.com' });
-    expect(mockSend.mock.calls[0][0].event_name).toBe('email_conversion');
+    expect(mockSend.mock.calls[0][0].event_name).toBe('email_address_clicked');
     mockSend.mockClear();
     trackWhatsappConversion({ phone: '07123456789' });
-    expect(mockSend.mock.calls[0][0].event_name).toBe('whatsapp_conversion');
+    expect(mockSend.mock.calls[0][0].event_name).toBe('whatsapp_button_clicked');
   });
 
   it('phone dedup covers BOTH channels (second click → no dataLayer, no gateway)', () => {
@@ -117,15 +117,15 @@ describe('click conversions — both channels, shared event_id', () => {
     expect(id1).toBeTruthy();
     const id2 = trackPhoneConversion();
     expect(id2).toBeNull();
-    expect(getDataLayer().filter((e) => e.event === 'phone_click')).toHaveLength(1);
+    expect(getDataLayer().filter((e) => e.event === 'phone_number_clicked')).toHaveLength(1);
     expect(mockSend).toHaveBeenCalledTimes(1);
   });
 
   it('callback/email/whatsapp dedup covers BOTH channels too (second click → no dataLayer, no gateway)', () => {
     const cases: Array<{ fn: () => string | null; dlEvent: string }> = [
-      { fn: () => trackCallbackConversion(), dlEvent: 'callback_click' },
-      { fn: () => trackEmailConversion({ email: 'a@b.com' }), dlEvent: 'email_click' },
-      { fn: () => trackWhatsappConversion({ phone: '07123456789' }), dlEvent: 'whatsapp_click' },
+      { fn: () => trackCallbackConversion(), dlEvent: 'callback_request_submitted' },
+      { fn: () => trackEmailConversion({ email: 'a@b.com' }), dlEvent: 'email_address_clicked' },
+      { fn: () => trackWhatsappConversion({ phone: '07123456789' }), dlEvent: 'whatsapp_button_clicked' },
     ];
     for (const { fn, dlEvent } of cases) {
       mockSend.mockClear();
@@ -140,7 +140,7 @@ describe('click conversions — both channels, shared event_id', () => {
     setCkyConsent({ analytics: true, marketing: false });
     trackPhoneConversion();
     // dataLayer push allowed under analytics consent…
-    expect(getDataLayer().some((e) => e.event === 'phone_click')).toBe(true);
+    expect(getDataLayer().some((e) => e.event === 'phone_number_clicked')).toBe(true);
     // …but NO server-side dispatch without marketing consent.
     expect(mockSend).not.toHaveBeenCalled();
   });
@@ -150,10 +150,10 @@ describe('click conversions — both channels, shared event_id', () => {
     const id = trackPhoneConversion({ phone: '07123456789' });
     expect(id).toBeTruthy();
     // No browser GA4 event (analytics withheld)…
-    expect(getDataLayer().some((e) => e.event === 'phone_click')).toBe(false);
+    expect(getDataLayer().some((e) => e.event === 'phone_number_clicked')).toBe(false);
     // …but the money signal (Meta CAPI + Ads) reaches the gateway with the shared id.
     expect(mockSend).toHaveBeenCalledTimes(1);
-    expect(mockSend.mock.calls[0][0].event_name).toBe('phone_conversion');
+    expect(mockSend.mock.calls[0][0].event_name).toBe('phone_number_clicked');
     expect(mockSend.mock.calls[0][0].event_id).toBe(id);
   });
 

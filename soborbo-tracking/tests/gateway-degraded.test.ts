@@ -28,7 +28,7 @@ beforeEach(() => resetAll());
 afterEach(() => vi.unstubAllGlobals());
 
 describe('sendToWorker — token-less degraded low-risk dispatch', () => {
-  for (const event of ['phone_conversion', 'email_conversion', 'whatsapp_conversion']) {
+  for (const event of ['phone_number_clicked', 'email_address_clicked', 'whatsapp_button_clicked']) {
     it(`${event}: dispatches token-less when no Turnstile token (degraded)`, async () => {
       const fetchMock = stubFetch();
       const ok = await sendToWorker({ event_name: event, event_id: 'E', event_time: 1_700_000_000 });
@@ -48,9 +48,9 @@ describe('sendToWorker — token-less degraded low-risk dispatch', () => {
 });
 
 describe('sendToWorker — higher-risk events still skipped without a token', () => {
-  // callback_conversion is deliberately EXCLUDED from the low-risk set (parity with
+  // callback_request_submitted is deliberately EXCLUDED from the low-risk set (parity with
   // the worker's DEGRADED_LOW_RISK_EVENTS) — a form/callback is a spam surface.
-  for (const event of ['contact_form_submit', 'callback_conversion', 'quote_calculator_conversion']) {
+  for (const event of ['contact_form_submitted', 'callback_request_submitted', 'quote_calculator_submitted']) {
     it(`${event}: skips (no dispatch) and reports TRK-1001`, async () => {
       const fetchMock = stubFetch();
       const ok = await sendToWorker({ event_name: event, event_id: 'E', event_time: 1_700_000_000 });

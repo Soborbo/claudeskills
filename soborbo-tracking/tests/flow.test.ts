@@ -38,7 +38,7 @@ describe('lead journey — flows through both channels in the right shape', () =
     expect(r.success).toBe(true);
 
     // browser channel (dataLayer) — no PII, has the id/value/currency
-    const dl = lastEvent('lead_submit')!;
+    const dl = lastEvent('quote_calculator_submitted')!;
     expect(dl.event_id).toBe(r.eventId);
     expect(dl.value).toBe(380);
     expect(dl.currency).toBe('GBP');
@@ -50,7 +50,7 @@ describe('lead journey — flows through both channels in the right shape', () =
     // server channel (gateway) — exact contract the worker consumes
     expect(mockSend).toHaveBeenCalledOnce();
     const p = mockSend.mock.calls[0][0];
-    expect(p.event_name).toBe('contact_form_submit');
+    expect(p.event_name).toBe('quote_calculator_submitted'); // §2.1: lead/quote form = Lead
     expect(p.event_id).toBe(r.eventId);               // SAME id → Meta dedup
     expect(Number.isInteger(p.event_time)).toBe(true); // unix SECONDS, not ms
     expect(p.event_time).toBeGreaterThan(1_000_000_000);
@@ -68,20 +68,20 @@ describe('lead journey — flows through both channels in the right shape', () =
     trackCalculatorStep('size', 1, 4);
     trackCalculatorOption('size', '3-bed');
     trackCalculatorComplete('quote-calc');
-    for (const e of ['calculator_start', 'calculator_step', 'calculator_option', 'calculator_complete']) {
+    for (const e of ['quote_calculator_opened', 'quote_calculator_step_completed', 'quote_calculator_option_selected', 'quote_calculator_submitted']) {
       expect(lastEvent(e)).toBeTruthy();
     }
-    const id = trackServerEvent('quote_calculator_conversion', { value: 1200, currency: 'GBP' });
+    const id = trackServerEvent('quote_calculator_submitted', { value: 1200, currency: 'GBP' });
     const p = mockSend.mock.calls.at(-1)![0];
-    expect(p.event_name).toBe('quote_calculator_conversion');
+    expect(p.event_name).toBe('quote_calculator_submitted');
     expect(p.event_id).toBe(id);
     expect(p.value).toBe(1200);
   });
 
-  it('contact submit maps to contact_form_submit with the shared id', () => {
+  it('contact submit maps to contact_form_submitted with the shared id', () => {
     const r = trackContactSubmit({ email: 'a@b.com', phone: '0620123456' });
-    expect(lastEvent('contact_submit')!.event_id).toBe(r.eventId);
-    expect(mockSend.mock.calls[0][0].event_name).toBe('contact_form_submit');
+    expect(lastEvent('contact_form_submitted')!.event_id).toBe(r.eventId);
+    expect(mockSend.mock.calls[0][0].event_name).toBe('contact_form_submitted');
   });
 });
 
@@ -92,19 +92,19 @@ describe('the lead never gets stuck', () => {
     const r = trackLeadSubmit({ email: 'a@b.com', value: 100, currency: 'GBP' });
     // Returns synchronously with success; the browser event is already in the dataLayer.
     expect(r.success).toBe(true);
-    expect(lastEvent('lead_submit')).toBeTruthy();
+    expect(lastEvent('quote_calculator_submitted')).toBeTruthy();
     expect(mockSend).toHaveBeenCalledOnce();
   });
 
   it('a rejecting worker does NOT throw out of the conversion path', () => {
     mockSend.mockImplementation(() => Promise.reject(new Error('boom')));
     expect(() => trackLeadSubmit({ email: 'a@b.com', value: 100 })).not.toThrow();
-    expect(lastEvent('lead_submit')).toBeTruthy();
+    expect(lastEvent('quote_calculator_submitted')).toBeTruthy();
   });
 
   it('value 0 is omitted from the dataLayer (no Smart Bidding poisoning) but the event still fires', () => {
     const r = trackLeadSubmit({ email: 'a@b.com', value: 0, currency: 'GBP' });
     expect(r.success).toBe(true);
-    expect(lastEvent('lead_submit')!.value).toBeUndefined();
+    expect(lastEvent('quote_calculator_submitted')!.value).toBeUndefined();
   });
 });

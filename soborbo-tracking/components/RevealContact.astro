@@ -1,0 +1,51 @@
+---
+/**
+ * <RevealContact /> — click-to-reveal email/phone with conversion tracking (§6).
+ *
+ * The address/number is NOT present as plain text in the served HTML (it is stored
+ * reversed in a data-attribute and assembled by JS on click) → it hides from naive
+ * HTML scrapers. Honest limit: a JS-running bot still sees it; this only stops mass
+ * scrapers. The reveal click fires the canonical conversion on BOTH channels with a
+ * shared event_id (email_address_clicked / phone_number_clicked).
+ *
+ * Usage:
+ *   <RevealContact type="email" value="hello@example.com" />
+ *   <RevealContact type="phone" value="+447123456789">Show phone</RevealContact>
+ */
+interface Props { type: 'email' | 'phone'; value: string; class?: string; [key: string]: unknown; }
+const { type, value, class: cls, ...rest } = Astro.props;
+// Reverse so the literal value is not in the served HTML (environment-agnostic — no
+// Buffer/btoa, which may be unavailable in the Workers SSR runtime).
+const enc = [...String(value)].reverse().join('');
+const hasSlot = Astro.slots.has('default');
+const defaultLabel = type === 'email' ? 'Show email' : 'Show phone';
+---
+<button type="button" class={cls} data-reveal-contact data-kind={type} data-enc={enc} {...rest}>
+  {hasSlot ? <slot /> : defaultLabel}
+</button>
+
+<script>
+  import { trackEmailConversion, trackPhoneConversion } from '../lib';
+  function bind() {
+    document.querySelectorAll<HTMLButtonElement>('[data-reveal-contact]').forEach((btn) => {
+      if (btn.dataset.trackBound) return;
+      btn.dataset.trackBound = '1';
+      btn.addEventListener('click', () => {
+        const kind = btn.dataset.kind;
+        const value = (btn.dataset.enc || '').split('').reverse().join('');
+        if (!value) return;
+        // Reveal: swap the button for a real mailto:/tel: link.
+        const a = document.createElement('a');
+        a.href = (kind === 'email' ? 'mailto:' : 'tel:') + value;
+        a.textContent = value;
+        if (btn.className) a.className = btn.className;
+        btn.replaceWith(a);
+        // Fire the canonical conversion (both channels, shared event_id, session-deduped).
+        if (kind === 'email') trackEmailConversion({ email: value });
+        else trackPhoneConversion({ phone: value });
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', bind);
+  if (document.readyState !== 'loading') bind();
+</script>

@@ -8,7 +8,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "check:events": "node server/check-event-contract.mjs"
+    "check:events": "node server/check-event-contract.mjs",
+    "gen:gtm": "node gtm/gen-container.mjs gtm/container.json",
+    "gen:aliases": "node server/gen-event-aliases.mjs"
   },
   "devDependencies": {
     "jsdom": "^25.0.0",

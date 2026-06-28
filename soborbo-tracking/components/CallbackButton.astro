@@ -1,5 +1,5 @@
 ---
-/** <CallbackButton /> — CTA with callback_click tracking. */
+/** <CallbackButton /> — CTA with callback_request_submitted tracking. */
 interface Props { class?: string; type?: 'button' | 'submit'; [key: string]: unknown; }
 const { class: cls, type = 'button', ...rest } = Astro.props;
 ---
@@ -13,7 +13,7 @@ const { class: cls, type = 'button', ...rest } = Astro.props;
     document.querySelectorAll<HTMLButtonElement>('[data-tracking-callback]').forEach(btn => {
       if (btn.dataset.trackBound) return;
       btn.dataset.trackBound = '1';
-      // Fires BOTH channels (dataLayer callback_click + gateway callback_conversion).
+      // Fires BOTH channels (dataLayer callback_request_submitted + gateway callback_request_submitted).
       btn.addEventListener('click', () => trackCallbackConversion());
     });
   }

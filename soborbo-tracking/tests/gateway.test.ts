@@ -72,7 +72,7 @@ describe('trackConversion — consent-gated (footgun fix)', () => {
     setCkyConsent({ analytics: false, marketing: false });
     const fetchMock = vi.fn((..._args: unknown[]) => Promise.resolve(new Response(null, { status: 204 })));
     vi.stubGlobal('fetch', fetchMock);
-    await trackConversion('phone_conversion', { value: 0, user_data: { email: 'a@b.com' } });
+    await trackConversion('phone_number_clicked', { value: 0, user_data: { email: 'a@b.com' } });
     expect(getDataLayer()).toHaveLength(0);
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -95,7 +95,7 @@ describe('sendToWorker — gateway payload', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const ok = await sendToWorker({
-      event_name: 'contact_form_submit',
+      event_name: 'contact_form_submitted',
       event_id: 'E1',
       event_time: 1_700_000_000,
       user_data: { email: 'a@b.com' },
@@ -104,7 +104,7 @@ describe('sendToWorker — gateway payload', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][0]).toBe('/api/event/conversion');
     const body = JSON.parse((fetchMock.mock.calls[0][1] as { body: string }).body);
-    expect(body.event_name).toBe('contact_form_submit');
+    expect(body.event_name).toBe('contact_form_submitted');
     expect(body.event_id).toBe('E1');
     // a token jelen van (a pontos érték a modul-szintű cache miatt sorrend-függő)
     expect(typeof body.turnstile_token).toBe('string');

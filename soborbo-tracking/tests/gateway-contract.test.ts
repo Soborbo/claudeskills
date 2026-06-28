@@ -26,7 +26,7 @@ function stubTurnstile(token = 'TT'): void {
 }
 
 function basePayload(): ConversionPayload {
-  return { event_name: 'phone_conversion', event_id: 'E1', event_time: 1_700_000_000,
+  return { event_name: 'phone_number_clicked', event_id: 'E1', event_time: 1_700_000_000,
     value: 380, currency: 'GBP', user_data: { email: 'a@b.com', phone_number: '07123456789' } };
 }
 
@@ -41,14 +41,14 @@ describe('gateway contract', () => {
   // 1) Runs first while the token cache is empty.
   it('no Turnstile token → higher-risk event skips: no network, returns false, TRK-1001', async () => {
     // window.turnstile is absent → getTurnstileToken yields undefined.
-    // contact_form_submit is NOT in the degraded low-risk set, so it is still
+    // contact_form_submitted is NOT in the degraded low-risk set, so it is still
     // hard-skipped. (Low-risk click events now dispatch token-less instead —
     // see gateway-degraded.test.ts for that path.)
     const fetchMock = vi.fn((..._a: unknown[]) => Promise.resolve(new Response(null, { status: 204 })));
     vi.stubGlobal('fetch', fetchMock);
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const ok = await sendToWorker({ ...basePayload(), event_name: 'contact_form_submit' });
+    const ok = await sendToWorker({ ...basePayload(), event_name: 'contact_form_submitted' });
     expect(ok).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(getDiagnostics().some((d) => d.code === 'TRK-1001')).toBe(true);
@@ -87,7 +87,7 @@ describe('gateway contract', () => {
 
     const body = JSON.parse(init.body);
     // identity + dedup
-    expect(body.event_name).toBe('phone_conversion');
+    expect(body.event_name).toBe('phone_number_clicked');
     expect(body.event_id).toBe('E1');
     expect(Number.isInteger(body.event_time)).toBe(true);
     // value / currency
@@ -147,6 +147,6 @@ describe('gateway contract', () => {
     const fail = getDiagnostics().find((d) => d.code === 'TRK-1002');
     expect(fail).toBeTruthy();
     expect(fail!.severity).toBe('error');
-    expect(fail!.context?.event_name).toBe('phone_conversion');
+    expect(fail!.context?.event_name).toBe('phone_number_clicked');
   });
 });

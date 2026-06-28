@@ -77,7 +77,7 @@ EU regulatory exposure.
 **Why:** Consent Mode v2 has a defined default-state requirement. Tags that fire
 before the default declaration assume "granted" (Google) or fail-open (Meta).
 
-## 6. `form_abandon` is best-effort — don't tighten the budget
+## 6. `form_abandoned` is best-effort — don't tighten the budget
 
 `pagehide`/`visibilitychange` don't fire reliably on mobile; the abandon event is
 **directional, not exact**. Don't build CAC / funnel-to-revenue math on abandonment
@@ -115,7 +115,7 @@ events as if real, so the breakage is invisible until you check the production v
 
 ## 10. ViewContent fires once per browser EVER
 
-`quote_calculator_first_view` (→ Meta `ViewContent`) must be gated by its **own**
+`quote_calculator_opened` (→ Meta `ViewContent`) must be gated by its **own**
 persistent localStorage flag, NOT by a field inside any conversion/session state
 that gets wiped on completion — otherwise it re-arms and double-counts. Give every
 new "first-time" engagement signal its own persistent key.

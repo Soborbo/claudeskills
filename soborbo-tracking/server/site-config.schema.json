@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Soborbo/claudeskills/soborbo-tracking/server/site-config.schema.json",
+  "title": "Soborbo event-gateway per-site KV config",
+  "description": "Formal schema for the SITE_CONFIG KV value the gateway worker reads per hostname. The gads.conversion_actions enum is GENERATED from events.json (canonical + legacy GA4 aliases); server/generate-site.mjs guards drift between this enum and events.json. Model 2: the ga4 block is OFFLINE-ONLY (the worker sends GA4 MP only from /api/event/lead-status; on-site GA4 is browser-only). gads is Google-Ads-offline-only via the Data Manager API.",
+  "type": "object",
+  "required": ["site_id", "country_code", "currency", "meta", "gads"],
+  "additionalProperties": false,
+  "patternProperties": {
+    "^_comment": {}
+  },
+  "properties": {
+    "site_id": { "type": "string", "minLength": 1 },
+    "country_code": { "type": "string", "enum": ["GB", "HU", "EU", "US", "DE", "FR", "IT", "ES"] },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "require_consent": { "type": "boolean" },
+    "meta": {
+      "type": "object",
+      "required": ["pixel_id", "access_token"],
+      "additionalProperties": false,
+      "patternProperties": { "^_comment": {} },
+      "properties": {
+        "pixel_id": { "type": "string", "pattern": "^\\d{5,}$" },
+        "access_token": { "type": "string", "minLength": 1 },
+        "test_event_code": {
+          "type": ["string", "null"],
+          "description": "Sprint 4-8 only. MUST be removed in production or every conversion goes to the Meta Test stream (CLAUDE.md #17)."
+        }
+      }
+    },
+    "ga4": {
+      "type": "object",
+      "description": "OFFLINE-ONLY under Model 2. The worker uses this only for the offline GA4 MP augment in lead-status.ts; on-site GA4 comes from the browser (Google tag). Omit to disable the offline GA4 leg.",
+      "required": ["measurement_id", "api_secret"],
+      "additionalProperties": false,
+      "patternProperties": { "^_comment": {} },
+      "properties": {
+        "measurement_id": { "type": "string", "pattern": "^G-[A-Z0-9]+$" },
+        "api_secret": { "type": "string", "minLength": 1 }
+      }
+    },
+    "gads": {
+      "type": "object",
+      "description": "Google-Ads-OFFLINE-only (Model 2): Enhanced Conversions for Leads via the Data Manager API, posted from /api/event/lead-status. conversion_actions keys are typically the OFFLINE CRM events (lead_qualified, booking_confirmed, revenue_confirmed, …).",
+      "required": ["customer_id"],
+      "additionalProperties": false,
+      "patternProperties": { "^_comment": {} },
+      "properties": {
+        "customer_id": { "type": ["string", "null"], "pattern": "^\\d{10}$" },
+        "login_customer_id": { "type": ["string", "null"], "pattern": "^\\d{10}$" },
+        "conversion_actions": {
+          "type": "object",
+          "description": "event_name -> numeric Data Manager conversion action / productDestinationId. Keys (enum) GENERATED from events.json: canonical names + legacy GA4 aliases.",
+          "propertyNames": {
+            "enum": [
+              "quote_calculator_submitted",
+              "callback_request_submitted",
+              "contact_form_submitted",
+              "phone_number_clicked",
+              "email_address_clicked",
+              "whatsapp_button_clicked",
+              "view_item",
+              "add_to_cart",
+              "begin_checkout",
+              "order_request_submitted",
+              "add_payment_info",
+              "purchase",
+              "quote_email_return",
+              "quote_calculator_opened",
+              "quote_calculator_step_completed",
+              "quote_calculator_option_selected",
+              "form_abandoned",
+              "scroll_depth",
+              "video_play",
+              "lead_validated",
+              "lead_qualified",
+              "quote_sent",
+              "booking_confirmed",
+              "job_completed",
+              "revenue_confirmed",
+              "lead_disqualified",
+              "quote_calculator_conversion",
+              "callback_conversion",
+              "contact_form_submit",
+              "phone_conversion",
+              "email_conversion",
+              "whatsapp_conversion",
+              "booking_click",
+              "quote_calculator_first_view"
+            ]
+          },
+          "additionalProperties": { "type": "string", "pattern": "^\\d+$" }
+        }
+      }
+    },
+    "tiktok": { "type": ["object", "null"] },
+    "linkedin": { "type": ["object", "null"] },
+    "microsoft_ads": { "type": ["object", "null"] }
+  }
+}

@@ -3,8 +3,10 @@
  *
  * Two channels, with a SHARED event_id (dedup):
  *   1) Browser: dataLayer push → GTM → GA4 / Google Ads / Meta Pixel (events.ts)
- *   2) Server: the event-gateway worker (/api/event/conversion) → Meta CAPI +
- *      GA4 MP + Google Ads uploadClickConversions (gateway.ts → sendToWorker)
+ *   2) Server: the event-gateway worker (/api/event/conversion) → Meta CAPI
+ *      (+ TikTok/LinkedIn/MsAds click-ID) on-site. Model 2: on-site GA4 + Google
+ *      Ads are browser-only; the server does GA4 + Google Ads ONLY offline
+ *      (CRM lead-status, Data Manager API). (gateway.ts → sendToWorker)
  *
  * The earlier in-app /api/track (Meta-only) endpoint is GONE — the server side
  * belongs entirely to the gateway (all 3 platforms + durability). The gateway
@@ -78,7 +80,7 @@ export interface LeadSubmitParams {
   value?: number;
   currency?: string;
   contentName?: string;
-  /** Override the gateway event name (default: contact_form_submit). */
+  /** Override the gateway event name (default: quote_calculator_submitted). */
   eventName?: string;
 }
 
@@ -90,8 +92,12 @@ export interface LeadSubmitResult {
   fbclid: string | null;
 }
 
-// Internal type → gateway event name (from the worker's ALLOWED_EVENT_NAMES).
-export const DEFAULT_GATEWAY_EVENT = 'contact_form_submit';
+// Internal type → canonical gateway event name. The worker also accepts the legacy
+// names and normalizes them at ingress, but we emit canonical. §2.1: the lead/quote
+// form is a Lead (quote_calculator_submitted); the contact form is a Contact
+// (contact_form_submitted) — no longer both Contact.
+export const DEFAULT_GATEWAY_EVENT = 'quote_calculator_submitted';
+export const CONTACT_GATEWAY_EVENT = 'contact_form_submitted';
 
 /**
  * Server-side dispatch to the gateway. Fire-and-forget: the gateway asynchronously
@@ -150,15 +156,15 @@ export function trackContactSubmit(
   if (!hasMarketingConsent()) return { success: false, consentBlocked: true, eventId, gclid, fbclid };
 
   pushContactConversion({ email: params.email, phone: params.phone, eventId, gclid: gclid || undefined });
-  dispatchToGateway(params.eventName || DEFAULT_GATEWAY_EVENT, eventId, {
+  dispatchToGateway(params.eventName || CONTACT_GATEWAY_EVENT, eventId, {
     email: params.email, phone: params.phone,
   });
   return { success: true, consentBlocked: false, eventId, gclid, fbclid };
 }
 
 /**
- * Generic server-side event to the gateway (e.g. phone_conversion,
- * callback_conversion, quote_calculator_conversion). The browser dataLayer
+ * Generic server-side event to the gateway (e.g. phone_number_clicked,
+ * callback_request_submitted, quote_calculator_submitted). The browser dataLayer
  * push must be handled separately (events.ts) with the same event_id if dedup is needed.
  */
 export function trackServerEvent(
@@ -190,10 +196,10 @@ export function trackServerEvent(
 // Exported so the event-name contract test can assert against the REAL map the code
 // dispatches with (not a copy), guaranteeing they stay in the gateway's allowed set.
 export const CLICK_GATEWAY_EVENT = {
-  phone: 'phone_conversion',
-  callback: 'callback_conversion',
-  email: 'email_conversion',
-  whatsapp: 'whatsapp_conversion',
+  phone: 'phone_number_clicked',
+  callback: 'callback_request_submitted',
+  email: 'email_address_clicked',
+  whatsapp: 'whatsapp_button_clicked',
 } as const;
 
 function trackClickConversion(
@@ -214,7 +220,7 @@ function trackClickConversion(
   return eventId;
 }
 
-/** Phone click → dataLayer `phone_click` + gateway `phone_conversion` (shared event_id, session-deduped). */
+/** Phone click → dataLayer + gateway `phone_number_clicked` (shared event_id, session-deduped). */
 export function trackPhoneConversion(params: { phone?: string } = {}): string | null {
   // dedup is owned here → pass dedup=false to the dataLayer pusher to avoid double-marking.
   return trackClickConversion((id) => { trackPhoneClick(id, false); }, CLICK_GATEWAY_EVENT.phone, {
@@ -222,21 +228,21 @@ export function trackPhoneConversion(params: { phone?: string } = {}): string | 
   });
 }
 
-/** Callback click → dataLayer `callback_click` + gateway `callback_conversion` (shared event_id, session-deduped). */
+/** Callback click → dataLayer + gateway `callback_request_submitted` (shared event_id, session-deduped). */
 export function trackCallbackConversion(params: { email?: string; phone?: string } = {}): string | null {
   return trackClickConversion((id) => { trackCallbackClick(id); }, CLICK_GATEWAY_EVENT.callback, {
     dedupName: 'callback', params,
   });
 }
 
-/** Email (mailto:) click → dataLayer `email_click` + gateway `email_conversion` (shared event_id, session-deduped). */
+/** Email (mailto:) click → dataLayer + gateway `email_address_clicked` (shared event_id, session-deduped). */
 export function trackEmailConversion(params: { email?: string } = {}): string | null {
   return trackClickConversion((id) => { trackEmailClick(id); }, CLICK_GATEWAY_EVENT.email, {
     dedupName: 'email', params: { email: params.email },
   });
 }
 
-/** WhatsApp click → dataLayer `whatsapp_click` + gateway `whatsapp_conversion` (shared event_id, session-deduped). */
+/** WhatsApp click → dataLayer + gateway `whatsapp_button_clicked` (shared event_id, session-deduped). */
 export function trackWhatsappConversion(params: { phone?: string } = {}): string | null {
   return trackClickConversion((id) => { trackWhatsappClick(id); }, CLICK_GATEWAY_EVENT.whatsapp, {
     dedupName: 'whatsapp', params: { phone: params.phone },

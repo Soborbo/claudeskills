@@ -22,8 +22,8 @@ describe('gtm/container.json — importable export', () => {
       .map((t: { parameter: { key: string; value: string }[] }) =>
         t.parameter.find((p) => p.key === 'eventName')?.value);
     for (const name of [
-      'contact_form_submit', 'callback_conversion', 'phone_conversion',
-      'email_conversion', 'whatsapp_conversion', 'quote_calculator_conversion',
+      'contact_form_submitted', 'callback_request_submitted', 'phone_number_clicked',
+      'email_address_clicked', 'whatsapp_button_clicked', 'quote_calculator_submitted',
     ]) {
       expect(ga4Names).toContain(name);
     }
@@ -35,8 +35,8 @@ describe('gtm/container.json — importable export', () => {
       .map((t: { customEventFilter: { parameter: { key: string; value: string }[] }[] }) =>
         t.customEventFilter[0].parameter.find((p) => p.key === 'arg1')?.value);
     for (const name of [
-      'lead_submit', 'contact_submit', 'callback_click', 'phone_click',
-      'email_click', 'whatsapp_click', 'calculator_complete',
+      'quote_calculator_submitted', 'contact_form_submitted', 'callback_request_submitted', 'phone_number_clicked',
+      'email_address_clicked', 'whatsapp_button_clicked', 'quote_calculator_submitted',
     ]) {
       expect(events).toContain(name);
     }
@@ -62,7 +62,7 @@ describe('gtm/container.json — importable export', () => {
     expect(adTypes).toContain('ad_storage');
     expect(adTypes).toContain('ad_user_data');
 
-    const ga4 = cv.tag.find((t: { name: string }) => t.name === 'GA4 - contact_form_submit');
+    const ga4 = cv.tag.find((t: { name: string }) => t.name === 'GA4 - contact_form_submitted');
     const anTypes = ga4.consentSettings.consentType.list.map((x: { value: string }) => x.value);
     expect(anTypes).toContain('analytics_storage');
   });
