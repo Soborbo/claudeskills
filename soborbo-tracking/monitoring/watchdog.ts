@@ -41,12 +41,18 @@ interface Env {
  */
 const KEY_EVENTS = [
   'primary_conversion',
+  'quote_calculator_submitted',
   'callback_request_submitted',
   'phone_number_clicked',
   'email_address_clicked',
   'whatsapp_button_clicked',
   'contact_form_submitted',
 ];
+// NOTE: these are the CANONICAL names. Sites whose GA4 stream still uses the
+// legacy GA4 event names (e.g. painlessremovals: `quote_calculator_conversion`,
+// `callback_conversion`, `phone_conversion`, ...) must list THOSE here — the
+// watchdog queries GA4 by the name the property actually receives, and an
+// entry that never occurs is silently skipped by MIN_BASELINE_PER_DAY.
 
 /** Alert if yesterday's count < this fraction of the 7-day daily average. */
 const ALERT_RATIO = 0.6;

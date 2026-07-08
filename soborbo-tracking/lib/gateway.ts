@@ -331,18 +331,40 @@ export function collectAttribution(): AttributionParams {
   // Last-touch: the fresh URL signals override the stored ones.
   const merged: AttributionParams = { ...stored, ...fresh };
 
-  // Ad-consent revoked/missing → drop the previously stored click IDs too
-  // (don't persist/send an ad identifier without consent).
-  if (!adGranted) {
-    for (const k of ATTR_CLICK_PARAMS) delete merged[k];
-  }
-
   // First-touch landing context (don't overwrite if already present).
   if (!merged.landing_page) merged.landing_page = window.location.href;
   if (!merged.referrer && document.referrer) merged.referrer = document.referrer;
 
+  if (adGranted) {
+    writeStoredAttribution(merged);
+    return merged;
+  }
+
+  // Click-ID handling without a grant is THREE-state, not two:
+  //  - explicit DENIED → honor the revocation at rest too: purge stored
+  //    click IDs and send none.
+  //  - UNKNOWN (no CookieYes cookie yet, JS API not loaded — the boot
+  //    race on every early page-load) → fail-closed on the WIRE (no click
+  //    IDs leave the browser), but do NOT purge IDs stored under a prior
+  //    grant. Treating "unknown" as a denial deleted a consented user's
+  //    gclid before the CMP initialised, orphaning the conversion from
+  //    its ad click.
+  const adDenied = consent
+    ? consent.ad_user_data === 'DENIED' && consent.ad_storage === 'DENIED'
+    : false;
+
+  if (adDenied) {
+    for (const k of ATTR_CLICK_PARAMS) delete merged[k];
+    writeStoredAttribution(merged);
+    return merged;
+  }
+
+  // Unknown: persist untouched (fresh contains no click IDs — collection
+  // above is grant-gated), strip click IDs from the outgoing copy only.
   writeStoredAttribution(merged);
-  return merged;
+  const outgoing: AttributionParams = { ...merged };
+  for (const k of ATTR_CLICK_PARAMS) delete outgoing[k];
+  return outgoing;
 }
 
 // Token-less degraded dispatch (server-side TASK 2). When Turnstile can't produce a
