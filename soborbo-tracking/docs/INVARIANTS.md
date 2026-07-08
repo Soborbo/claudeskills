@@ -130,6 +130,15 @@ marketing-gated with a 90-day TTL.
 Don't widen the clear delay or drop the consent gate to "fix" missing PII on late
 conversions — forwarding a user's PII without consent is a regulatory exposure.
 
+Consent is THREE-state, not two: **granted / denied / unknown**. "Unknown" is the
+boot window before the CMP has loaded (no CookieYes cookie, JS API absent) — it is
+NOT a user decision. Fail closed on the wire under unknown (send no click IDs / no
+PII), but never PURGE at-rest data that was persisted under a prior grant — treating
+unknown as denial deletes a consented user's stored gclid/PII on every early
+page-load and orphans the conversion from its ad click. Purge only on an explicit
+DENIED. (`collectAttribution` implements this; keep any new consent gate to the
+same three-state contract.)
+
 ## 12. The gateway rejects requests without an `Origin` header
 
 The gateway fails closed: no Origin = not a browser request = reject. Server-to-
@@ -214,6 +223,22 @@ v5 is unload-safe by construction: the gateway POST uses `navigator.sendBeacon` 
 a `fetch(..., { keepalive: true })` fallback (`sendToWorker`), and `<TrackedForm>`
 awaits `waitForTracking(600)` before `requestSubmit()`. Don't regress either path to
 a plain `fetch` "for simplicity."
+
+Two subtleties a fixed wait doesn't cover:
+
+- **The beacon only queues AFTER the Turnstile token mint.** `sendToWorker` awaits
+  `getTurnstileToken()` before `sendBeacon` — a first-on-page mint is a Cloudflare
+  round-trip (300 ms–1.5 s), and navigating meanwhile kills the pending mint, not
+  just the request. Mitigations: pre-warm the token at page load (the `<Turnstile>`
+  component does this; keep it), and when a handler both dispatches AND navigates,
+  gate the navigation on the dispatch's returned promise (with a hard safety
+  timeout ~2.5 s) instead of a fixed 600 ms wait.
+- **GTM pixel tags on the same event need their own gate.** If GTM fires Ads/GA4/
+  Meta tags off the dataLayer push, navigate from GTM's `eventCallback` (+
+  `eventTimeout` and the same safety timeout), not synchronously after the push —
+  the dataLayer push "succeeding" says nothing about the pixel requests it
+  triggered. This race silently zeroed a production site's "Callback requested"
+  Google Ads conversions for months.
 
 ## 20. `wait_for_update` in `Tracking.astro` must match the CMP's load time
 
