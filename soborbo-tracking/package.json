@@ -10,9 +10,13 @@
     "typecheck": "tsc --noEmit",
     "check:events": "node server/check-event-contract.mjs",
     "gen:gtm": "node gtm/gen-container.mjs gtm/container.json",
-    "gen:aliases": "node server/gen-event-aliases.mjs"
+    "gen:aliases": "node server/gen-event-aliases.mjs",
+    "verify": "node verify/run-verify.mjs",
+    "verify:strict": "node verify/run-verify.mjs --strict"
   },
   "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^26.1.1",
     "jsdom": "^25.0.0",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
