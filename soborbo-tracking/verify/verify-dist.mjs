@@ -63,7 +63,12 @@ const { values: args } = parseArgs({
 
 const TURNSTILE_SCRIPT_RE = /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js/;
 const TURNSTILE_CONTAINER_RE = /id="cf-turnstile-invisible"/;
-const GTM_LOADER_RE = /googletagmanager\.com\/gtm\.js\?id=(GTM-[A-Z0-9]+)/;
+// The standard GTM snippet concatenates the container id AT RUNTIME
+// (`gtm.js?id='+i`), so the loader URL in the HTML never carries it —
+// require the loader AND a GTM-XXXX token anywhere on the page instead.
+// (First calibration run failed all 115 pages by expecting the id inline.)
+const GTM_LOADER_RE = /googletagmanager\.com\/gtm\.js/;
+const GTM_ID_TOKEN_RE = /GTM-[A-Z0-9]{4,}/;
 const GTM_NOSCRIPT_RE = /googletagmanager\.com\/ns\.html\?id=GTM-[A-Z0-9]+/;
 const CONSENT_DEFAULT_RE = /\(\s*['"]consent['"]\s*,\s*['"]default['"]/;
 const TEL_LINK_RE = /href="tel:/;
@@ -110,10 +115,12 @@ function isConversionCapable(html, urlPath, manifest) {
 }
 
 function checkPage(html, urlPath, manifest, failures, warnings) {
-  // 2. GTM present, with a real container id.
-  const gtm = html.match(GTM_LOADER_RE);
+  // 2. GTM present, with a real container id somewhere on the page.
+  const gtm = GTM_LOADER_RE.test(html);
   if (!gtm) {
-    failures.push(`${urlPath}: GTM loader missing or has an EMPTY container id — this page ships untracked (GTM_ID absent at build time?)`);
+    failures.push(`${urlPath}: GTM loader missing — this page ships untracked`);
+  } else if (!GTM_ID_TOKEN_RE.test(html)) {
+    failures.push(`${urlPath}: GTM loader present but NO container id token on the page — GTM_ID was empty at build time`);
   } else if (!GTM_NOSCRIPT_RE.test(html)) {
     warnings.push(`${urlPath}: GTM <noscript> iframe fallback missing`);
   }

@@ -118,15 +118,23 @@ Validated 2026-07-08 against painlessremovals.com (the reference site):
 
 | Mutation (historical bug reintroduced) | Layer | Result |
 |---|---|---|
-| Turnstile script stripped from a built conversion-capable page | dist | ❌ FAIL (caught) |
-| Build without `GTM_ID` in the environment | dist | ❌ FAIL — flagged all 115 pages (caught; observed on a real credential-less sandbox build) |
+| Turnstile script stripped from a built conversion-capable page | dist | ❌ FAIL (caught, zero noise) |
+| GTM container-id token stripped from a built page (empty `GTM_ID` at build) | dist | ❌ FAIL (caught) |
+| Consent Mode default block removed from a built page | dist | ❌ FAIL (caught) |
 | Conversion event renamed in code (`callback_conversion` → `_v2`) | gtm-live | ❌ 2× FAIL: configured-but-not-emitted AND emitted-but-no-live-trigger (caught from both directions) |
 | `value: 0` reinserted into a real `trackEvent` payload | source | ❌ FAIL (caught) |
 | Navigation-safe helper regressed to `trackEvent` + sync redirect | source | ❌ FAIL (caught) |
 | `sessionId` removed from a `sendGA4MP` call-site | source | ❌ FAIL (caught) |
 | Refresh double-fire / stale-guard / callback race / value-drop | e2e | encoded as dedicated scenarios in `funnel-factory.ts` (each assertion documents the incident it reproduces) |
 
-First-run false positives (fixed, kept as calibration notes): the
-`value-zero` rule initially matched the COMMENTS explaining the rule (now
-comment-stripped), and `nav-after-track` flagged `tel:`/`mailto:` href
-assignments, which do not unload the page (now excluded).
+First-run false positives (fixed, kept as calibration notes — a verifier's
+first real run is where you calibrate it, not where you trust it):
+
+- the `value-zero` rule matched the COMMENTS explaining the rule (now
+  comment-stripped);
+- `nav-after-track` flagged `tel:`/`mailto:` href assignments, which open
+  the dialer without unloading the page (now excluded);
+- the GTM check expected the container id INSIDE the loader URL, but the
+  standard snippet concatenates it at runtime (`gtm.js?id='+i`) — it
+  failed all 115 pages of a perfectly tracked build. Now: loader presence
+  + a `GTM-XXXX` token anywhere on the page.
