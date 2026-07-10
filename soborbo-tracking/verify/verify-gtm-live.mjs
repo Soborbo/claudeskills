@@ -120,9 +120,11 @@ async function fetchLiveVersion() {
 // Container model
 // ---------------------------------------------------------------------------
 
-/** Custom-event trigger name(s) from a live-version trigger entry. */
+/** Custom-event trigger name(s) from a live-version trigger entry.
+ *  The live API spells the type `customEvent`; workspace exports spell it
+ *  `CUSTOM_EVENT` — normalize both. */
 function customEventNames(trigger) {
-  if ((trigger.type || '').toLowerCase() !== 'customevent') return [];
+  if ((trigger.type || '').toLowerCase().replace(/_/g, '') !== 'customevent') return [];
   const names = [];
   for (const f of trigger.customEventFilter ?? []) {
     for (const p of f.parameter ?? []) {
@@ -160,9 +162,16 @@ async function main() {
     process.exit(2);
   }
   const codeEvents = JSON.parse(await readFile(args.events, 'utf8')).filter((e) => !IGNORE_EVENTS.has(e));
-  const conversionEvents = args['conversion-events']
+  const configured = args['conversion-events']
     ? args['conversion-events'].split(',').map((s) => s.trim()).filter(Boolean)
-    : codeEvents.filter((e) => /conversion|submitted/.test(e));
+    : [];
+  // Conversion-grade = the configured list UNION any code event whose name
+  // looks conversion-shaped. The union matters: with only the configured
+  // list, renaming an event in code slips through (the old name stays in
+  // config, the new name is never checked) — the exact drift this layer
+  // exists to catch.
+  const heuristic = codeEvents.filter((e) => /conversion|submitted/.test(e) && e !== 'form_submission');
+  const conversionEvents = [...new Set([...configured, ...heuristic])];
 
   const { source, version } = await fetchLiveVersion();
   const { triggersByEvent, tagsByTrigger } = modelContainer(version);
@@ -170,6 +179,15 @@ async function main() {
   const warnings = [];
 
   console.log(`  container source: ${source}` + (version.containerVersionId ? ` (version ${version.containerVersionId}${version.name ? ` — "${version.name}"` : ''})` : ''));
+
+  // 0: every CONFIGURED conversion event must still exist in the code —
+  // a configured name the code no longer emits means the event was renamed
+  // or deleted without updating the contract (and probably without GTM).
+  for (const ev of configured) {
+    if (!codeEvents.includes(ev)) {
+      failures.push(`configured conversion event \`${ev}\` is emitted NOWHERE in the code — renamed or deleted? Update verify.site.json AND the GTM container together`);
+    }
+  }
 
   // 1 + 2: every conversion event has a live trigger that fires a live tag.
   for (const ev of conversionEvents) {

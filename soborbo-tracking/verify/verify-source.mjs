@@ -58,6 +58,9 @@ const PII_KEYS = [
 ];
 const EVENT_NAME_RE = /\b(?:trackEvent|trackEventBeforeNavigate)\(\s*['"]([A-Za-z0-9_.]+)['"]/g;
 const DL_PUSH_EVENT_RE = /dataLayer\.push\(\s*\{[^}]*?\bevent:\s*['"]([A-Za-z0-9_.]+)['"]/gs;
+// Events routed through a variable (`eventName = 'email_conversion'; ...
+// trackEvent(eventName, ...)`) — the literal is at the assignment site.
+const EVENT_VAR_RE = /\beventName\s*=\s*['"]([A-Za-z0-9_.]+)['"]/g;
 
 function allowed(lines, i, rule) {
   const re = new RegExp(`verify-allow:\\s*${rule}\\b`);
@@ -77,12 +80,22 @@ async function walk(dir) {
   return out;
 }
 
+/** The code portion of a line: comment-only lines -> '', trailing `//` text stripped.
+ *  The rules must never fire on prose ABOUT the rules — the first real-world run
+ *  flagged five comments that explain why value:0 is forbidden. */
+function codeOf(line) {
+  const t = line.trimStart();
+  if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return '';
+  const idx = line.indexOf('//');
+  return idx === -1 ? line : line.slice(0, idx);
+}
+
 function checkFile(file, text, failures, events) {
   const lines = text.split('\n');
   const navWindow = Number(args['nav-window']);
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const line = codeOf(lines[i]);
 
     // value-zero — only inside tracking-ish calls (heuristic: the line or the
     // enclosing few lines mention track/dispatch/dataLayer/conversion).
@@ -96,17 +109,19 @@ function checkFile(file, text, failures, events) {
     // nav-after-track — trackEvent( … followed by a synchronous location change.
     if (/\btrackEvent\(/.test(line) && !/trackEventBeforeNavigate/.test(line)) {
       for (let j = i + 1; j <= Math.min(lines.length - 1, i + navWindow); j++) {
-        if (/^\s*(\/\/|\*)/.test(lines[j])) continue;
-        // A new handler/function boundary ends the window early.
-        if (/^\s*(const|function|export|})\s*$/.test(lines[j])) { /* keep scanning modestly */ }
-        if (/window\.location\.(href\s*=|assign\()/.test(lines[j])) {
+        const codeJ = codeOf(lines[j]);
+        if (codeJ === '') continue;
+        if (/window\.location\.(href\s*=|assign\()/.test(codeJ)) {
+          // tel:/mailto: assignments open the dialer/mail app WITHOUT
+          // unloading the page — the pixel requests survive. Not a race.
+          if (/tel:|mailto:/.test(codeJ)) break;
           if (!allowed(lines, j, 'nav-after-track') && !allowed(lines, i, 'nav-after-track')) {
             failures.push(`${file}:${j + 1} [nav-after-track] synchronous navigation ${navWindow} lines after trackEvent() at line ${i + 1} — cancels the pixel requests; use the navigation-safe helper (eventCallback + timeout)`);
           }
           break;
         }
         // A navigation-safe call in between clears the suspicion.
-        if (/trackEventBeforeNavigate\(|eventCallback/.test(lines[j])) break;
+        if (/trackEventBeforeNavigate\(|eventCallback/.test(codeJ)) break;
       }
     }
 
@@ -137,7 +152,7 @@ function checkFile(file, text, failures, events) {
   }
 
   // Event vocabulary extraction (for verify-gtm-live).
-  for (const re of [EVENT_NAME_RE, DL_PUSH_EVENT_RE]) {
+  for (const re of [EVENT_NAME_RE, DL_PUSH_EVENT_RE, EVENT_VAR_RE]) {
     for (const m of text.matchAll(re)) events.add(m[1]);
   }
 }
