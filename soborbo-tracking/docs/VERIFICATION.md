@@ -125,7 +125,7 @@ Validated 2026-07-08 against painlessremovals.com (the reference site):
 | `value: 0` reinserted into a real `trackEvent` payload | source | ❌ FAIL (caught) |
 | Navigation-safe helper regressed to `trackEvent` + sync redirect | source | ❌ FAIL (caught) |
 | `sessionId` removed from a `sendGA4MP` call-site | source | ❌ FAIL (caught) |
-| Refresh double-fire / stale-guard / callback race / value-drop | e2e | encoded as dedicated scenarios in `funnel-factory.ts` (each assertion documents the incident it reproduces) |
+| Refresh double-fire / stale-guard / callback race / value-drop | e2e | encoded as dedicated scenarios in `funnel-factory.ts` — and on its FIRST full run against the reference site, `refresh-no-dupe` caught a genuine production bug that 195 unit tests, a 25-agent adversarial code review and a bot PR-review had all passed: the quote-signature input contained a `completedAt` timestamp minted per call, so the fingerprint rotated every mount and a refresh re-fired the conversion under a fresh event_id. Fixed; all 6 scenarios green since. |
 
 First-run false positives (fixed, kept as calibration notes — a verifier's
 first real run is where you calibrate it, not where you trust it):
