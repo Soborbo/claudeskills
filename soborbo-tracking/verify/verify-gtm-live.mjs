@@ -43,7 +43,7 @@
  *     [--snapshot ./live-container.json] [--committed ./gtm/container.json]
  */
 
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { createSign } from 'node:crypto';
 import { parseArgs } from 'node:util';
@@ -96,24 +96,37 @@ async function accessToken() {
 }
 
 async function fetchLiveVersion() {
-  if (args.snapshot) {
-    return { source: `SNAPSHOT ${args.snapshot}`, version: JSON.parse(await readFile(args.snapshot, 'utf8')) };
-  }
+  // LIVE credentials take PRECEDENCE over a snapshot: a frozen file must
+  // never shadow the real container when we can read it — otherwise every
+  // GTM UI edit after the snapshot date is structurally invisible and the
+  // layer's whole drift-catching purpose is defeated.
   const token = await accessToken();
   const { GTM_ACCOUNT_ID, GTM_CONTAINER_ID } = process.env;
-  if (!token || !GTM_ACCOUNT_ID || !GTM_CONTAINER_ID) {
-    console.error(
-      '\n  ⚠ SKIPPED (NOT verified): no GTM credentials.\n' +
-      '    Set GTM_ACCESS_TOKEN (tagmanager.readonly) or GA_SA_EMAIL + GA_SA_PRIVATE_KEY,\n' +
-      '    plus GTM_ACCOUNT_ID and GTM_CONTAINER_ID — or pass --snapshot for offline mode.\n' +
-      '    A skip is NOT a pass: the live container was NOT checked.\n',
-    );
-    process.exit(3); // distinct exit code: skipped, not passed
+  if (token && GTM_ACCOUNT_ID && GTM_CONTAINER_ID) {
+    const url = `https://tagmanager.googleapis.com/tagmanager/v2/accounts/${GTM_ACCOUNT_ID}/containers/${GTM_CONTAINER_ID}/versions:live`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error(`GTM API ${res.status}: ${(await res.text()).slice(0, 500)}`);
+    return { source: 'LIVE (Tag Manager API)', version: await res.json(), snapshotMode: false };
   }
-  const url = `https://tagmanager.googleapis.com/tagmanager/v2/accounts/${GTM_ACCOUNT_ID}/containers/${GTM_CONTAINER_ID}/versions:live`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`GTM API ${res.status}: ${(await res.text()).slice(0, 500)}`);
-  return { source: 'LIVE (Tag Manager API)', version: await res.json() };
+  if (args.snapshot) {
+    const version = JSON.parse(await readFile(args.snapshot, 'utf8'));
+    // Staleness: prefer a machine-readable fetchedAt field, fall back to mtime.
+    let ageDays = null;
+    const stamp = version.fetchedAt ? Date.parse(version.fetchedAt) : (await stat(args.snapshot)).mtimeMs;
+    if (Number.isFinite(stamp)) ageDays = Math.floor((Date.now() - stamp) / 86_400_000);
+    if (ageDays !== null && ageDays > 14) {
+      console.error(`  WARN  snapshot is ${ageDays} day(s) old — refresh it (live mode does this automatically) or trust decays`);
+    }
+    return { source: `SNAPSHOT ${args.snapshot}${ageDays !== null ? ` (${ageDays}d old)` : ''}`, version, snapshotMode: true };
+  }
+  console.error(
+    '\n  ⚠ SKIPPED (NOT verified): no GTM credentials and no snapshot.\n' +
+    '    Set GTM_ACCESS_TOKEN (tagmanager.readonly) or GA_SA_EMAIL + GA_SA_PRIVATE_KEY,\n' +
+    '    plus GTM_ACCOUNT_ID and GTM_CONTAINER_ID (numeric ids, not GTM-XXXX) —\n' +
+    '    or pass --snapshot for offline mode.\n' +
+    '    A skip is NOT a pass: the live container was NOT checked.\n',
+  );
+  process.exit(3); // distinct exit code: skipped, not passed
 }
 
 // ---------------------------------------------------------------------------
@@ -173,7 +186,7 @@ async function main() {
   const heuristic = codeEvents.filter((e) => /conversion|submitted/.test(e) && e !== 'form_submission');
   const conversionEvents = [...new Set([...configured, ...heuristic])];
 
-  const { source, version } = await fetchLiveVersion();
+  const { source, version, snapshotMode } = await fetchLiveVersion();
   const { triggersByEvent, tagsByTrigger } = modelContainer(version);
   const failures = [];
   const warnings = [];
@@ -237,7 +250,11 @@ async function main() {
 
   for (const w of warnings) console.error(`  WARN  ${w}`);
   for (const f of failures) console.error(`  FAIL  ${f}`);
-  console.log(`\nverify-gtm-live: ${conversionEvents.length} conversion event(s) checked against ${triggersByEvent.size} live trigger(s); ${failures.length} failure(s), ${warnings.length} warning(s)`);
+  console.log(`\nverify-gtm-live: ${conversionEvents.length} conversion event(s) checked against ${triggersByEvent.size} ${snapshotMode ? 'SNAPSHOT' : 'live'} trigger(s); ${failures.length} failure(s), ${warnings.length} warning(s)`);
+  if (failures.length === 0 && snapshotMode) {
+    console.error('  NOTE: checks ran against a SNAPSHOT — the LIVE container was NOT verified. Reporting SKIP, not PASS.');
+    process.exit(3);
+  }
   process.exit(failures.length > 0 ? 1 : 0);
 }
 

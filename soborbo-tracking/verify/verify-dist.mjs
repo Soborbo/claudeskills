@@ -75,10 +75,27 @@ const TEL_LINK_RE = /href="tel:/;
 const MAILTO_LINK_RE = /href="mailto:/;
 const WHATSAPP_LINK_RE = /href="https?:\/\/(?:[^"/]*\.)?(?:wa\.me|whatsapp\.com)/;
 
+// The manifest file is shared with run-verify.mjs (verify.site.json does
+// double duty), so warn on keys NEITHER consumer knows — a typo like
+// `turnstileExampt` would otherwise silently disable an exemption.
+const KNOWN_MANIFEST_KEYS = new Set([
+  // verify-dist keys
+  'conversionCapablePages', 'turnstileExempt', 'ssrPages', 'dispatchBundleMarkers',
+  // run-verify keys (ignored here, legitimate in the shared file)
+  'src', 'dist', 'mpFn', 'conversionEvents', 'keyEvents', 'gtmSnapshot',
+  'committedGtm', 'e2eDir', 'liveData',
+]);
+
 async function loadManifest(path) {
   if (!existsSync(path)) return {};
   try {
-    return JSON.parse(await readFile(path, 'utf8'));
+    const manifest = JSON.parse(await readFile(path, 'utf8'));
+    for (const key of Object.keys(manifest)) {
+      if (!KNOWN_MANIFEST_KEYS.has(key)) {
+        console.error(`  WARN  unknown manifest key \`${key}\` in ${path} — typo? It is silently ignored by every layer.`);
+      }
+    }
+    return manifest;
   } catch (err) {
     console.error(`FATAL: manifest ${path} is not valid JSON: ${err.message}`);
     process.exit(2);
@@ -172,7 +189,12 @@ async function main() {
     if (args.verbose) console.log(`  checked ${urlPath}`);
   }
 
-  // SSR pages aren't in dist — fetch them if we have a base URL, else shout.
+  // SSR pages aren't in dist — fetch them if we have a base URL, else the
+  // layer must report SKIP (exit 3), NOT pass: the historical months-long
+  // Turnstile/CAPI bug lived on exactly such an SSR page, and a green
+  // summary over an unchecked page is the failure mode this harness exists
+  // to kill.
+  let skippedSsr = 0;
   const ssrPages = manifest.ssrPages ?? [];
   if (ssrPages.length > 0) {
     if (args['base-url']) {
@@ -180,26 +202,43 @@ async function main() {
         const url = args['base-url'].replace(/\/$/, '') + p;
         try {
           const res = await fetch(url, { redirect: 'follow' });
+          // A styled 404/500 renders with the full layout (GTM, consent,
+          // Turnstile) and would "verify" a broken route as PASS — status
+          // and final-URL must match what we asked for.
+          if (!res.ok) {
+            failures.push(`${p}: SSR page returned HTTP ${res.status} — a broken route cannot count as verified`);
+            continue;
+          }
+          const finalPath = new URL(res.url).pathname;
+          if (finalPath !== p && finalPath !== p.replace(/\/$/, '')) {
+            failures.push(`${p}: SSR fetch was redirected to ${finalPath} — verified the wrong page`);
+            continue;
+          }
           const html = await res.text();
           pages++;
-          checkPage(html, `${p} (SSR via ${args['base-url']})`, manifest, failures, warnings);
+          // CLEAN path: conversionCapablePages / turnstileExempt matching
+          // must work for SSR pages too — a decorated label would silently
+          // disable force-listing and exemptions exactly here.
+          console.error(`  info  SSR fetch ${p} <- ${url}`);
+          checkPage(html, p, manifest, failures, warnings);
         } catch (err) {
           failures.push(`${p}: SSR page fetch failed (${err.message}) — could not verify`);
         }
       }
     } else {
+      skippedSsr = ssrPages.length;
       console.error(
         `\n  ⚠ SKIPPED (NOT verified): ${ssrPages.length} SSR page(s) — ${ssrPages.join(', ')}\n` +
         `    These do not exist in dist/. Pass --base-url to fetch and check them live.\n` +
-        `    A skip is NOT a pass.\n`,
+        `    A skip is NOT a pass — this layer will report SKIP, not PASS.\n`,
       );
     }
   }
 
   for (const w of warnings) console.error(`  WARN  ${w}`);
   for (const f of failures) console.error(`  FAIL  ${f}`);
-  console.log(`\nverify-dist: ${pages} page(s), ${failures.length} failure(s), ${warnings.length} warning(s)`);
-  process.exit(failures.length > 0 ? 1 : 0);
+  console.log(`\nverify-dist: ${pages} page(s), ${failures.length} failure(s), ${warnings.length} warning(s)${skippedSsr ? `, ${skippedSsr} SSR page(s) UNVERIFIED` : ''}`);
+  process.exit(failures.length > 0 ? 1 : skippedSsr > 0 ? 3 : 0);
 }
 
 main().catch((err) => {

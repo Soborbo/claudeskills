@@ -32,11 +32,13 @@
  * the SITE repo, because only the site knows how to seed a completed funnel
  * state. Side-effect policy: the adapter MUST stub the site's own save/lead
  * APIs (stubSiteApis) so runs create no emails, CRM leads or DB rows; the
- * harness aborts all third-party pixels by default (see network-truth.ts).
+ * harness answers all third-party pixels locally with a 204 by default
+ * (see network-truth.ts) so nothing reaches production GA4/Ads/Meta.
  */
 
+import { appendFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
-import { attachNetworkTruth, dataLayerEvents } from './network-truth';
+import { attachNetworkTruth, dataLayerEvents, type NetworkTruth } from './network-truth';
 
 export interface SiteAdapter {
   /** e.g. process.env.VERIFY_BASE_URL — preview URL or local server. */
@@ -71,19 +73,30 @@ export interface SiteAdapter {
 const strict = process.env.VERIFY_STRICT === '1';
 
 /** Assert-if-capable: in strict mode a missing capability fails; otherwise
- *  the assertion is skipped with a LOUD annotation (a skip is not a pass). */
+ *  the assertion is skipped with a LOUD annotation (a skip is not a pass).
+ *  Skips are ALSO appended to VERIFY_SKIP_FILE (set by run-verify.mjs), so
+ *  the orchestrator can downgrade a green Playwright exit to SKIP — without
+ *  this, an offline environment would record "e2e PASS" while every
+ *  network-level claim went unverified. */
 function ifCapable(cap: boolean, what: string, run: () => void | Promise<void>) {
   if (cap) return run();
   const msg = `SKIPPED (capability missing): ${what} — rerun with network access to GTM/Turnstile or VERIFY_STRICT=1 to fail instead`;
   if (strict) throw new Error(msg.replace('SKIPPED', 'STRICT FAIL'));
   test.info().annotations.push({ type: 'verify-skip', description: msg });
+  const skipFile = process.env.VERIFY_SKIP_FILE;
+  if (skipFile) {
+    try { appendFileSync(skipFile, `${msg}\n`); } catch { /* best-effort */ }
+  }
   // eslint-disable-next-line no-console
   console.warn(`  ⚠ ${msg}`);
 }
 
+const netsInFlight: NetworkTruth[] = [];
+
 async function openResults(page: Page, adapter: SiteAdapter, variant: { gclid: string; mutate?: boolean }) {
   const stubs = await adapter.stubSiteApis(page);
   const net = await attachNetworkTruth(page);
+  netsInFlight.push(net);
   // Land once on the origin so storage APIs are available, seed, then load results.
   await page.goto(adapter.baseUrl + '/', { waitUntil: 'domcontentloaded' });
   await adapter.seedCompletedState(page, variant);
@@ -93,6 +106,18 @@ async function openResults(page: Page, adapter: SiteAdapter, variant: { gclid: s
 
 export function defineFunnelSpecs(adapter: SiteAdapter): void {
   test.describe('conversion funnel — network truth', () => {
+    // Pattern-rot tripwire: a request that reached a known tracking host but
+    // matched no specific route was BLOCKED (no pollution), but it means the
+    // harness's matchers no longer describe reality — fail loudly.
+    test.afterEach(() => {
+      for (const net of netsInFlight.splice(0)) {
+        expect(
+          net.misses.map((m) => m.url),
+          'tracking request escaped every specific matcher — update the route patterns in network-truth.ts',
+        ).toHaveLength(0);
+      }
+    });
+
     test('completion fires the primary conversion exactly once, with attribution', async ({ page }) => {
       const { net, stubs } = await openResults(page, adapter, { gclid: 'VERIFY_GCLID_1' });
 
@@ -105,6 +130,15 @@ export function defineFunnelSpecs(adapter: SiteAdapter): void {
       // 2. The site save API was called once and shares the event_id (dedup key).
       await expect.poll(() => stubs.saves()).toHaveLength(1);
       expect(stubs.saves()[0].event_id).toBe(ev.event_id);
+
+      // 1b. SETTLE window, then re-assert "exactly once": expect.poll resolves
+      // the instant the count reaches 1, so a duplicate fire arriving a
+      // moment later (unguarded second effect run / re-mount — the per-mount
+      // UUID bug class) would otherwise pass "exactly once" on timing alone.
+      await page.waitForTimeout(2500);
+      const settled = await dataLayerEvents(page, adapter.events.primary);
+      expect(settled, `a SECOND primary conversion fired after the first was observed (event_ids: ${settled.map((e) => e.event_id).join(', ')})`).toHaveLength(1);
+      expect(stubs.saves(), 'a second save-quote call fired after the first was observed').toHaveLength(1);
 
       // 3. Wire truth: the gateway dispatch left the browser with the SAME
       //    event_id and the seeded gclid. Requires the Turnstile capability.
@@ -120,6 +154,13 @@ export function defineFunnelSpecs(adapter: SiteAdapter): void {
       await ifCapable(net.capabilities.gtmLoaded, 'GTM pixel requests', async () => {
         await expect.poll(() => net.ga4Events(adapter.events.primary).length, { timeout: 10_000 }).toBeGreaterThan(0);
         await expect.poll(() => net.ads.length, { timeout: 10_000 }).toBeGreaterThan(0);
+      });
+
+      // 4b. Meta browser pixel — separate capability: it needs fbevents.js
+      // (connect.facebook.net), which can be unreachable even when GTM loads.
+      // Without this assertion the meta bucket was never consulted at all.
+      await ifCapable(net.capabilities.metaPixelLoaded, 'Meta browser pixel request', async () => {
+        await expect.poll(() => net.meta.length, { timeout: 10_000 }).toBeGreaterThan(0);
       });
     });
 
@@ -158,19 +199,49 @@ export function defineFunnelSpecs(adapter: SiteAdapter): void {
       const { net } = await openResults(page, adapter, { gclid: 'VERIFY_GCLID_4' });
       await expect.poll(() => dataLayerEvents(page, adapter.events.primary)).toHaveLength(1);
 
+      // Timestamp the actual NAVIGATION COMMIT (main frame lands on the
+      // thank-you URL) — not "after waitForURL resolved", which would also
+      // bless requests issued from the thank-you page itself.
+      let navCommitAt = Number.POSITIVE_INFINITY;
+      const matchesThankYou = (url: string) =>
+        typeof adapter.thankYouPath === 'string' ? url.includes(adapter.thankYouPath) : adapter.thankYouPath.test(url);
+      page.on('framenavigated', (frame) => {
+        if (frame === page.mainFrame() && matchesThankYou(frame.url()) && !Number.isFinite(navCommitAt)) {
+          navCommitAt = Date.now();
+        }
+      });
+
       await page.locator(adapter.callbackSelector).first().click();
       await page.waitForURL(adapter.thankYouPath, { timeout: 15_000 });
-      const navAt = Date.now();
+      expect(Number.isFinite(navCommitAt), 'navigation commit was never observed').toBe(true);
 
-      // The callback conversion's evidence must predate (or match) navigation.
+      // The callback conversion's evidence must (a) be ISSUED before the
+      // navigation commit and (b) actually be DELIVERED — issue-time alone
+      // cannot distinguish "issued-then-cancelled by the teardown" from
+      // "delivered", and cancelled-in-flight IS the historical regression.
+      // Delivery = finishedAt set (requestfinished) / no `failed`.
+      //
+      // Honest limitation: the route stubs answer in ~0 ms, so a regression
+      // that only loses SLOW real-network requests is compressed out of
+      // existence here. What this reliably catches: the dispatch never being
+      // issued before teardown, and any issued request the browser then
+      // cancelled (requestfailed → failed set, finishedAt never set).
       await ifCapable(net.capabilities.turnstileLoaded, 'callback gateway dispatch', async () => {
         const hit = net.gateway.find((r) => r.payload.event_name === adapter.gatewayNames.callback);
         expect(hit, 'callback gateway dispatch never left the browser — killed by navigation?').toBeTruthy();
-        expect(hit!.at, 'gateway dispatch happened only after navigation').toBeLessThanOrEqual(navAt);
+        expect(hit!.at, 'gateway dispatch was only issued AFTER the navigation committed').toBeLessThanOrEqual(navCommitAt);
+        // A beacon survives navigation by design; a cancelled one means the
+        // dispatch was NOT a beacon/keepalive — exactly the regression.
+        expect(hit!.failed, `gateway dispatch was cancelled in flight (${hit!.failed ?? ''})`).toBeUndefined();
       });
-      await ifCapable(net.capabilities.gtmLoaded, 'callback pixel requests before nav', () => {
-        const ga4 = net.ga4Events(adapter.events.callback);
-        expect(ga4.length, 'GA4 callback hit was cancelled by the navigation race').toBeGreaterThan(0);
+      await ifCapable(net.capabilities.gtmLoaded, 'callback pixel requests before nav', async () => {
+        await expect.poll(
+          () => net.ga4Events(adapter.events.callback).some((r) => r.at <= navCommitAt && r.finishedAt !== undefined),
+          {
+            timeout: 5_000,
+            message: 'no GA4 callback hit was BOTH issued before the navigation commit AND delivered — cancelled by the race?',
+          },
+        ).toBe(true);
       });
     });
 

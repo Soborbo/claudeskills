@@ -34,13 +34,45 @@ node verify/run-verify.mjs --config verify.site.json [--strict] [--base-url URL]
 |---|---|---|---|
 | `source` | CI, <1s | nothing | no `value: 0`, no sync nav after `trackEvent`, GA4 MP call-sites session-stitched, no PII keys in pushes; also extracts the event vocabulary |
 | `dist` | CI, after build | `dist/` | every conversion-capable page has the FULL Turnstile pair; GTM loader with non-empty ID + noscript on every page; consent default BEFORE the GTM loader; SSR pages fetched via `--base-url` |
-| `gtm-live` | CI / on-demand | GTM API creds (or `--snapshot`) | every conversion event the code emits has a LIVE trigger firing ≥1 unpaused tag; dead live triggers; committed-JSON drift |
-| `e2e` | CI w/ browser, or against preview/prod URL | Playwright + a site adapter | network truth: conversion fires once; refresh doesn't re-fire; changed quote re-fires with new id; callback pixels beat navigation; phone click carries value; Turnstile pair present at runtime. Third-party pixels are recorded then ABORTED — no data pollution; site APIs are stubbed — no fake leads |
+| `gtm-live` | CI / on-demand | GTM API creds (snapshot = fallback) | every conversion event the code emits has a LIVE trigger firing ≥1 unpaused tag; dead live triggers; committed-JSON drift |
+| `e2e` | CI w/ browser, or against preview/prod URL | Playwright + a site adapter | network truth: conversion fires once (with a settle window — "once at first glance" is not once); refresh doesn't re-fire; changed quote re-fires with new id; callback pixels are issued before the navigation COMMIT **and delivered** (`requestfinished` — an issued-then-cancelled request is the regression, not evidence); phone click carries value; Turnstile pair present at runtime. Third-party pixels are answered locally with 204 — no data pollution; site APIs are stubbed — no fake leads |
 | `live-data` | scheduled + post-deploy | GA4 SA creds | key events ARRIVED in the window AND their "(not set)"-source share is under threshold (attribution quality, not just volume) |
 
 **A SKIP is never a PASS.** Every layer that can't run says so loudly and
 exits 3; the summary lists it; `--strict` turns skips into failures. This is
-the rule that prevents "conditionally done" from reading as done.
+the rule that prevents "conditionally done" from reading as done. The full
+skip map:
+
+- `dist` with `ssrPages` configured but no `--base-url` → **SKIP** (the SSR
+  conversion page is exactly where the historical Turnstile bug lived).
+- `gtm-live` without creds: falls back to the committed snapshot; a clean
+  snapshot-only run is still **SKIP** — a snapshot cannot prove the LIVE
+  container (that failure mode is incident #2 above). With creds present,
+  live ALWAYS takes precedence over the snapshot. Snapshots older than 14
+  days warn; `fetchedAt` in the snapshot JSON is the staleness anchor.
+- `e2e` capability skips (GTM/Turnstile unreachable in a sandbox): the
+  factory appends each skipped claim to `VERIFY_SKIP_FILE`; the orchestrator
+  downgrades a green Playwright exit to **SKIP** if that file is non-empty.
+- missing prerequisites (no `dist/`, no source dir, invalid manifest) are
+  **ERROR** (exit 2), not skip — those are misconfigurations to fix, not
+  capabilities to lack.
+
+### Network-truth interception rules (e2e)
+
+- Route patterns are **RegExp, not globs** — Playwright's glob `*` does not
+  match `/`, and real pixel URLs carry path segments (Ads conversion id:
+  `…/pagead/conversion/123456789/?…`; modern Meta: `facebook.com/tr/?…`).
+  Globs silently let REAL conversion pixels through to production.
+- A **blocking catch-all** over the known tracking hosts backstops pattern
+  rot: anything it catches was missed by a specific matcher — blocked
+  anyway, recorded in `misses`, and `misses` must be empty at the end of
+  every test. Script loads (gtm.js, fbevents.js, conversion_async.js) pass
+  through: 204-ing them would break the very tags under test.
+- Every recorded request carries `at` (issued) and `finishedAt`/`failed`
+  (delivered vs cancelled). Race-class assertions must check delivery.
+- Known residual: a GA4 tag using `server_container_url` (custom sGTM
+  collect domain) is invisible to matchers, catch-all AND capability
+  probes. Moving to sGTM requires extending `network-truth.ts` first.
 
 ## Site setup
 
@@ -58,14 +90,27 @@ the rule that prevents "conditionally done" from reading as done.
     "email_conversion", "whatsapp_conversion", "contact_form_submit"
   ],
   "keyEvents": ["quote_calculator_conversion", "callback_conversion", "phone_conversion"],
-  "conversionCapablePages": ["/instantquote/"],
+  "conversionCapablePages": ["/instantquote/", "/instantquote/your-quote/"],
   "ssrPages": ["/instantquote/your-quote/"],
   "turnstileExempt": [],
+  "dispatchBundleMarkers": [],
+  "gtmSnapshot": "./verify/gtm-live-snapshot.json",
   "committedGtm": "./GTM-workspace.json",
   "e2eDir": "./e2e",
   "liveData": { "days": 2, "maxUnassigned": 0.4 }
 }
 ```
+
+Unknown manifest keys are warned about by name — a typo like
+`turnstileExampt` must not silently disable an exemption.
+
+**Force-list every SSR conversion page in `conversionCapablePages`.** The
+tel:/mailto: heuristic works on static HTML, but an SSR page whose
+conversion UI is a client-only React island renders NO links server-side —
+the heuristic sees nothing and the Turnstile-pair requirement silently
+doesn't apply. This is precisely the page class the historical bug lived
+on. (SSR pages are also status-checked: a styled 404 or a redirect to a
+different path counts as FAIL, not as the page it landed on.)
 
 3. Write the e2e **site adapter** (`e2e/adapter.ts`) implementing
    `SiteAdapter` from `verify/e2e/funnel-factory.ts` — the only site-specific
@@ -138,3 +183,29 @@ first real run is where you calibrate it, not where you trust it):
   standard snippet concatenates it at runtime (`gtm.js?id='+i`) — it
   failed all 115 pages of a perfectly tracked build. Now: loader presence
   + a `GTM-XXXX` token anywhere on the page.
+
+Second-round hardening (an adversarial review of the harness itself — two
+independent reviewers tasked with making each layer LIE — found these false
+negatives; all fixed and encoded):
+
+- `nav-after-track` missed `window.location.replace()`, nav on the SAME
+  line as the `trackEvent` call, and any line where `//` appeared inside a
+  string literal (`'https://…'` truncated the whole line as a "comment");
+- `pii-in-push` missed shorthand properties (`{ email }`), keys after a
+  nested object (`{ meta: {…}, email }` — body capture stopped at the
+  first `}`), and the runtime set's `name`/`city` keys;
+- `value-zero` missed `value: 0.0`; the `mp-session-stitch` look-ahead was
+  satisfied by a `// TODO: wire sessionId` comment;
+- the e2e route patterns were globs — Playwright's `*` doesn't match `/`,
+  so REAL Ads (`…/conversion/<id>/?…`) and modern Meta (`…/tr/?…`) pixel
+  URLs were neither recorded NOR blocked (both headline claims false);
+- the callback-race test timestamped navigation AFTER `waitForURL`
+  resolved (near-vacuous ordering) and treated an issued-then-cancelled
+  request as evidence — now: `framenavigated` commit time + delivery
+  (`requestfinished`) required;
+- "fires exactly once" resolved at the first observation — a duplicate
+  200 ms later passed. Now: 2.5 s settle window, then re-assert.
+
+The meta-lesson is the same at every layer: **the verifier is code too.
+Review it adversarially, mutation-test it, and treat "the harness passed on
+its first try" as a smell, not a comfort.**

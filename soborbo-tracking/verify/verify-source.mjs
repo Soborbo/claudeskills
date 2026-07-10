@@ -53,7 +53,7 @@ const { values: args } = parseArgs({
 const SRC_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.astro'];
 const PII_KEYS = [
   'user_data', 'user_email', 'user_phone', 'email', 'phone', 'phone_number',
-  'first_name', 'last_name', 'street', 'postal_code', 'postcode',
+  'first_name', 'last_name', 'name', 'street', 'city', 'postal_code', 'postcode',
   'em', 'ph', 'fn', 'ln',
 ];
 const EVENT_NAME_RE = /\b(?:trackEvent|trackEventBeforeNavigate)\(\s*['"]([A-Za-z0-9_.]+)['"]/g;
@@ -82,12 +82,26 @@ async function walk(dir) {
 
 /** The code portion of a line: comment-only lines -> '', trailing `//` text stripped.
  *  The rules must never fire on prose ABOUT the rules — the first real-world run
- *  flagged five comments that explain why value:0 is forbidden. */
+ *  flagged five comments that explain why value:0 is forbidden.
+ *  Quote-aware: `//` inside a string literal ('https://…') is NOT a comment —
+ *  a naive indexOf('//') made `const u = 'https://x'; window.location.href = u`
+ *  entirely invisible to nav-after-track. */
 function codeOf(line) {
   const t = line.trimStart();
   if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return '';
-  const idx = line.indexOf('//');
-  return idx === -1 ? line : line.slice(0, idx);
+  let quote = '';
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (quote) {
+      if (c === '\\') i++;
+      else if (c === quote) quote = '';
+    } else if (c === "'" || c === '"' || c === '`') {
+      quote = c;
+    } else if (c === '/' && line[i + 1] === '/') {
+      return line.slice(0, i);
+    }
+  }
+  return line;
 }
 
 function checkFile(file, text, failures, events) {
@@ -99,7 +113,8 @@ function checkFile(file, text, failures, events) {
 
     // value-zero — only inside tracking-ish calls (heuristic: the line or the
     // enclosing few lines mention track/dispatch/dataLayer/conversion).
-    if (/\bvalue:\s*0(?![.\d])/.test(line) && !allowed(lines, i, 'value-zero')) {
+    // `0.0`/`0.00` are the same bug as `0`; `0.5` is a real value.
+    if (/\bvalue:\s*0(?:\.0+)?(?![.\d])/.test(line) && !allowed(lines, i, 'value-zero')) {
       const ctx = lines.slice(Math.max(0, i - 6), i + 2).join('\n');
       if (/track|dispatch|dataLayer|conversion|fbq/i.test(ctx)) {
         failures.push(`${file}:${i + 1} [value-zero] literal \`value: 0\` in a tracking payload — the gateway strips zeros; browser/server desync + £0 into Ads`);
@@ -107,11 +122,14 @@ function checkFile(file, text, failures, events) {
     }
 
     // nav-after-track — trackEvent( … followed by a synchronous location change.
+    // Covers href=/assign()/replace(), INCLUDING nav on the same line as the
+    // call (one-line JSX handlers) — the j=i pass scans the text after the
+    // trackEvent( occurrence only.
     if (/\btrackEvent\(/.test(line) && !/trackEventBeforeNavigate/.test(line)) {
-      for (let j = i + 1; j <= Math.min(lines.length - 1, i + navWindow); j++) {
-        const codeJ = codeOf(lines[j]);
+      for (let j = i; j <= Math.min(lines.length - 1, i + navWindow); j++) {
+        const codeJ = j === i ? line.slice(line.indexOf('trackEvent(')) : codeOf(lines[j]);
         if (codeJ === '') continue;
-        if (/window\.location\.(href\s*=|assign\()/.test(codeJ)) {
+        if (/window\.location\.(href\s*=|assign\(|replace\()/.test(codeJ)) {
           // tel:/mailto: assignments open the dialer/mail app WITHOUT
           // unloading the page — the pixel requests survive. Not a race.
           if (/tel:|mailto:/.test(codeJ)) break;
@@ -128,8 +146,10 @@ function checkFile(file, text, failures, events) {
     // mp-session-stitch — the MP sender call-site must mention sessionId.
     const mpFn = args['mp-fn'];
     if (mpFn && new RegExp(`\\b${mpFn}\\(`).test(line) && !allowed(lines, i, 'mp-session-stitch')) {
-      const callCtx = lines.slice(i, Math.min(lines.length, i + 25)).join('\n');
-      // Take up to the end of the call: crude but effective — look within 25 lines.
+      // Take up to the end of the call: crude but effective — look within 25
+      // lines. Comment-stripped: a `// TODO: wire sessionId` comment in the
+      // window must NOT satisfy the rule.
+      const callCtx = lines.slice(i, Math.min(lines.length, i + 25)).map(codeOf).join('\n');
       if (!/sessionId/.test(callCtx)) {
         failures.push(`${file}:${i + 1} [mp-session-stitch] ${mpFn}() call without a sessionId in the call-site — the MP hit lands Unassigned and never matches a gclid`);
       }
@@ -137,11 +157,17 @@ function checkFile(file, text, failures, events) {
   }
 
   // pii-in-push — inspect object literals passed to trackEvent / dataLayer.push.
-  for (const re of [/\b(?:trackEvent|trackEventBeforeNavigate)\(\s*['"][^'"]+['"]\s*,\s*\{([^}]*)\}/gs, /dataLayer\.push\(\s*\{([^}]*)\}/gs]) {
+  // Body capture runs to the `}` that closes the CALL (`}` + `)`), not the
+  // first `}` — a nested object (`{ meta: { a: 1 }, email: e }`) must not
+  // truncate the scan before the PII key.
+  for (const re of [/\b(?:trackEvent|trackEventBeforeNavigate)\(\s*['"][^'"]+['"]\s*,\s*\{([\s\S]*?)\}\s*\)/g, /dataLayer\.push\(\s*\{([\s\S]*?)\}\s*\)/g]) {
     for (const m of text.matchAll(re)) {
       const body = m[1];
       for (const key of PII_KEYS) {
-        if (new RegExp(`(?:^|[,{\\s])${key}\\s*:`).test(body)) {
+        // Key positions only (after `{`, `,` or start) — not values, so
+        // `{ label: name }` doesn't fire. Shorthand (`{ email }`) counts:
+        // the key IS the PII name, and the runtime guard strips it too.
+        if (new RegExp(`(?:^|[{,])\\s*${key}\\s*(?=[:,}]|$)`).test(body)) {
           const lineNo = text.slice(0, m.index).split('\n').length;
           if (!allowed(text.split('\n'), lineNo - 1, 'pii-in-push')) {
             failures.push(`${file}:${lineNo} [pii-in-push] PII-shaped key \`${key}\` in a tracking push — PII belongs on the hidden side-channel, never the dataLayer`);

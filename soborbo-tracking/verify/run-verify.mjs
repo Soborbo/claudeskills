@@ -37,7 +37,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { readFile, rm, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -56,7 +56,8 @@ const { values: args } = parseArgs({
 
 function run(cmd, argv, opts = {}) {
   return new Promise((resolve) => {
-    const child = spawn(cmd, argv, { stdio: 'inherit', ...opts });
+    // shell:true on Windows: npx is npx.cmd and Node refuses implicit .cmd spawning.
+    const child = spawn(cmd, argv, { stdio: 'inherit', shell: process.platform === 'win32', ...opts });
     child.on('close', (code) => resolve(code ?? 2));
     child.on('error', (err) => {
       console.error(`  could not start ${cmd}: ${err.message}`);
@@ -116,10 +117,27 @@ async function main() {
           record(layer, 3);
           break;
         }
+        // Capability skips inside the factory write to this file so a green
+        // Playwright exit with unverified network claims records as SKIP,
+        // never PASS.
+        const skipFile = join(HERE, '.e2e-skips.txt');
+        await rm(skipFile, { force: true });
         const code = await run('npx', ['playwright', 'test', '--config', dir], {
-          env: { ...process.env, ...(args['base-url'] ? { VERIFY_BASE_URL: args['base-url'] } : {}), ...(args.strict ? { VERIFY_STRICT: '1' } : {}) },
+          env: {
+            ...process.env,
+            VERIFY_SKIP_FILE: skipFile,
+            ...(args['base-url'] ? { VERIFY_BASE_URL: args['base-url'] } : {}),
+            ...(args.strict ? { VERIFY_STRICT: '1' } : {}),
+          },
         });
-        record(layer, code === 0 ? 0 : 1);
+        let hadSkips = false;
+        try { hadSkips = (await stat(skipFile)).size > 0; } catch { /* no skips */ }
+        if (code === 0 && hadSkips) {
+          console.error('  ⚠ e2e passed its runnable assertions but capability-skipped network-level claims — recording SKIP, not PASS (see lines above).');
+          record(layer, 3);
+        } else {
+          record(layer, code === 0 ? 0 : 1);
+        }
         break;
       }
       case 'live-data': {
