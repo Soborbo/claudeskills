@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "moduleResolution": "bundler",
     "strict": true,
     "noEmit": true,
@@ -15,7 +19,15 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["vitest/globals"]
+    "types": [
+      "vitest/globals",
+      "node"
+    ]
   },
-  "include": ["env.d.ts", "lib/**/*.ts", "tests/**/*.ts"]
+  "include": [
+    "env.d.ts",
+    "lib/**/*.ts",
+    "tests/**/*.ts",
+    "verify/e2e/**/*.ts"
+  ]
 }
