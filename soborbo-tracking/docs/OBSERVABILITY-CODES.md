@@ -11,22 +11,27 @@ reported by `lib/observability.ts` with a **stable code**, three ways:
 3. **DOM CustomEvent** `sb-tracking-diagnostic` — forward to your error pipeline.
    Only `warn`/`error` are dispatched (info is a throughput heartbeat, not a problem).
 
+> These TRK-1xxx/3xxx codes are the CLIENT vocabulary. The GATEWAY has its own
+> TRK-NNN-NNN codes (runbook: `Serverside/docs/error-codes.md`) — notably
+> TRK-400-017 (server-only event rejected on the browser path), TRK-900-007
+> (retry-record could not be persisted → manual resend), TRK-950-004 (delivery
+> claimed `accepted` without a vendor HTTP status). Don't confuse the two spaces.
+
 ## Codes
 
 | Code | Severity | When | Likely cause if it spikes after a deploy |
 |------|----------|------|------------------------------------------|
 | `TRK-1000` | info | Gateway dispatch sent (ring/heartbeat) | — |
-| `TRK-1001` | warn | Gateway dispatch skipped: **no Turnstile token** | Turnstile broke (script blocked / CSP / sitekey), or `<Turnstile/>` removed |
-| `TRK-1002` | error | **Gateway POST failed** (network/transport) | Gateway route/worker down, CORS, DNS, bad `/api/event/*` binding |
+| `TRK-1002` | error | **Gateway POST failed** (network/transport) | Gateway route/worker down, DNS, bad `/api/event/*` binding |
 | `TRK-1003` | info | `sendBeacon` unavailable/failed → used `fetch` keepalive | Usually benign (browser/UA), watch if it becomes constant |
-| `TRK-1004` | warn | Gateway dispatch sent **token-less** (degraded: phone/email/whatsapp click) | Turnstile is failing (script blocked / CSP / slow). The money signal is still delivered via the gateway's degraded mode — but fix Turnstile; usually co-occurs with `TRK-2xxx`. |
-| `TRK-2001` | warn | Turnstile script not loaded | `api.js` blocked / not included / slow |
-| `TRK-2002` | warn | Turnstile container `#cf-turnstile-invisible` missing | `<Turnstile/>` not rendered in the layout |
-| `TRK-2003` | warn | Turnstile challenge timed out | Turnstile service issue / interactive challenge on an invisible widget |
-| `TRK-2004` | error | `PUBLIC_TURNSTILE_SITE_KEY` is empty → every server-side dispatch is skipped | The sitekey env var is missing from the build |
+| `TRK-1005` | error | **Server-ingress-only event blocked from browser dispatch** | A wiring bug: form/lead/purchase conversions must be dispatched by the SITE BACKEND (`server/backend/`). The block prevented a guaranteed gateway 403 — fix the call site, don't bypass the guard |
+| `TRK-1006` | error | **Gateway rejected the dispatch** (non-2xx on the fetch fallback) | 403 = Origin not allow-listed / gated event; 429 = rate limit; 404 = hostname missing from SITE_CONFIG KV. The conversion did NOT land |
 | `TRK-3001` | error | **PII-shaped key blocked from a dataLayer push** | A code change started pushing raw PII — a GDPR regression. Fix the push; route PII via `setUserDataForEC()` |
 
-> `TRK-1xxx` = worker connection, `TRK-2xxx` = Turnstile, `TRK-3xxx` = data integrity.
+> `TRK-1xxx` = worker connection, `TRK-3xxx` = data integrity.
+> `TRK-1001`, `TRK-1004`, and the whole `TRK-2xxx` block (Turnstile) are RETIRED —
+> the gateway no longer validates Turnstile and the client never gates a dispatch
+> on a token. Do not reuse the numbers.
 > The codes are a contract — alert/dashboard on them; don't renumber casually.
 
 ## Wiring it to alerts
@@ -46,10 +51,12 @@ const problems = (window.__sbTrackingDiag || []).filter(d => d.severity !== 'inf
 ```
 
 Suggested alerts (any of these firing across many sessions = act):
-- `TRK-1002` at all → the gateway is unreachable. Page/lead conversions are not
-  reaching Meta CAPI / Google Ads server-side.
-- `TRK-1001` / `TRK-2xxx` sustained → Turnstile is down → **every** server-side
-  dispatch is being skipped.
+- `TRK-1002` at all → the gateway is unreachable. Click conversions are not
+  reaching Meta CAPI server-side.
+- `TRK-1005` at all → a deploy wired a gated event to the browser path; its server
+  leg is missing until the call site moves to the backend.
+- `TRK-1006` sustained → the gateway is rejecting the browser path (Origin
+  allow-list / KV config / rate limit) — the click-conversion leg is down.
 - `TRK-3001` ever → a PII regression shipped; the key is stripped (no leak) but fix
   the source immediately and check Meta Blocked Parameters (INVARIANTS #16).
 
@@ -62,6 +69,6 @@ getDiagnostics();   // TrackingDiagnostic[] (the ring, newest last)
 clearDiagnostics(); // reset the ring
 ```
 
-The codes are exercised by `tests/observability.test.ts`, `tests/gateway-contract.test.ts`
-(connection failures surface the right codes), and `tests/flow.test.ts` (the lead is
-never blocked by a slow/failed worker).
+The codes are exercised by `tests/observability.test.ts`, `tests/gateway.test.ts`,
+and `tests/gateway-contract.test.ts` (the ingress-split guard surfaces TRK-1005;
+connection failures surface TRK-1002/1006).

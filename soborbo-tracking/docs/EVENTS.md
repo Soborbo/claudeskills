@@ -17,13 +17,15 @@ v5 — that legacy machinery was removed.
   Pixel / Google Ads. Names: `quote_calculator_submitted`, `contact_form_submitted`, `phone_number_clicked`,
   `callback_request_submitted`, `email_address_clicked`, `whatsapp_button_clicked`, `calculator_*`,
   `form_abandoned`, `scroll_depth`.
-- **Server**: the conversion functions in `index.ts`
-  (`trackLeadSubmit` / `trackPhoneConversion` / …) POST to the event-gateway
-  worker with the SAME `event_id`. The gateway `event_name` must be in the
-  worker's allowed set (`ALLOWED_EVENT_NAMES` + `EVENT_NAME_MAP`, in
-  `Soborbo/Serverside`): `contact_form_submitted`, `quote_calculator_submitted`,
-  `callback_request_submitted`, `phone_number_clicked`, `email_address_clicked`,
-  `whatsapp_button_clicked`, `quote_calculator_opened`, `video_play`.
+- **Server** — split by ingress path (`lib/event-contract.ts`, from events.json):
+  - Low-risk clicks (`phone_number_clicked`, `email_address_clicked`,
+    `whatsapp_button_clicked`, `begin_checkout`, `video_play`): the click
+    functions in `index.ts` POST them to the browser path with the SAME `event_id`.
+  - High-value conversions (`quote_calculator_submitted`,
+    `callback_request_submitted`, `contact_form_submitted`,
+    `order_request_submitted`, `purchase`): server-ingress-only — the SITE BACKEND
+    dispatches them (`server/backend/gateway-dispatch.ts`) with the browser's
+    `event_id` (hidden field); the browser path 403s them (TRK-400-017).
 
 ## Naming convention
 
@@ -57,8 +59,10 @@ auto-populate the e-commerce reports — use them verbatim):
 | `begin_checkout` | Checkout start | GA4 + Meta `InitiateCheckout` |
 | `purchase` | Order confirmation | GA4 + Google Ads + Meta `Purchase` |
 
-For each one that should run server-side too, add it to the gateway's
-`ALLOWED_EVENT_NAMES` + `EVENT_NAME_MAP` (Meta name) in `Soborbo/Serverside`.
+For each one that should run server-side too, add it to the ENGINE's
+`src/events.json` (`channels: ["browser","server"]`, plus
+`server_ingress_only: true` if it is a money event), re-vendor `events.json`
+here, and regenerate `lib/event-contract.ts` (the drift tests will insist).
 
 ### SaaS signup with free trial
 
@@ -87,8 +91,9 @@ push({ event: 'your_new_event', event_id: eventId, value: 42, currency: 'EUR',
 
 For a server-side mirror, dispatch through the gateway with the same `event_id`
 via `trackServerEvent('your_gateway_event', { eventId, value, currency, email, phone })`
-(or add a dedicated wrapper in `index.ts`). The gateway hashes PII and adds
-attribution/consent/Turnstile.
+— but ONLY for browser-path events (`lib/event-contract.ts`); a `server_ingress_only`
+event must be dispatched by the site BACKEND (`server/backend/gateway-dispatch.ts`).
+The gateway hashes PII server-side; the client adds attribution/consent.
 
 ### 2. GTM container
 

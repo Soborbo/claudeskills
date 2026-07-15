@@ -4,19 +4,16 @@ import {
   trackPhoneClick, trackCallbackClick, trackEmailClick, trackWhatsappClick,
   pushLeadConversion, pushContactConversion,
 } from '../lib/events';
-import { CLICK_GATEWAY_EVENT, DEFAULT_GATEWAY_EVENT } from '../lib/index';
+import { CLICK_GATEWAY_EVENT } from '../lib/index';
+import { BROWSER_GATEWAY_EVENTS } from '../lib/event-contract';
 import { setCkyConsent, resetAll, getDataLayer } from './helpers';
 
-// A CANONICAL-EVENTS.md mérvadó listái — ha a kód eltér, ez a teszt elbukik.
+// The authoritative browser dataLayer vocabulary (CANONICAL-EVENTS.md) — if the
+// code drifts, this test fails.
 const BROWSER_EVENTS = [
   'quote_calculator_opened', 'quote_calculator_step_completed', 'quote_calculator_option_selected', 'quote_calculator_submitted',
-  'quote_calculator_submitted', 'contact_form_submitted', 'phone_number_clicked', 'callback_request_submitted',
+  'contact_form_submitted', 'phone_number_clicked', 'callback_request_submitted',
   'email_address_clicked', 'whatsapp_button_clicked', 'form_abandoned', 'scroll_depth',
-];
-const GATEWAY_ALLOWED = [
-  'quote_calculator_submitted', 'callback_request_submitted', 'contact_form_submitted',
-  'phone_number_clicked', 'email_address_clicked', 'whatsapp_button_clicked',
-  'quote_calculator_opened', 'video_play',
 ];
 
 beforeEach(() => {
@@ -24,8 +21,8 @@ beforeEach(() => {
   setCkyConsent({ analytics: true, marketing: true });
 });
 
-describe('contract — böngésző dataLayer event-nevek', () => {
-  it('minden tracker a dokumentált nevet emittálja', () => {
+describe('contract — browser dataLayer event names', () => {
+  it('every tracker emits the documented name', () => {
     trackCalculatorStart('c');
     trackCalculatorStep('s', 1);
     trackCalculatorOption('s', 'v');
@@ -39,25 +36,26 @@ describe('contract — böngésző dataLayer event-nevek', () => {
 
     const emitted = new Set(getDataLayer().map((e) => e.event as string));
     for (const name of ['quote_calculator_opened', 'quote_calculator_step_completed', 'quote_calculator_option_selected', 'quote_calculator_submitted',
-      'quote_calculator_submitted', 'contact_form_submitted', 'phone_number_clicked', 'callback_request_submitted', 'email_address_clicked', 'whatsapp_button_clicked']) {
+      'contact_form_submitted', 'phone_number_clicked', 'callback_request_submitted', 'email_address_clicked', 'whatsapp_button_clicked']) {
       expect(emitted.has(name)).toBe(true);
     }
-    // egyik emittált név sincs a dokumentált listán kívül
+    // no emitted name falls outside the documented list
     for (const name of emitted) expect(BROWSER_EVENTS).toContain(name);
   });
 });
 
-describe('contract — gateway allowed event-nevek', () => {
-  it('a kód VALÓDI gateway-nevei mind az engedélyezett halmazban vannak', () => {
-    // Assert against the REAL maps the code dispatches with (imported from index.ts),
+describe('contract — gateway event names the code actually dispatches', () => {
+  it('every REAL browser gateway name is in the browser-path allow-list (from events.json)', () => {
+    // Assert against the REAL map the code dispatches with (imported from index.ts),
     // not a local copy — so a code change to a non-allowed name fails this test.
-    const used = [DEFAULT_GATEWAY_EVENT, ...Object.values(CLICK_GATEWAY_EVENT)];
+    // The allow-list itself is derived from events.json (see event-contract.test.ts),
+    // closing the chain: engine events.json → event-contract.ts → CLICK_GATEWAY_EVENT.
+    const used: string[] = Object.values(CLICK_GATEWAY_EVENT).filter((n) => n !== null);
     for (const n of used) {
-      expect(GATEWAY_ALLOWED).toContain(n);
+      expect(BROWSER_GATEWAY_EVENTS.has(n), n).toBe(true);
     }
-    // sanity: the click map covers all four click conversions
-    expect(Object.values(CLICK_GATEWAY_EVENT).sort()).toEqual(
-      ['callback_request_submitted', 'email_address_clicked', 'phone_number_clicked', 'whatsapp_button_clicked'],
-    );
+    // sanity: phone/email/whatsapp dispatch, callback is dataLayer-only (server-ingress-only)
+    expect(used.sort()).toEqual(['email_address_clicked', 'phone_number_clicked', 'whatsapp_button_clicked']);
+    expect(CLICK_GATEWAY_EVENT.callback).toBeNull();
   });
 });

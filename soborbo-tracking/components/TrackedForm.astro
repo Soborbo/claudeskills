@@ -1,10 +1,18 @@
 ---
 /**
- * <TrackedForm /> — Form wrapper with conversion tracking.
+ * <TrackedForm /> — Form wrapper with conversion tracking (BROWSER leg only).
  *
- * Handles: validate → track → hidden fields → wait → submit.
+ * Handles: validate → track (dataLayer) → hidden fields → wait → submit.
  * Re-submits via form.requestSubmit() (guarded against recursion) so OTHER
  * submit listeners still run and the submitter button is preserved natively.
+ *
+ * THE SERVER LEG IS NOT HERE — and that is load-bearing. Form conversions
+ * (quote_calculator_submitted / contact_form_submitted) are server-ingress-only:
+ * the gateway 403s them on the browser path. The API route that receives this
+ * form's POST MUST dispatch the gateway conversion (server/backend/
+ * gateway-dispatch.ts) REUSING the `event_id` hidden field this component
+ * populates — that is what keeps Meta Pixel↔CAPI dedup intact. A form wired
+ * without the backend dispatch ships leads with NO server-side ad conversion.
  *
  * Field mapping: override with props if your form uses non-standard names.
  *

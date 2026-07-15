@@ -1,8 +1,9 @@
 ---
-// Example layout — copy and adapt. The tracking is just 3 lines.
+// Example layout — copy and adapt. The tracking is just 2 lines.
+// (No Turnstile: the tracking path has no token gate — the gateway's Origin
+// allow-list + rate limit is the browser-path control.)
 import Tracking from '../components/Tracking.astro';
 import TrackingNoscript from '../components/TrackingNoscript.astro';
-import Turnstile from '../components/Turnstile.astro';
 
 const GTM_ID = 'GTM-XXXXXXX';
 const COOKIEYES_ID = 'abcdef123456';
@@ -17,7 +18,6 @@ const COOKIEYES_ID = 'abcdef123456';
   </head>
   <body>
     <TrackingNoscript gtmId={GTM_ID} />
-    <Turnstile />
     <slot />
   </body>
 </html>

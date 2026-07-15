@@ -4,9 +4,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 // and simulate slow/failed workers — events.ts runs for real (true end-to-end browser side).
 vi.mock('../lib/gateway', () => ({
   sendToWorker: vi.fn(() => Promise.resolve(true)),
-  getTurnstileToken: vi.fn(() => Promise.resolve('TOK')),
   collectAttribution: vi.fn(() => ({})),
-  prewarmTurnstile: vi.fn(),
 }));
 
 import {
@@ -29,8 +27,8 @@ beforeEach(() => {
   setCkyConsent({ analytics: true, marketing: true });
 });
 
-describe('lead journey — flows through both channels in the right shape', () => {
-  it('lead submit: side-channel PII + PII-free dataLayer + gateway payload, one shared event_id', () => {
+describe('lead journey — browser leg + hidden-field handoff to the backend', () => {
+  it('lead submit: side-channel PII + PII-free dataLayer + eventId for the backend, NO browser gateway leg', () => {
     const r = trackLeadSubmit({
       email: 'A@B.com', phone: '07123456789', firstName: 'Jo', lastName: 'Smith',
       value: 380, currency: 'GBP',
@@ -47,23 +45,15 @@ describe('lead journey — flows through both channels in the right shape', () =
     // side-channel — normalized PII for Enhanced Conversions
     expect(sideChannel()).toMatchObject({ email: 'a@b.com', phone_number: '+447123456789' });
 
-    // server channel (gateway) — exact contract the worker consumes
-    expect(mockSend).toHaveBeenCalledOnce();
-    const p = mockSend.mock.calls[0][0];
-    expect(p.event_name).toBe('quote_calculator_submitted'); // §2.1: lead/quote form = Lead
-    expect(p.event_id).toBe(r.eventId);               // SAME id → Meta dedup
-    expect(Number.isInteger(p.event_time)).toBe(true); // unix SECONDS, not ms
-    expect(p.event_time).toBeGreaterThan(1_000_000_000);
-    expect(p.event_time).toBeLessThan(100_000_000_000);
-    expect(p.value).toBe(380);
-    expect(p.currency).toBe('GBP');
-    // raw PII for the gateway to hash server-side (Meta CAPI contract)
-    expect(p.user_data).toEqual({
-      email: 'A@B.com', phone_number: '07123456789', first_name: 'Jo', last_name: 'Smith',
-    });
+    // server channel: NOT from the browser. quote_calculator_submitted is
+    // server-ingress-only — the backend dispatches it with r.eventId (the
+    // event_id hidden field). A dispatch here would be 403'd by the gateway.
+    expect(mockSend).not.toHaveBeenCalled();
+    // …and the eventId the backend must reuse is a real UUID.
+    expect(r.eventId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
-  it('calculator funnel runs start→step→option→complete, then the conversion reaches the gateway', () => {
+  it('calculator funnel runs start→step→option→complete in the dataLayer', () => {
     trackCalculatorStart('quote-calc');
     trackCalculatorStep('size', 1, 4);
     trackCalculatorOption('size', '3-bed');
@@ -71,33 +61,36 @@ describe('lead journey — flows through both channels in the right shape', () =
     for (const e of ['quote_calculator_opened', 'quote_calculator_step_completed', 'quote_calculator_option_selected', 'quote_calculator_submitted']) {
       expect(lastEvent(e)).toBeTruthy();
     }
-    const id = trackServerEvent('quote_calculator_submitted', { value: 1200, currency: 'GBP' });
-    const p = mockSend.mock.calls.at(-1)![0];
-    expect(p.event_name).toBe('quote_calculator_submitted');
-    expect(p.event_id).toBe(id);
-    expect(p.value).toBe(1200);
+    expect(mockSend).not.toHaveBeenCalled(); // funnel is browser-only
   });
 
-  it('contact submit maps to contact_form_submitted with the shared id', () => {
+  it('a browser-path click event still reaches the gateway with value/currency', () => {
+    const id = trackServerEvent('video_play', { value: 1200, currency: 'GBP' });
+    const p = mockSend.mock.calls.at(-1)![0];
+    expect(p.event_name).toBe('video_play');
+    expect(p.event_id).toBe(id);
+    expect(p.value).toBe(1200);
+    expect(Number.isInteger(p.event_time)).toBe(true); // unix SECONDS, not ms
+    expect(p.event_time).toBeLessThan(100_000_000_000);
+  });
+
+  it('contact submit maps to contact_form_submitted in the dataLayer, backend owns the server leg', () => {
     const r = trackContactSubmit({ email: 'a@b.com', phone: '0620123456' });
     expect(lastEvent('contact_form_submitted')!.event_id).toBe(r.eventId);
-    expect(mockSend.mock.calls[0][0].event_name).toBe('contact_form_submitted');
+    expect(mockSend).not.toHaveBeenCalled();
   });
 });
 
 describe('the lead never gets stuck', () => {
-  it('a hanging worker does NOT block the conversion (fire-and-forget)', () => {
-    // Worker promise never resolves — simulates a dead/slow gateway.
+  it('a hanging worker does NOT block a click conversion (fire-and-forget)', () => {
     mockSend.mockImplementation(() => new Promise<boolean>(() => { /* never resolves */ }));
-    const r = trackLeadSubmit({ email: 'a@b.com', value: 100, currency: 'GBP' });
-    // Returns synchronously with success; the browser event is already in the dataLayer.
-    expect(r.success).toBe(true);
-    expect(lastEvent('quote_calculator_submitted')).toBeTruthy();
-    expect(mockSend).toHaveBeenCalledOnce();
+    const id = trackServerEvent('phone_number_clicked');
+    expect(id).toBeTruthy(); // returns synchronously
   });
 
   it('a rejecting worker does NOT throw out of the conversion path', () => {
     mockSend.mockImplementation(() => Promise.reject(new Error('boom')));
+    expect(() => trackServerEvent('phone_number_clicked')).not.toThrow();
     expect(() => trackLeadSubmit({ email: 'a@b.com', value: 100 })).not.toThrow();
     expect(lastEvent('quote_calculator_submitted')).toBeTruthy();
   });

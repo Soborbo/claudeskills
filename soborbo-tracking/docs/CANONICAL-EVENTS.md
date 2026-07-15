@@ -13,13 +13,26 @@ the GA4 event name, and the gateway `event_name` are now the SAME string. The ol
 
 - **Meta** deduplicates by `event_id` (browser Pixel ↔ server CAPI) → fire on both.
 - **GA4 does NOT deduplicate** → on-site GA4 is **browser-only** (the GTM Google tag).
-  The gateway sends GA4 MP **only offline** (CRM lead-status augment), never on-site.
+  The gateway sends **NO GA4 at all** — the offline GA4 leg is disabled too (without
+  a real client_id every offline event would open a synthetic GA4 client).
 - **Google Ads** on-site is **browser-only** too (AWCT + Enhanced Conversions). The
   server sends Google Ads **only offline** (Enhanced Conversions for Leads via the
   Data Manager API). This is **Model 2** — it kills the GA4/Ads on-site double-count
   and the fragile conversion-action matching.
 - **TikTok / LinkedIn / Microsoft** server forwarders stay on-site (event_id dedup,
   like Meta) when a click ID is present.
+
+## Ingress split (Run 6) — which path carries which event
+
+- **Browser path** (`/api/event/conversion`, tokenless): `phone_number_clicked`,
+  `email_address_clicked`, `whatsapp_button_clicked`, `begin_checkout`, `video_play`.
+- **Server path only** (`/api/event/conversion-server`, per-site token; browser
+  path → 403/TRK-400-017): `quote_calculator_submitted`,
+  `callback_request_submitted`, `contact_form_submitted`,
+  `order_request_submitted`, `purchase` — dispatched by the SITE BACKEND with the
+  browser's `event_id` (see `server/backend/`).
+- Derived mirror in code: `lib/event-contract.ts` (guarded by
+  `tests/event-contract.test.ts`).
 
 ## Canonical conversion table
 
@@ -55,8 +68,8 @@ One name flows through `events.ts` (dataLayer) → GTM trigger → GA4 event →
 
 `lead_validated`, `lead_qualified`, `quote_sent`, `booking_confirmed`,
 `job_completed`, `revenue_confirmed`, `lead_disqualified`. Uploaded to Google Ads
-(Data Manager API) + GA4 MP (offline augment). The bid-optimization target is
-`lead_qualified` (a real lead), not the raw click.
+(Data Manager API); no GA4 (the offline GA4 leg is disabled). The bid-optimization
+target is `lead_qualified` (a real lead), not the raw click.
 
 ## GA4 admin tasks (once per property)
 

@@ -17,17 +17,15 @@ export type DiagSeverity = 'info' | 'warn' | 'error';
 interface CodeDef { code: string; severity: DiagSeverity; message: string }
 
 export const TRACKING_CODES = {
-  // 1xxx — gateway / worker connection
+  // 1xxx — gateway / worker connection.
+  // TRK-1001/1004 (Turnstile skip / degraded token-less) and the whole TRK-2xxx
+  // Turnstile block are RETIRED: the gateway no longer validates Turnstile, and
+  // the client never gates a dispatch on a token. Do not reuse the numbers.
   GATEWAY_OK:              { code: 'TRK-1000', severity: 'info',  message: 'Gateway dispatch sent' },
-  GATEWAY_NO_TURNSTILE:    { code: 'TRK-1001', severity: 'warn',  message: 'Gateway dispatch skipped: no Turnstile token' },
   GATEWAY_NETWORK_FAIL:    { code: 'TRK-1002', severity: 'error', message: 'Gateway POST failed (network/transport)' },
   GATEWAY_BEACON_FALLBACK: { code: 'TRK-1003', severity: 'info',  message: 'sendBeacon unavailable/failed; used fetch keepalive' },
-  GATEWAY_DEGRADED_TOKENLESS: { code: 'TRK-1004', severity: 'warn', message: 'Gateway dispatch sent token-less (degraded low-risk) — Turnstile failed but the money signal is preserved' },
-  // 2xxx — Turnstile
-  TURNSTILE_NOT_LOADED:    { code: 'TRK-2001', severity: 'warn',  message: 'Turnstile script not loaded' },
-  TURNSTILE_NO_CONTAINER:  { code: 'TRK-2002', severity: 'warn',  message: 'Turnstile container #cf-turnstile-invisible missing' },
-  TURNSTILE_TIMEOUT:       { code: 'TRK-2003', severity: 'warn',  message: 'Turnstile challenge timed out' },
-  TURNSTILE_NO_SITEKEY:    { code: 'TRK-2004', severity: 'error', message: 'PUBLIC_TURNSTILE_SITE_KEY is empty — server-side dispatch will be skipped' },
+  GATEWAY_SERVER_ONLY_EVENT: { code: 'TRK-1005', severity: 'error', message: 'Server-ingress-only event blocked from browser dispatch — the site BACKEND must send it via /api/event/conversion-server' },
+  GATEWAY_REJECTED:        { code: 'TRK-1006', severity: 'error', message: 'Gateway rejected the dispatch (non-2xx HTTP status) — the conversion did NOT land' },
   // 3xxx — data integrity
   PII_IN_DATALAYER:        { code: 'TRK-3001', severity: 'error', message: 'PII-shaped key blocked from a dataLayer push' },
 } as const satisfies Record<string, CodeDef>;
@@ -59,15 +57,19 @@ function ring(): TrackingDiagnostic[] {
 /** Emit a coded diagnostic. Returns the record (handy in tests). */
 export function report(key: TrackingCodeKey, context?: Record<string, unknown>): TrackingDiagnostic {
   const def = TRACKING_CODES[key];
+  // Widen: the current code table happens to contain no 'warn' entries, but the
+  // severity contract stays three-level for future codes. (The cast defeats TS's
+  // const-initializer narrowing, which would otherwise flag the 'warn' branch.)
+  const severity = def.severity as DiagSeverity;
   const diag: TrackingDiagnostic = {
-    code: def.code, severity: def.severity, message: def.message, context,
+    code: def.code, severity, message: def.message, context,
     ts: typeof Date !== 'undefined' ? Date.now() : 0,
   };
 
   // 1) console — errors/warnings always; info only under diag-debug.
   const line = `[tracking] ${def.code} ${def.message}`;
-  if (def.severity === 'error') console.error(line, context ?? '');
-  else if (def.severity === 'warn') console.warn(line, context ?? '');
+  if (severity === 'error') console.error(line, context ?? '');
+  else if (severity === 'warn') console.warn(line, context ?? '');
   else if (diagDebug) console.log(line, context ?? '');
 
   if (typeof window !== 'undefined') {

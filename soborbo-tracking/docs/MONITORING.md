@@ -135,12 +135,44 @@ The watchdog above is **volume-based** (it notices conversions dropped, after th
 fact). The client also emits **real-time** coded diagnostics for the failure modes
 that cause those drops — see `OBSERVABILITY-CODES.md`. The two complement each other:
 
-- **`TRK-1002`** (gateway POST failed) / **`TRK-1001`** (no Turnstile token) tell you
-  *immediately* that server-side dispatch is broken — before the watchdog's daily
-  volume comparison would.
+- **`TRK-1002`** (gateway POST failed) / **`TRK-1006`** (gateway rejected the POST)
+  tell you *immediately* that the browser-path dispatch is broken — before the
+  watchdog's daily volume comparison would. **`TRK-1005`** flags a wiring bug the
+  moment a gated form event is dispatched from browser code.
 - **`TRK-3001`** (PII blocked from the dataLayer) flags a GDPR regression the moment
   it ships.
 
 Forward the `sb-tracking-diagnostic` CustomEvent (or scrape `window.__sbTrackingDiag`)
 to the same alerting sink as the watchdog so both the leading (codes) and lagging
 (volume) signals land in one place.
+
+## Gateway-side monitoring (engine — the primary safety net since Run 6)
+
+The client codes and the GA4 watchdog above are the BROWSER's view. The gateway
+(`Soborbo/Serverside`) has its own, stronger net — know it before you build more:
+
+- **Three-state D1 ledger.** Every delivery books `accepted` / `skipped` /
+  `rejected` per platform. `accepted` ALWAYS carries the vendor's HTTP status —
+  the engine downgrades a statusless success to `skipped` and fires
+  **TRK-950-004** (critical). A green dashboard over a ledger full of statusless
+  "accepted" rows is the exact failure this killed.
+- **Daily synthetic smoke lead** (`server/backend/smoke.ts`, 04:4x UTC per site) —
+  proves site worker → token → gateway → Meta TEST stream → ledger with no human.
+  The gateway's **daily digest** (08:00 UTC) alarms when a site in `SMOKE_SITES`
+  has no fresh `smoke-*` row (chain dead) or its Meta leg is `rejected` (vendor
+  call broken). `skipped` is OK for a deliberately meta-less site.
+- **Zero-conversion guard** in the same digest: a configured site with 0 accepted
+  events in 24h is flagged — a silently dead server leg looks exactly like that.
+- **DLQ + TRK-900-007**: a failed vendor call is queued for retry (Queue/R2); if
+  the retry record itself cannot be persisted anywhere, the event is NOT marked
+  dispatched and TRK-900-007 (critical) fires — recovery is a MANUAL resend.
+- **TRK-400-017** (browser path rejected a server-only event): occasional hits are
+  bots/probes; a sustained spike after a site deploy means a call site regressed
+  to browser dispatch (pair it with client TRK-1005).
+
+Runbook for all gateway codes: `Serverside/docs/error-codes.md`.
+
+**Division of labor:** the gateway digest + smoke guard catch server-leg death
+within 24h; the GA4 watchdog catches browser-leg / GTM death within 24h; the
+client TRK codes catch both in real time on live sessions. All three exist
+because each one alone has already missed a multi-week outage.

@@ -1,4 +1,6 @@
 {
+  "_comment": "Generator input for the NOT-YET-WIRED trapezlemezes.hu. Fill the REPLACE_ME secret in a COPY outside git, then: node ../generate-site.mjs --input /tmp/trapezlemezes.json --out /tmp/trapez-out",
+  "_comment_gads": "conversion_actions is EMPTY on purpose. Model 2: the gateway uploads Google Ads only OFFLINE (CRM lifecycle: lead_qualified, booking_confirmed, revenue_confirmed) — those actions do not exist yet in this Ads account and must be created first. The OLD on-site action IDs (quote_calculator_conversion 6926598604, callback_conversion 7176297115, contact_form_submit 7591648016, phone_conversion 6926366138) are browser-owned under Model 2 (AWCT) and must NOT be put here.",
   "site_id": "trapezlemezes",
   "hostnames": ["trapezlemezes.hu", "www.trapezlemezes.hu"],
   "country_code": "HU",
@@ -8,18 +10,9 @@
     "pixel_id": "1190487559035660",
     "access_token": "REPLACE_ME_META_CAPI_SYSTEM_USER_TOKEN"
   },
-  "ga4": {
-    "measurement_id": "REPLACE_ME_GA4_MEASUREMENT_ID",
-    "api_secret": "REPLACE_ME_GA4_API_SECRET"
-  },
   "gads": {
     "customer_id": "3415114700",
     "login_customer_id": null,
-    "conversion_actions": {
-      "quote_calculator_conversion": "6926598604",
-      "callback_conversion": "7176297115",
-      "contact_form_submit": "7591648016",
-      "phone_conversion": "6926366138"
-    }
+    "conversion_actions": {}
   }
 }

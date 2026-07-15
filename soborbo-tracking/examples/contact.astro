@@ -1,7 +1,9 @@
 ---
-// Example contact page with TrackedForm. On submit: dataLayer push (GTM) +
-// gateway POST (contact_form_submitted), with the same event_id. PII does NOT go
-// into the dataLayer — only in the gateway POST body (the gateway hashes it).
+// Example contact page with TrackedForm. On submit: dataLayer push (GTM) + the
+// event_id hidden field travels with the POST to /api/lead. The SERVER leg is
+// dispatched by the /api/lead API route (sendGatewayConversion with that same
+// event_id — see server/backend/README.md); the browser does NOT post form
+// conversions to the gateway. PII never enters the dataLayer.
 import Layout from './Layout.astro';
 import TrackedForm from '../components/TrackedForm.astro';
 import PhoneLink from '../components/PhoneLink.astro';
