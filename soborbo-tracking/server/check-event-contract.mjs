@@ -21,11 +21,22 @@
  * Failures print a short diff to stderr and exit non-zero. Wire into CI — drift
  * here is invisible at runtime and is a common way tracking silently breaks.
  *
+ * It ALSO guards the vendored gateway contract:
+ *
+ *   5. `events.json` (the vendored copy of Serverside/src/events.json) must be
+ *      post-Run-6: it must carry `server_ingress_only` flags. A re-vendor from an
+ *      old engine checkout fails loudly here instead of silently reopening the
+ *      browser path for form conversions.
+ *   6. With `--engine <path-to-Serverside/src/events.json>`: byte-level JSON
+ *      equality between the vendored copy and the engine's source of truth.
+ *      Run it whenever the Serverside repo is checked out next to this one.
+ *
  * Usage (defaults shown):
  *   node server/check-event-contract.mjs \
  *     --src ./lib,./components \
  *     --events ./docs/CANONICAL-EVENTS.md \
- *     --gtm ./gtm/container.json
+ *     --gtm ./gtm/container.json \
+ *     [--engine ../Serverside/src/events.json]
  *
  * `--gtm` is optional; when the file is missing, checks (2)–(4) are skipped.
  */
@@ -34,14 +45,18 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { parseArgs } from 'node:util';
+import { fileURLToPath } from 'node:url';
 
 const { values: args } = parseArgs({
   options: {
     src: { type: 'string', default: './lib,./components' },
     events: { type: 'string', default: './docs/CANONICAL-EVENTS.md' },
     gtm: { type: 'string', default: './gtm/container.json' },
+    engine: { type: 'string' },
   },
 });
+
+const VENDORED_EVENTS_PATH = fileURLToPath(new URL('../events.json', import.meta.url));
 
 const SRC_EXTENSIONS = ['.ts', '.tsx', '.js', '.mjs', '.cjs', '.astro'];
 // dataLayer pushes: `push({ event: 'X' ... })` or `dataLayer.push({ event: 'X' ... })`.
@@ -151,6 +166,34 @@ async function main() {
 
   const errors = [];
   const warnings = [];
+
+  // 5. Vendored events.json sanity: must be the post-Run-6 shape.
+  let vendored = null;
+  try {
+    vendored = JSON.parse(await readFile(VENDORED_EVENTS_PATH, 'utf8'));
+    const ingressOnly = vendored.filter((e) => e.server_ingress_only === true).map((e) => e.name);
+    if (ingressOnly.length === 0) {
+      errors.push(
+        '[events.json]  no event carries server_ingress_only:true — the vendored copy predates Run 6. Re-vendor from Serverside/src/events.json.'
+      );
+    }
+  } catch (e) {
+    errors.push(`[events.json]  cannot read/parse vendored events.json: ${e.message}`);
+  }
+
+  // 6. Optional engine-drift check: vendored copy ≡ engine source of truth.
+  if (args.engine) {
+    try {
+      const engine = JSON.parse(await readFile(args.engine, 'utf8'));
+      if (JSON.stringify(engine) !== JSON.stringify(vendored)) {
+        errors.push(
+          `[engine drift] vendored events.json differs from ${args.engine} — re-vendor (cp) it; the engine is the source of truth.`
+        );
+      }
+    } catch (e) {
+      errors.push(`[engine drift] cannot read/parse ${args.engine}: ${e.message}`);
+    }
+  }
 
   // 1. code → docs
   for (const [event, sites] of codeEvents) {

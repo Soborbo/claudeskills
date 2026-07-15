@@ -1,59 +1,29 @@
-# Follow-up: forward Microsoft / TikTok / LinkedIn click IDs (Serverside repo)
+# Follow-up log — Serverside (engine) work items
 
-> **This work lives in the separate `Soborbo/Serverside` repo (the event-gateway
-> worker), not in this skill.** It is documented here because it is the natural
-> server-side counterpart to the click IDs this skill already captures.
+> Historical tracker for engine-side work this skill depends on. The engine repo
+> (`Soborbo/Serverside`) is the source of truth for current state; check its
+> README / `docs/HANDOVER-run6.md` before acting on anything here.
 
-## What the client already does (this skill)
+## ✅ DONE — Microsoft / TikTok / LinkedIn click-ID forwarders
 
-`lib/gateway.ts` (`collectAttribution`) already captures and forwards these click
-IDs in the gateway POST body's `attribution` object (ad-consent gated):
+Shipped in the engine. The gateway forwards on-site conversions to the
+TikTok/LinkedIn/Microsoft conversion APIs when the matching click ID
+(`ttclid` / `li_fat_id` / `msclkid`) is present — same event_id-dedup model as
+Meta CAPI, per-site config blocks (`tiktok` / `linkedin` / `microsoft_ads` in the
+KV site-config; absent block → clean `skipped`). The client side of this
+(`collectAttribution` capturing the click IDs) is in `lib/gateway.ts`.
 
-- `msclkid`  — Microsoft Ads (Bing)
-- `ttclid`   — TikTok
-- `li_fat_id`— LinkedIn
-- `twclid`   — X/Twitter
+## ✅ DONE — Run 6 correctness set (2026-07)
 
-So the data already reaches the gateway. What's missing is the **server-side
-fan-out** to those platforms' conversion APIs — today the gateway only forwards to
-Meta CAPI, GA4 MP, and Google Ads.
+Three-state ledger honesty (TRK-950-004), high-value browser-path gate
+(TRK-400-017, `server_ingress_only`), DLQ persistence guarantee (TRK-900-007),
+real error statuses on server-to-server routes, quote-state Durable Object
+DELETED, offline GA4 leg DISABLED, per-site server-ingress token
+(`crm_token_sha256`), daily smoke-lead guard (`SMOKE_SITES` digest check).
+This skill (v6) is written against that contract.
 
-## What to build in `Soborbo/Serverside`
+## Open (engine-side, operator action)
 
-Mirror the existing Meta/GA4/Google-Ads pattern. On its own branch + PR:
-
-1. **Per-platform forwarder modules** (e.g. `src/forwarders/microsoft.ts`,
-   `tiktok.ts`, `linkedin.ts`), each exposing the same shape as the existing
-   forwarders (build payload from the normalized event + hashed user_data + the
-   relevant click ID; POST to the platform API; return a result for the
-   Queues/DLQ retry path).
-   - Microsoft Ads — UET / offline conversions (Bing Ads API) keyed on `msclkid`.
-   - TikTok — Events API (`/event/track/`) keyed on `ttclid`, hashed email/phone.
-   - LinkedIn — Conversions API keyed on `li_fat_id`, hashed email (SHA-256).
-
-2. **Per-site config fields** (KV `SiteConfig`): optional blocks
-   `microsoft_ads`, `tiktok`, `linkedin` (each with API token + the conversion/
-   pixel/event identifiers). Absent block → platform skipped (same as the GA4 MP
-   opt-out today).
-
-3. **Wire into the fan-out** alongside Meta/GA4/Google Ads, **gated on marketing
-   consent** (the same `require_consent` / consent-signal checks), with the same
-   **Cloudflare Queues + DLQ** durability the existing platforms use.
-
-4. **Tests** following the existing platform test pattern (payload shape, consent
-   gating, retry/DLQ on failure, click-ID presence/absence).
-
-## If credentials are unavailable
-
-Scaffold the modules + config fields + tests with the live API call clearly marked
-`TODO` (and the integration point isolated behind a small `dispatch()` function),
-rather than faking live calls. The Queues/DLQ wiring, consent gating, and config
-plumbing can all land and be tested without real credentials; only the outbound
-HTTP call is stubbed until tokens are provisioned.
-
-## Allowed event names
-
-No change needed on the client. These platforms consume the same canonical events
-already mapped in `CANONICAL-EVENTS.md`; the gateway's `EVENT_NAME_MAP` gains
-per-platform name mappings (e.g. TikTok `Contact`/`SubmitForm`, LinkedIn
-conversion IDs) inside the new forwarders.
+- **Cloudflare Queues activation**: `wrangler queues create event-gateway-dlq`
+  + `event-gateway-dlq-dead`, then uncomment the three wrangler.toml blocks.
+  Until then the DLQ runs on R2 + hourly cron retry (works, just slower).

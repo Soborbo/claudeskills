@@ -2,9 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 vi.mock('../lib/gateway', () => ({
   sendToWorker: vi.fn(() => Promise.resolve(true)),
-  getTurnstileToken: vi.fn(() => Promise.resolve('TOK')),
   collectAttribution: vi.fn(() => ({})),
-  prewarmTurnstile: vi.fn(),
 }));
 
 import { initTracking } from '../lib/index';

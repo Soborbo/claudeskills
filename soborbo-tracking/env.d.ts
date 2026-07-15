@@ -5,7 +5,6 @@
  * type-check the library without pulling in the full Astro/Vite type packages.
  */
 interface ImportMetaEnv {
-  readonly PUBLIC_TURNSTILE_SITE_KEY: string;
   readonly PUBLIC_TRACKING_COUNTRY?: string;
   readonly PUBLIC_TRACKING_CURRENCY?: string;
   readonly PUBLIC_TRACKING_LOCALE?: string;

@@ -1,36 +1,35 @@
 /**
- * Astro client-lib: server-side tracking dispatch to the Soborbo Worker.
+ * Astro client-lib: BROWSER-side tracking dispatch to the Soborbo event-gateway.
  *
  * Usage: copy-paste into the Astro site's src/lib/ (Painless, BeautyFlow, etc.).
- * Astro env: the PUBLIC_TURNSTILE_SITE_KEY public variable is required.
  *
- * Sprint 9 spec in 09-sprint-astro-painless.md.
+ * SCOPE — read this before "improving" anything:
+ *
+ *  - This module serves the BROWSER ingress path only (`/api/event/conversion`,
+ *    tokenless, Origin allow-list + rate limit on the gateway). It may carry ONLY
+ *    the low-risk click/engagement events in `BROWSER_GATEWAY_EVENTS`.
+ *  - High-value conversions (forms/lead/purchase — `SERVER_INGRESS_ONLY_EVENTS`)
+ *    are dispatched by the SITE BACKEND on `/api/event/conversion-server` with the
+ *    per-site token (see server/backend/gateway-dispatch.ts). The gateway 403s
+ *    them here (TRK-400-017). `sendToWorker` HARD-BLOCKS them client-side too, so
+ *    a wiring mistake is a loud diagnostic instead of a silent conversion loss.
+ *  - There is NO Turnstile anywhere in this path. The old Turnstile token gate
+ *    silently swallowed real click conversions for two weeks in production
+ *    (2026-06-28→07-13) while validating against a test secret. Do NOT add a
+ *    "bot check" that can block the dispatch — the gateway's Origin allow-list +
+ *    rate limit is the browser-path control, server-side.
  */
 
-import { generateUUID } from './uuid';
 import { hasAnalyticsConsent, hasMarketingConsent } from './consent';
+import { generateUUID } from './uuid';
 import { report } from './observability';
+import { BROWSER_GATEWAY_EVENTS, SERVER_INGRESS_ONLY_EVENTS } from './event-contract';
 
 declare global {
   interface Window {
-    turnstile?: {
-      render: (container: string | HTMLElement, options: TurnstileOptions) => string;
-      reset: (widgetId?: string) => void;
-      execute: (container?: string | HTMLElement) => void;
-      getResponse: (widgetId?: string) => string | undefined;
-    };
     dataLayer: Record<string, unknown>[];
     fbq?: (...args: unknown[]) => void;
   }
-}
-
-interface TurnstileOptions {
-  sitekey: string;
-  callback?: (token: string) => void;
-  'expired-callback'?: () => void;
-  'error-callback'?: () => void;
-  size?: 'normal' | 'compact' | 'invisible';
-  appearance?: 'always' | 'execute' | 'interaction-only';
 }
 
 export interface UserData {
@@ -72,104 +71,6 @@ export interface ConversionPayload {
   attribution?: AttributionParams;
 }
 
-let cachedTurnstileToken: string | undefined;
-let cachedTokenExpiresAt = 0;
-let turnstileWidgetId: string | undefined;
-// A single widget is rendered once. Subsequent calls reset it and route the
-// resolution through this pending pointer, so the original callbacks (which
-// closed over the first call) can still resolve later promises.
-let pendingResolver:
-  | { resolve: (v: string | undefined) => void; timeout: ReturnType<typeof setTimeout> }
-  | undefined;
-
-export async function getTurnstileToken(): Promise<string | undefined> {
-  if (cachedTurnstileToken && Date.now() < cachedTokenExpiresAt) {
-    return cachedTurnstileToken;
-  }
-
-  // Hard config error: without a sitekey the widget can't render, so EVERY
-  // server-side dispatch would be silently skipped. Surface it loudly (TRK-2004)
-  // instead of failing as a generic "no token".
-  if (!import.meta.env.PUBLIC_TURNSTILE_SITE_KEY) {
-    report('TURNSTILE_NO_SITEKEY');
-    return undefined;
-  }
-
-  if (!window.turnstile) {
-    report('TURNSTILE_NOT_LOADED');
-    return undefined;
-  }
-
-  return new Promise((resolve) => {
-    const container = document.getElementById('cf-turnstile-invisible');
-    if (!container) {
-      report('TURNSTILE_NO_CONTAINER');
-      resolve(undefined);
-      return;
-    }
-
-    // If a previous request is still pending, resolve it as undefined
-    // (we'll start a fresh challenge).
-    if (pendingResolver) {
-      clearTimeout(pendingResolver.timeout);
-      pendingResolver.resolve(undefined);
-    }
-
-    const timeout = setTimeout(() => {
-      if (pendingResolver) {
-        const r = pendingResolver;
-        pendingResolver = undefined;
-        report('TURNSTILE_TIMEOUT');
-        r.resolve(undefined);
-      }
-    }, 10000);
-    pendingResolver = { resolve, timeout };
-
-    const onCallback = (token: string) => {
-      if (!pendingResolver) return;
-      const r = pendingResolver;
-      pendingResolver = undefined;
-      clearTimeout(r.timeout);
-      cachedTurnstileToken = token;
-      cachedTokenExpiresAt = Date.now() + 4 * 60 * 1000;
-      r.resolve(token);
-    };
-    const onError = () => {
-      if (!pendingResolver) return;
-      const r = pendingResolver;
-      pendingResolver = undefined;
-      clearTimeout(r.timeout);
-      r.resolve(undefined);
-    };
-
-    if (turnstileWidgetId !== undefined) {
-      // Subsequent calls — reset and re-execute the existing widget.
-      // The original callbacks delegate to the current pendingResolver above.
-      window.turnstile!.reset(turnstileWidgetId);
-      window.turnstile!.execute(container);
-    } else {
-      turnstileWidgetId = window.turnstile!.render(container, {
-        sitekey: import.meta.env.PUBLIC_TURNSTILE_SITE_KEY,
-        size: 'invisible',
-        callback: onCallback,
-        'error-callback': onError
-      });
-      window.turnstile!.execute(container);
-    }
-  });
-}
-
-/**
- * Pre-warm the Turnstile token on page load so it's already cached (4 min) before
- * the first conversion dispatch — removes the invisible-challenge latency from the
- * critical path (a phone/callback/form click would otherwise wait on it). Wired in
- * Turnstile.astro. Best-effort and fire-and-forget: getTurnstileToken() never
- * rejects (it resolves undefined on failure), so the dispatch path still retries.
- */
-export function prewarmTurnstile(): void {
-  void getTurnstileToken().catch(() => { /* best-effort warm-up */ });
-}
-
 function getCookie(name: string): string | undefined {
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
   return match ? decodeURIComponent(match[2]) : undefined;
@@ -185,8 +86,7 @@ function extractGAClientId(gaCookie: string | undefined): string | undefined {
 //   GS1: `GS1.1.<session_id>.<...>`
 //   GS2: `GS2.1.s<session_id>$o..$g..`  ← the default for new sessions since 2025-05-06
 // In GS2 a literal `s` precedes the session_id. We handle the optional `s` and the
-// multi-digit version/slot segments too. Without it the MP event does not show up
-// properly in GA4 reports.
+// multi-digit version/slot segments too.
 function extractGASessionId(): string | undefined {
   const match = document.cookie.match(/_ga_[A-Z0-9]+=GS\d+\.\d+\.s?(\d+)/);
   return match ? match[1] : undefined;
@@ -367,31 +267,26 @@ export function collectAttribution(): AttributionParams {
   return outgoing;
 }
 
-// Token-less degraded dispatch (server-side TASK 2). When Turnstile can't produce a
-// token (slow / blocked / CSP), still dispatch LOW-RISK click conversions
-// (tel:/mailto:/whatsapp) so the gateway's degraded mode can accept them
-// rate-limited — otherwise the #1 lead signal (phone) is silently lost with no
-// retry. Higher-risk events (forms, callback) are still skipped: the gateway
-// HARD-REJECTS token-less forms, so dispatching them would just be a wasted beacon.
-// This set must match the worker's DEGRADED_LOW_RISK_EVENTS (src/lib/degraded.ts)
-// EXACTLY — callback_request_submitted is deliberately excluded on both sides.
-const DEGRADED_LOW_RISK_EVENTS: ReadonlySet<string> = new Set([
-  'phone_number_clicked',
-  'email_address_clicked',
-  'whatsapp_button_clicked'
-]);
-
+/**
+ * Browser dispatch to the gateway (`/api/event/conversion`).
+ *
+ * GUARDRAIL: only `BROWSER_GATEWAY_EVENTS` pass. A `server_ingress_only` event
+ * (or any name outside the browser allow-list) is refused HERE, with a loud
+ * TRK-1005 diagnostic — the gateway would 403/drop it anyway, but a client-side
+ * block turns "silently lost conversion" into "visible wiring bug". Send those
+ * events from the site backend instead (server/backend/gateway-dispatch.ts).
+ *
+ * Transport: `sendBeacon` first (survives page unload — tel:/mailto: clicks
+ * navigate away), `fetch keepalive` fallback. The fetch fallback DOES inspect the
+ * HTTP status: a 4xx/5xx reports TRK-1006 (GATEWAY_REJECTED) instead of lying
+ * "sent". (A queued beacon cannot be inspected — that's inherent to beacons and
+ * acceptable for low-risk click events; the gateway's D1 ledger is the ground
+ * truth either way.)
+ */
 export async function sendToWorker(payload: ConversionPayload): Promise<boolean> {
-  const turnstileToken = await getTurnstileToken();
-  if (!turnstileToken) {
-    if (!DEGRADED_LOW_RISK_EVENTS.has(payload.event_name)) {
-      report('GATEWAY_NO_TURNSTILE', { event_name: payload.event_name });
-      return false;
-    }
-    // Low-risk money signal → dispatch token-less. `turnstile_token` is omitted
-    // from the body below (undefined), so the worker sees `missing_token` and
-    // routes it through the degraded, rate-limited path.
-    report('GATEWAY_DEGRADED_TOKENLESS', { event_name: payload.event_name });
+  if (SERVER_INGRESS_ONLY_EVENTS.has(payload.event_name) || !BROWSER_GATEWAY_EVENTS.has(payload.event_name)) {
+    report('GATEWAY_SERVER_ONLY_EVENT', { event_name: payload.event_name });
+    return false;
   }
 
   const fbp = getCookie('_fbp');
@@ -401,7 +296,6 @@ export async function sendToWorker(payload: ConversionPayload): Promise<boolean>
 
   const body = JSON.stringify({
     ...payload,
-    turnstile_token: turnstileToken,
     fbp,
     fbc,
     client_id: clientId,
@@ -423,12 +317,19 @@ export async function sendToWorker(payload: ConversionPayload): Promise<boolean>
   }
 
   try {
-    await fetch('/api/event/conversion', {
+    const res = await fetch('/api/event/conversion', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body,
       keepalive: true
     });
+    if (!res.ok) {
+      // 403 = Origin not allow-listed OR a server-ingress-only event slipped
+      // through (TRK-400-017 on the gateway); 429 = rate limit; 404 = hostname
+      // missing from SITE_CONFIG KV. All of them mean the conversion did NOT land.
+      report('GATEWAY_REJECTED', { event_name: payload.event_name, status: res.status });
+      return false;
+    }
     report('GATEWAY_OK', { event_name: payload.event_name, transport: 'fetch' });
     return true;
   } catch (err) {
@@ -439,10 +340,11 @@ export async function sendToWorker(payload: ConversionPayload): Promise<boolean>
 
 /**
  * @deprecated Prefer the consent-safe entry points in `index.ts`
- * (`trackLeadSubmit` / `trackServerEvent` / `trackPhoneConversion` …). This
- * low-level helper is kept for direct/advanced use. It is now CONSENT-GATED to
- * match the skill's consent matrix: the dataLayer push needs analytics consent,
- * the gateway dispatch needs marketing consent. Without either it is a no-op.
+ * (`trackServerEvent` / `trackPhoneConversion` …). This low-level helper is kept
+ * for direct/advanced use. It is CONSENT-GATED to match the skill's consent
+ * matrix: the dataLayer push needs analytics consent, the gateway dispatch needs
+ * marketing consent. Without either it is a no-op. The gateway leg only accepts
+ * browser-path events (see `sendToWorker`).
  */
 export async function trackConversion(
   eventName: string,

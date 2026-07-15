@@ -1,5 +1,13 @@
 ---
-/** <CallbackButton /> — CTA with callback_request_submitted tracking. */
+/**
+ * <CallbackButton /> — CTA with callback tracking (browser dataLayer leg ONLY).
+ *
+ * `callback_request_submitted` is server-ingress-only: the gateway 403s it on
+ * the browser path (TRK-400-017), so this component pushes only the dataLayer
+ * event (Pixel/GA4 via GTM). If the callback CTA leads to a real form POST,
+ * the site BACKEND dispatches the gateway conversion with the shared event_id
+ * (see server/backend/gateway-dispatch.ts).
+ */
 interface Props { class?: string; type?: 'button' | 'submit'; [key: string]: unknown; }
 const { class: cls, type = 'button', ...rest } = Astro.props;
 ---
@@ -13,7 +21,7 @@ const { class: cls, type = 'button', ...rest } = Astro.props;
     document.querySelectorAll<HTMLButtonElement>('[data-tracking-callback]').forEach(btn => {
       if (btn.dataset.trackBound) return;
       btn.dataset.trackBound = '1';
-      // Fires BOTH channels (dataLayer callback_request_submitted + gateway callback_request_submitted).
+      // dataLayer only — the gateway leg (if any) belongs to the form's backend.
       btn.addEventListener('click', () => trackCallbackConversion());
     });
   }

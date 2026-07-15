@@ -5,8 +5,9 @@ side of this skill exactly as specified in [`../docs/gtm-setup.md`](../docs/gtm-
 and [`../docs/CANONICAL-EVENTS.md`](../docs/CANONICAL-EVENTS.md).
 
 > This is the **browser channel** only (GTM → GA4 / Meta Pixel / Google Ads). The
-> server channel (Meta CAPI + GA4 MP + Google Ads `uploadClickConversions`) is the
-> event-gateway worker in `Soborbo/Serverside` — it is not configured in GTM.
+> server channel (Meta CAPI on-site + Google Ads offline via the Data Manager API;
+> NO server GA4) is the event-gateway worker in `Soborbo/Serverside` — it is not
+> configured in GTM.
 
 ## What's inside
 
@@ -63,9 +64,9 @@ container you import **into**, so you don't edit that.
    `quote_calculator_submitted` as Key Events (see `CANONICAL-EVENTS.md`).
 3. **GA4 custom dimensions.** Register `event_id`, `session_id`, `source`, `service`,
    `device`, `calculator_name`, `step_id` (event-scoped).
-4. **GA4 double-counting.** This container fires GA4 **browser-side**. Keep the
-   gateway GA4 MP **off** (omit the `ga4` block in the site KV) unless you deliberately
-   accept the overlap — GA4 does not dedup. See `CANONICAL-EVENTS.md`.
+4. **GA4 double-counting.** This container fires GA4 **browser-side** — and that is
+   the ONLY GA4: the gateway sends none (omit the `ga4` block in the site KV; it is
+   diagnostics-only legacy). GA4 does not dedup. See `CANONICAL-EVENTS.md`.
 5. **Verify.** GTM Preview + GA4 DebugView + Meta Test Events (dedup on the shared
    `event_id`).
 

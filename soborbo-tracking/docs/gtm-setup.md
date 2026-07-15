@@ -1,10 +1,9 @@
 # GTM Setup
 
 > For GA4 event names, **`CANONICAL-EVENTS.md`** is authoritative. The GTM tag emits
-> the **canonical GA4 event name** (e.g. `contact_form_submitted`) from the browser
-> dataLayer event (e.g. `quote_calculator_submitted`) — so the browser and (optionally) the gateway
-> GA4 MP produce the SAME GA4 event. **GA4 does not dedup** → if you also use the
-> gateway GA4 MP, don't fire twice (see CANONICAL-EVENTS.md "GA4 double-counting").
+> the **canonical GA4 event name** from the browser dataLayer event. GA4 is
+> browser-ONLY: the gateway sends no GA4 at all (GA4 does not dedup — a server
+> mirror would double-count; see CANONICAL-EVENTS.md "GA4 double-counting").
 
 ## Variables (Data Layer)
 

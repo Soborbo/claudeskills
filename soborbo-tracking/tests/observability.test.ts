@@ -54,8 +54,8 @@ describe('report()', () => {
   });
 
   it('ring buffer is bounded (no unbounded memory growth)', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
-    for (let i = 0; i < 60; i++) report('TURNSTILE_TIMEOUT');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    for (let i = 0; i < 60; i++) report('GATEWAY_REJECTED');
     expect(getDiagnostics().length).toBeLessThanOrEqual(50);
   });
 });
