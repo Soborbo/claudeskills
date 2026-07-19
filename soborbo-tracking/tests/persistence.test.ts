@@ -3,6 +3,7 @@ import {
   normalizeEmail, normalizePhone, sanitizeName,
   captureUrlParams, persistTrackingParams, getAttribution, getSourceType,
   getStoredData, getGclid, getFbclid, getFbc, getFbp, getDevice,
+  getAllTrackingData, getSessionId, getPageUrl, clearTrackingData,
 } from '../lib/persistence';
 import { setCkyConsent, setUrl, setCookie, resetAll } from './helpers';
 
@@ -134,5 +135,157 @@ describe('getStoredData — 90-day expiry', () => {
 describe('getDevice', () => {
   it('classifies by width', () => {
     expect(['mobile', 'tablet', 'desktop']).toContain(getDevice());
+  });
+});
+
+describe('normalizePhone — remaining market branches', () => {
+  it('HU: bare 36-prefixed and single-0 trunk numbers', () => {
+    expect(normalizePhone('36 20 123 4567', 'HU')).toBe('+36201234567');
+    expect(normalizePhone('0201234567', 'HU')).toBe('+36201234567');
+  });
+  it('GB: bare 44-prefixed and 0-trunk numbers', () => {
+    expect(normalizePhone('44 7123 456789', 'GB')).toBe('+447123456789');
+    expect(normalizePhone('0123 456 789', 'GB')).toBe('+44123456789');
+  });
+  it('strips punctuation: parentheses, dots, dashes', () => {
+    expect(normalizePhone('(07123) 456-789.', 'GB')).toBe('+447123456789');
+  });
+});
+
+describe('getAllTrackingData — URL wins per field, storage fills the gaps', () => {
+  it('merges URL and stored values field-by-field', () => {
+    setUrl('/lp?gclid=STOREDG&utm_source=google&utm_campaign=brand');
+    captureUrlParams(); persistTrackingParams();
+    setUrl('/inner?utm_source=retarget&gbraid=GB9');
+    const t = getAllTrackingData();
+    expect(t.utm_source).toBe('retarget');   // URL wins
+    expect(t.gbraid).toBe('GB9');            // URL-only field
+    expect(t.gclid).toBe('STOREDG');         // storage fills
+    expect(t.utm_campaign).toBe('brand');    // storage fills
+  });
+});
+
+describe('sessions', () => {
+  it('stable id within the 30-minute window (sessionStorage, analytics consent)', () => {
+    const a = getSessionId();
+    expect(getSessionId()).toBe(a);
+    expect(a).toMatch(/^sess_/);
+  });
+
+  it('a stale session (>30 min inactivity) rotates the id', () => {
+    const a = getSessionId();
+    const raw = JSON.parse(sessionStorage.getItem('sb_session')!);
+    raw.lastActivity = Date.now() - 31 * 60 * 1000;
+    sessionStorage.setItem('sb_session', JSON.stringify(raw));
+    expect(getSessionId()).not.toBe(a);
+  });
+
+  it('corrupted session JSON → fresh session instead of a crash', () => {
+    sessionStorage.setItem('sb_session', '{not-json');
+    expect(getSessionId()).toMatch(/^sess_/);
+  });
+
+  it('without any consent: memory-only session, stable across calls, nothing in sessionStorage', () => {
+    setCkyConsent({ analytics: false, marketing: false });
+    const a = getSessionId();
+    expect(getSessionId()).toBe(a);
+    expect(sessionStorage.getItem('sb_session')).toBeNull();
+  });
+});
+
+describe('stored-data hygiene', () => {
+  it('corrupted sb_tracking JSON → null AND the key is removed', () => {
+    localStorage.setItem('sb_tracking', '{broken');
+    expect(getStoredData()).toBeNull();
+    expect(localStorage.getItem('sb_tracking')).toBeNull();
+  });
+
+  it('fbclidAt is NOT re-stamped when the same fbclid persists again (fbc timestamp must not drift)', () => {
+    setUrl('/?fbclid=SAME'); captureUrlParams(); persistTrackingParams();
+    const first = getStoredData()!.fbclidAt!;
+    expect(first).toBeGreaterThan(0);
+    setUrl('/?fbclid=SAME&utm_source=meta'); captureUrlParams(); persistTrackingParams();
+    expect(getStoredData()!.fbclidAt).toBe(first);
+  });
+
+  it('a NEW fbclid re-stamps the capture time and replaces the id', () => {
+    setUrl('/?fbclid=ONE'); captureUrlParams(); persistTrackingParams();
+    const first = getStoredData()!.fbclidAt!;
+    setUrl('/?fbclid=TWO'); captureUrlParams(); persistTrackingParams();
+    expect(getStoredData()!.fbclid).toBe('TWO');
+    expect(getStoredData()!.fbclidAt).toBeGreaterThanOrEqual(first);
+  });
+
+  it('landingPage is first-touch: kept from the first persist', () => {
+    setUrl('/landing?gclid=G1'); captureUrlParams(); persistTrackingParams();
+    setUrl('/deeper?utm_source=x'); captureUrlParams(); persistTrackingParams();
+    expect(getStoredData()!.landingPage).toBe('/landing');
+  });
+
+  it('corrupted first-touch JSON is ignored by getAttribution', () => {
+    localStorage.setItem('sb_first_touch', '{broken');
+    setUrl('/?utm_source=last'); captureUrlParams(); persistTrackingParams();
+    const a = getAttribution();
+    expect(a.first_utm_source).toBeUndefined();
+    expect(a.last_utm_source).toBe('last');
+  });
+
+  it('clearTrackingData wipes tracking, first-touch and the session', () => {
+    setUrl('/?gclid=G'); captureUrlParams(); persistTrackingParams();
+    const sid = getSessionId();
+    clearTrackingData();
+    expect(getStoredData()).toBeNull();
+    expect(localStorage.getItem('sb_first_touch')).toBeNull();
+    expect(getSessionId()).not.toBe(sid);
+  });
+});
+
+describe('getDevice / getPageUrl — exact breakpoints', () => {
+  const setWidth = (w: number) => Object.defineProperty(window, 'innerWidth', { configurable: true, value: w, writable: true });
+
+  it('mobile <768, tablet <1024, desktop otherwise', () => {
+    setWidth(500); expect(getDevice()).toBe('mobile');
+    setWidth(767); expect(getDevice()).toBe('mobile');
+    setWidth(768); expect(getDevice()).toBe('tablet');
+    setWidth(1023); expect(getDevice()).toBe('tablet');
+    setWidth(1024); expect(getDevice()).toBe('desktop');
+  });
+
+  it('getPageUrl is origin+pathname WITHOUT the query (no click IDs leak into page_url)', () => {
+    setUrl('/arkalkulator/?gclid=SECRET');
+    expect(getPageUrl()).not.toContain('SECRET');
+    expect(getPageUrl()).toContain('/arkalkulator/');
+  });
+});
+
+describe('getSourceType — remaining branches', () => {
+  it('gbraid → paid; cpc → paid; social → social; referral medium / bare source → referral', () => {
+    setUrl('/?gbraid=GB'); captureUrlParams(); persistTrackingParams();
+    expect(getSourceType()).toBe('paid');
+    resetAll(); setCkyConsent({ marketing: true, analytics: true });
+    setUrl('/?utm_source=g&utm_medium=cpc'); captureUrlParams(); persistTrackingParams();
+    expect(getSourceType()).toBe('paid');
+    resetAll(); setCkyConsent({ marketing: true, analytics: true });
+    setUrl('/?utm_source=fb&utm_medium=social'); captureUrlParams(); persistTrackingParams();
+    expect(getSourceType()).toBe('social');
+    resetAll(); setCkyConsent({ marketing: true, analytics: true });
+    setUrl('/?utm_source=partner&utm_medium=referral'); captureUrlParams(); persistTrackingParams();
+    expect(getSourceType()).toBe('referral');
+    resetAll(); setCkyConsent({ marketing: true, analytics: true });
+    setUrl('/?utm_source=partner'); captureUrlParams(); persistTrackingParams();
+    expect(getSourceType()).toBe('referral');
+  });
+});
+
+describe('session id fallback without crypto', () => {
+  it('still mints a sess_ id', async () => {
+    const { vi } = await import('vitest');
+    vi.stubGlobal('crypto', undefined);
+    try {
+      sessionStorage.removeItem('sb_session');
+      expect(getSessionId()).toMatch(/^sess_/);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

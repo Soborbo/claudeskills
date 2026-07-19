@@ -10,9 +10,11 @@
     "typecheck": "tsc --noEmit",
     "check:events": "node server/check-event-contract.mjs",
     "gen:gtm": "node gtm/gen-container.mjs gtm/container.json",
-    "gen:aliases": "node server/gen-event-aliases.mjs"
+    "gen:aliases": "node server/gen-event-aliases.mjs",
+    "test:coverage": "vitest run --coverage --coverage.include=lib/** --coverage.include=server/backend/**"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
     "jsdom": "^25.0.0",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"

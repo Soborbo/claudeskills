@@ -81,3 +81,62 @@ describe('redactPii — dataLayer PII guard', () => {
     expect(redactPii(data)).toEqual([]);
   });
 });
+
+describe('report() — remaining branches', () => {
+  it('ring drops the OLDEST entries (newest last, bounded at 50)', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    for (let i = 0; i < 55; i++) report('GATEWAY_REJECTED', { i });
+    const ring = getDiagnostics();
+    expect(ring).toHaveLength(50);
+    expect(ring[0].context?.i).toBe(5);      // 0..4 dropped
+    expect(ring.at(-1)?.context?.i).toBe(54);
+  });
+
+  it('getDiagnostics returns a COPY — mutating it does not corrupt the ring', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    report('GATEWAY_REJECTED');
+    const copy = getDiagnostics();
+    copy.length = 0;
+    expect(getDiagnostics()).toHaveLength(1);
+  });
+
+  it('a throwing CustomEvent dispatch is swallowed — the ring still records', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const orig = window.dispatchEvent.bind(window);
+    (window as unknown as { dispatchEvent: unknown }).dispatchEvent = () => { throw new Error('CSP'); };
+    try {
+      const d = report('GATEWAY_NETWORK_FAIL');
+      expect(d.code).toBe('TRK-1002');
+      expect(getDiagnostics().at(-1)?.code).toBe('TRK-1002');
+    } finally {
+      (window as unknown as { dispatchEvent: unknown }).dispatchEvent = orig;
+    }
+  });
+
+  it('warn severity → console.warn + pipeline CustomEvent (future-code contract)', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let dispatched = 0;
+    const handler = () => { dispatched++; };
+    window.addEventListener('sb-tracking-diagnostic', handler);
+    const codes = TRACKING_CODES as unknown as Record<string, { code: string; severity: string; message: string }>;
+    codes.__TEST_WARN = { code: 'TRK-9999', severity: 'warn', message: 'synthetic warn' };
+    try {
+      const d = report('__TEST_WARN' as never);
+      expect(d.severity).toBe('warn');
+      expect(warnSpy).toHaveBeenCalledOnce();
+      expect(dispatched).toBe(1);
+    } finally {
+      delete codes.__TEST_WARN;
+      window.removeEventListener('sb-tracking-diagnostic', handler);
+    }
+  });
+
+  // LAST on purpose: enableDiagDebug flips a module-level flag with no off-switch.
+  it('enableDiagDebug turns info-level console logging on', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const { enableDiagDebug } = await import('../lib/observability');
+    enableDiagDebug();
+    report('GATEWAY_OK', { transport: 'beacon' });
+    expect(logSpy).toHaveBeenCalledOnce();
+  });
+});
