@@ -1,12 +1,26 @@
 /** Közös teszt-segédek a jsdom környezethez. */
 
+/**
+ * A CookieYes VALÓDI kategória-alakját emuláljuk: {necessary, functional,
+ * analytics, performance, advertisement} — `marketing` kulcs NINCS. A `marketing`
+ * opciót az `advertisement` kulcsra képezzük, így minden teszt a valós CMP-alak
+ * ellen fut (a régi helper a nemlétező `marketing` kulcsot írta, ezért a suite
+ * nem fogta meg a prod-ban minden konverziót elnémító consent-bugot).
+ * Az alias-átvételt külön teszt fedi (`setCkyConsentRaw`).
+ */
 export function setCkyConsent(opts: { analytics?: boolean; marketing?: boolean } = {}): void {
   const categories = {
     analytics: !!opts.analytics,
-    marketing: !!opts.marketing,
+    advertisement: !!opts.marketing,
+    performance: !!opts.analytics,
     functional: true,
     necessary: true,
   };
+  (window as unknown as { getCkyConsent: () => unknown }).getCkyConsent = () => ({ categories });
+}
+
+/** Nyers kategória-objektum beállítása (alak-regressziós tesztekhez). */
+export function setCkyConsentRaw(categories: Record<string, boolean>): void {
   (window as unknown as { getCkyConsent: () => unknown }).getCkyConsent = () => ({ categories });
 }
 

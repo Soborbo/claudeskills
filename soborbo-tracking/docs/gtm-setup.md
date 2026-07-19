@@ -88,8 +88,23 @@ User-provided data: {{CJS - User Provided Data}}. ad_storage + ad_user_data.
 Trigger: the conversion CEs (quote_calculator_submitted/callback_request_submitted/phone_number_clicked/quote_calculator_submitted).
 **Don't set a fixed value default of 1+currency** — it poisons the bidding (see INVARIANTS).
 
-## Enhanced Conversions
-Google Ads → Tools → Conversions → Enhanced Conversions: ON → Method: GTM.
+## Enhanced Conversions (Ads UI — kötelező kör, e nélkül a tag-oldali user_data a kukába megy)
+
+Google Ads → Tools → Conversions → Settings → **Enhanced conversions** kártya:
+
+1. **Turn on enhanced conversions** — pipa BE.
+2. **Method dropdown** ("Choose a method for setting up and managing user-provided
+   data"): **Google Tag Manager**-t válassz. NE hagyd a "Google Ads API"-n: azzal
+   a Google a GTM-tagek `user_data` event-paraméterét (a `{{CJS - User Provided
+   Data}}` / `__sbUserData` side-channelt) IGNORÁLJA, és az API-ról várja az
+   adatot — a website-EC némán halott, miközben minden zöldnek látszik.
+3. Save, majd a konverzió-akciónként örökölt EC-beállítást hagyd account-szintűn
+   (per-action override csak indokolt esetben).
+
+A **CRM offline út** (Enhanced Conversions for Leads, `conversion_uploaded_at` /
+Data Manager API) KÜLÖN, akciónkénti beállítás — NEM ez a dropdown; a kettő nem
+üti egymást, dedup az orderId/event_id-n.
+
 Check Diagnostics after 24-48h. (Server-side, the gateway also uploads the hashed
 user_data + gclid separately — they complement each other, dedup on orderId/event_id.)
 

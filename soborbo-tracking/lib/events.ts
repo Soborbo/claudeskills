@@ -202,9 +202,16 @@ export function markClickFired(name: string): void {
  * → Meta Pixel↔CAPI dedup. They return `true` when an event was actually pushed
  * (false = blocked by consent or session dedup), so the caller knows whether to
  * also dispatch server-side.
+ *
+ * Consent gate: analytics OR marketing is enough. The payload is PII- and
+ * ad-ID-free (event + event_id + session + device); the real data handling is
+ * decided per-tag in GTM (AW/GA4 honour Consent Mode v2, Meta HTML tags are
+ * ad_storage-gated). Under Model 2 the Google Ads website conversion lives ONLY
+ * on this browser leg — an analytics-only gate silently lost the phone
+ * conversion of every marketing-consented visitor who declined analytics.
  */
 export function trackPhoneClick(eventId?: string, dedup = true): boolean {
-  if (!hasAnalyticsConsent()) return false;
+  if (!hasAnalyticsConsent() && !hasMarketingConsent()) return false;
   // `dedup=false` is passed by the conversion layer (index.ts), which owns the
   // session dedup so it can cover BOTH channels even when analytics consent is off.
   if (dedup) {
@@ -216,19 +223,19 @@ export function trackPhoneClick(eventId?: string, dedup = true): boolean {
 }
 
 export function trackCallbackClick(eventId?: string): boolean {
-  if (!hasAnalyticsConsent()) return false;
+  if (!hasAnalyticsConsent() && !hasMarketingConsent()) return false;
   push({ event: 'callback_request_submitted', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
   return true;
 }
 
 export function trackEmailClick(eventId?: string): boolean {
-  if (!hasAnalyticsConsent()) return false;
+  if (!hasAnalyticsConsent() && !hasMarketingConsent()) return false;
   push({ event: 'email_address_clicked', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
   return true;
 }
 
 export function trackWhatsappClick(eventId?: string): boolean {
-  if (!hasAnalyticsConsent()) return false;
+  if (!hasAnalyticsConsent() && !hasMarketingConsent()) return false;
   push({ event: 'whatsapp_button_clicked', ...(eventId && { event_id: eventId }), session_id: getSessionId(), device: getDevice() });
   return true;
 }

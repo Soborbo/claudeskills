@@ -10,9 +10,10 @@ vi.mock('../lib/gateway', () => ({
 import {
   trackLeadSubmit, trackContactSubmit, trackServerEvent,
   trackPhoneConversion, trackCallbackConversion, trackEmailConversion, trackWhatsappConversion,
+  populateHiddenFields, buildSheetsPayload, waitForTracking, initTracking,
 } from '../lib/index';
 import { sendToWorker } from '../lib/gateway';
-import { setCkyConsent, resetAll, lastEvent, getDataLayer } from './helpers';
+import { setCkyConsent, resetAll, lastEvent, getDataLayer, setUrl } from './helpers';
 
 const mockSend = sendToWorker as unknown as ReturnType<typeof vi.fn>;
 
@@ -141,11 +142,16 @@ describe('click conversions — channels per the ingress contract', () => {
     expect(mockSend).not.toHaveBeenCalled();
   });
 
-  it('marketing-only consent → server-side conversion STILL fires (decoupled from analytics)', () => {
+  it('marketing-only consent → BOTH legs fire (Model 2: the Ads website conversion lives only on the dataLayer leg)', () => {
     setCkyConsent({ analytics: false, marketing: true });
     const id = trackPhoneConversion({ phone: '07123456789' });
     expect(id).toBeTruthy();
-    expect(getDataLayer().some((e) => e.event === 'phone_number_clicked')).toBe(false);
+    // The dataLayer push MUST go out under marketing-only: the GTM AW tag is the
+    // ONLY Google Ads website leg, and GTM tags enforce their own consent. The
+    // old analytics-only gate silently dropped this visitor's phone conversion.
+    const dl = getDataLayer().find((e) => e.event === 'phone_number_clicked')!;
+    expect(dl).toBeDefined();
+    expect(dl.event_id).toBe(id);
     expect(mockSend).toHaveBeenCalledTimes(1);
     expect(mockSend.mock.calls[0][0].event_name).toBe('phone_number_clicked');
     expect(mockSend.mock.calls[0][0].event_id).toBe(id);
@@ -156,5 +162,92 @@ describe('click conversions — channels per the ingress contract', () => {
     expect(trackPhoneConversion()).toBeNull();
     expect(mockSend).not.toHaveBeenCalled();
     expect(getDataLayer()).toHaveLength(0);
+  });
+});
+
+describe('populateHiddenFields', () => {
+  function makeForm(withExisting: boolean): HTMLFormElement {
+    const form = document.createElement('form');
+    if (withExisting) {
+      const input = document.createElement('input');
+      input.type = 'hidden'; input.name = 'gclid'; input.value = 'stale';
+      form.appendChild(input);
+    }
+    document.body.appendChild(form);
+    return form;
+  }
+
+  it('fills existing hidden inputs and CREATES the missing ones (event_id is load-bearing)', () => {
+    setUrl('/?gclid=G1&utm_source=google&utm_medium=cpc');
+    const form = makeForm(true);
+    populateHiddenFields(form, { success: true, consentBlocked: false, eventId: 'EID', gclid: 'G1', fbclid: null });
+    expect(form.querySelector<HTMLInputElement>('input[name="gclid"]')!.value).toBe('G1');
+    expect(form.querySelector<HTMLInputElement>('input[name="event_id"]')!.value).toBe('EID');
+    expect(form.querySelector<HTMLInputElement>('input[name="utm_source"]')!.value).toBe('google');
+    expect(form.querySelector<HTMLInputElement>('input[name="utm_medium"]')!.value).toBe('cpc');
+    // null → empty string, never the literal "null"
+    expect(form.querySelector<HTMLInputElement>('input[name="fbclid"]')!.value).toBe('');
+  });
+});
+
+describe('buildSheetsPayload — namespace guardrail', () => {
+  it('keys the row on event_id (NOT lead_id) and normalizes the phone', () => {
+    const p = buildSheetsPayload({ eventType: 'quote', email: 'a@b.hu', phone: '06301234567', value: 900, eventId: 'E9' });
+    expect(p.event_id).toBe('E9');
+    // lead_id is EXCLUSIVELY the CRM's key — a client-minted id here would
+    // "look populated" while joining to nothing.
+    expect('lead_id' in p).toBe(false);
+    expect(p.phone).toBe('+36301234567');
+    expect(p.value).toBe(900);
+    expect(p.currency).toBe('HUF'); // market default
+    expect(typeof p.submitted_at).toBe('string');
+  });
+});
+
+describe('waitForTracking', () => {
+  it('resolves after the grace period (default 600ms)', async () => {
+    vi.useFakeTimers();
+    let resolved = false;
+    void waitForTracking().then(() => { resolved = true; });
+    await vi.advanceTimersByTimeAsync(599);
+    expect(resolved).toBe(false);
+    await vi.advanceTimersByTimeAsync(2);
+    expect(resolved).toBe(true);
+    vi.useRealTimers();
+  });
+});
+
+describe('initTracking — capture + persist on load', () => {
+  it('with marketing consent the landing URL params persist immediately', () => {
+    setUrl('/?gclid=INITG&utm_source=google');
+    initTracking();
+    const stored = JSON.parse(localStorage.getItem('sb_tracking') || 'null');
+    expect(stored?.gclid).toBe('INITG');
+    expect(stored?.utm_source).toBe('google');
+  });
+});
+
+describe('remaining branches', () => {
+  it('trackContactSubmit is consent-blocked without marketing (eventId still minted)', () => {
+    setCkyConsent({ analytics: true, marketing: false });
+    const r = trackContactSubmit({ email: 'a@b.hu' });
+    expect(r.success).toBe(false);
+    expect(r.consentBlocked).toBe(true);
+    expect(r.eventId).toBeTruthy();
+    expect(getDataLayer().some((e) => e.event === 'contact_form_submitted')).toBe(false);
+  });
+
+  it('?debugTracking=1 flips debug mode on init (console [TRACK] echo)', () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    setUrl('/?debugTracking=1');
+    initTracking();
+    trackPhoneConversion();
+    expect(logSpy.mock.calls.some((c) => c[0] === '[TRACK]')).toBe(true);
+    logSpy.mockRestore();
+  });
+
+  it('buildSheetsPayload without phone omits the phone field', () => {
+    const p = buildSheetsPayload({ eventType: 'quote', email: 'a@b.hu', eventId: 'E' });
+    expect(p.phone).toBeUndefined();
   });
 });

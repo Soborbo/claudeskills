@@ -31,6 +31,14 @@ not "done" until every applicable item is checked.
 - [ ] No client-side conditional swallows a conversion under the *consent it
       should fire on* — analytics gates the dataLayer push, marketing gates the
       gateway POST, and the two are independent.
+- [ ] **Consent kulcs-alak runtime-ellenőrizve az ÉLES oldalon**: banner-elfogadás
+      után `window.getCkyConsent().categories` — a marketing-kategória kulcsa
+      `advertisement` (CookieYes-nél `marketing` kulcs NEM létezik), és
+      `hasMarketingConsent()` ekkor true. Kétszer égtünk meg vele (beautyflow,
+      lomtalan): a hibás olvasó dev-ben zöld, prod-ban minden konverziót elnyel.
+- [ ] **Ads UI → Enhanced conversions**: Turn on = BE, method = **Google Tag
+      Manager** (NEM "Google Ads API" — azzal a tag-oldali user_data-t a Google
+      eldobja). Lásd `gtm-setup.md` / Enhanced Conversions.
 - [ ] Navigation after a conversion does not drop it: the browser gateway POST
       uses `navigator.sendBeacon` / `keepalive`, and `<TrackedForm>` waits
       (`waitForTracking`) before re-submitting.
