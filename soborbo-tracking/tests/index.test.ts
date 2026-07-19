@@ -141,11 +141,16 @@ describe('click conversions — channels per the ingress contract', () => {
     expect(mockSend).not.toHaveBeenCalled();
   });
 
-  it('marketing-only consent → server-side conversion STILL fires (decoupled from analytics)', () => {
+  it('marketing-only consent → BOTH legs fire (Model 2: the Ads website conversion lives only on the dataLayer leg)', () => {
     setCkyConsent({ analytics: false, marketing: true });
     const id = trackPhoneConversion({ phone: '07123456789' });
     expect(id).toBeTruthy();
-    expect(getDataLayer().some((e) => e.event === 'phone_number_clicked')).toBe(false);
+    // The dataLayer push MUST go out under marketing-only: the GTM AW tag is the
+    // ONLY Google Ads website leg, and GTM tags enforce their own consent. The
+    // old analytics-only gate silently dropped this visitor's phone conversion.
+    const dl = getDataLayer().find((e) => e.event === 'phone_number_clicked')!;
+    expect(dl).toBeDefined();
+    expect(dl.event_id).toBe(id);
     expect(mockSend).toHaveBeenCalledTimes(1);
     expect(mockSend.mock.calls[0][0].event_name).toBe('phone_number_clicked');
     expect(mockSend.mock.calls[0][0].event_id).toBe(id);

@@ -193,11 +193,12 @@ export function trackServerEvent(
 //
 // These are the #1 lead-gen signals. phone/email/whatsapp fire up to TWO channels
 // with ONE shared event_id (Meta Pixel↔CAPI dedup):
-//   • browser dataLayer push (events.ts) — gated on ANALYTICS consent (browser GA4)
+//   • browser dataLayer push (events.ts) — analytics OR marketing consent. The
+//     payload is PII-free and each GTM tag enforces its own consent (Consent
+//     Mode v2 / ad_storage). Under Model 2 the Google Ads website conversion
+//     lives ONLY on this leg — an analytics-only gate silently lost the phone
+//     conversion of every marketing-consented visitor who declined analytics.
 //   • browser-path gateway dispatch      — gated on MARKETING consent (Meta CAPI)
-// The two gates are INDEPENDENT (this matches the skill's consent matrix): a
-// visitor who grants marketing but not analytics still gets the server-side ad
-// conversion — the money signal — even though the browser GA4 event is withheld.
 // Each click type keeps a session dedup that the conversion layer owns (keyed per
 // type: phone/callback/email/whatsapp), so a repeat click in the same session is
 // suppressed on BOTH channels regardless of which consents are present — otherwise
@@ -233,7 +234,9 @@ function trackClickConversion(
   if (dedupName && hasClickFired(dedupName)) return null; // already fired this session (both channels)
 
   const eventId = generateEventId();
-  if (analytics) pushDataLayer(eventId);                  // browser GA4 (dataLayer)
+  // Push under analytics OR marketing: under Model 2 the Ads website conversion
+  // (AW tag) exists ONLY on this browser leg, and GTM tags gate themselves.
+  if (analytics || marketing) pushDataLayer(eventId);     // browser GTM (GA4 + AW + Meta)
   if (marketing && gatewayEvent) dispatchToGateway(gatewayEvent, eventId, params); // server Meta CAPI
   if (dedupName) markClickFired(dedupName);
   return eventId;
