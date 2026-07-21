@@ -1,6 +1,0 @@
-{
-  "engine": "github.com/Soborbo/Serverside",
-  "skill": "github.com/Soborbo/claudeskills",
-  "canonical_event_source": "Serverside/src/events.json",
-  "_comment": "A soborbo-tracking skill (standard) és a motor (event-gateway Cloudflare Worker) KÉT külön repó. A kanonikus event-forrás a MOTOR: Serverside/src/events.json. Az itteni soborbo-tracking/events.json ennek vendor-másolata, amiből a generátorok (server/generate-site.mjs, gtm/gen-container.mjs, docs/CANONICAL-EVENTS.md) dolgoznak; a server/check-event-contract.mjs sync-guard elhasal, ha a kettő eltér. Bármilyen szerveroldali (gateway) változás a motor-repóban történik."
-}

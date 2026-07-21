@@ -205,7 +205,7 @@ For Google Sheets: create a service account in Google Cloud Console, download th
 
 ## Integration with Tracking Skill
 
-This skill handles the **server-side pipeline** (validation, storage, email). The **soborbo-tracking** skill handles **client-side conversion tracking** (dataLayer, Meta CAPI beacon). They work together:
+This skill handles the **server-side pipeline** (validation, storage, email). The **soborbo-tracking** package (now in `github.com/Soborbo/Serverside` → `soborbo-tracking/`, moved out of this repo on 2026-07-21) handles **client-side conversion tracking** (dataLayer, Meta CAPI beacon). They work together:
 
 ```
 User clicks Submit
