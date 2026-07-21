@@ -29,6 +29,7 @@ const { class: className = '' } = Astro.props;
 
   <!-- Hidden tracking fields -->
   <input type="hidden" name="event_id" />
+  <input type="hidden" name="marketing_consent" value="false" />
   <input type="hidden" name="source_page" value="" />
   <input type="hidden" name="utm_source" />
   <input type="hidden" name="utm_medium" />
@@ -133,7 +134,8 @@ const { class: className = '' } = Astro.props;
 )}
 
 <script>
-  import { populateHiddenFields, generateEventId, pushContactConversion, initFormAbandonTracking } from '../../lib/tracking/index';
+  import { populateHiddenFields, pushContactConversion, initFormAbandonTracking } from '../../lib/tracking/index';
+  import { hasMarketingConsent } from '../../lib/tracking/consent';
 
   const form = document.getElementById('contact-form') as HTMLFormElement | null;
   if (form) {
@@ -190,9 +192,11 @@ const { class: className = '' } = Astro.props;
       });
       if (!allValid) return;
 
-      // Refresh event_id for this submission
+      // Snapshot the ad-tracking consent (CookieYes marketing category) into a
+      // hidden field so the server leg can gate the CRM ad conversion on it.
+      const consentField = form.querySelector<HTMLInputElement>('[name="marketing_consent"]');
+      if (consentField) consentField.value = hasMarketingConsent() ? 'true' : 'false';
       const eventIdField = form.querySelector<HTMLInputElement>('[name="event_id"]');
-      if (eventIdField) eventIdField.value = generateEventId();
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending...';
@@ -202,26 +206,25 @@ const { class: className = '' } = Astro.props;
         const response = await fetch(form.action, {
           method: 'POST',
           body: formData,
-          redirect: 'manual',
         });
 
-        if (response.type === 'opaqueredirect' || response.status === 302) {
-          // Push tracking conversion
-          const email = formData.get('email') as string;
-          const phone = formData.get('phone') as string;
+        const result = await response
+          .json()
+          .catch(() => ({ success: false, error: 'Something went wrong. Please call us directly.' }));
+
+        if (response.ok && result.success) {
+          // Fire the browser conversion ONLY after the backend confirmed a real,
+          // saved, non-spam submission — and with the SHARED event_id the server
+          // returns (authoritative), so the Pixel event and the server CAPI
+          // event deduplicate. No PII is pushed to the dataLayer (CLAUDE.md §15).
           pushContactConversion({
-            email,
-            phone,
-            eventId: eventIdField?.value || '',
+            eventId: result.eventId || eventIdField?.value || '',
             formId: 'contact',
           });
-          // Redirect to thank-you page
-          const location = response.headers.get('Location');
-          window.location.href = location || '/thank-you';
+          window.location.href = result.redirect || '/thank-you';
           return;
         }
 
-        const result = await response.json().catch(() => ({ error: 'Something went wrong. Please call us directly.' }));
         showStatus(result.error || 'Something went wrong. Please call us directly.', true);
       } catch {
         showStatus('Network error. Please check your connection and try again.', true);

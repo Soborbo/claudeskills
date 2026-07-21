@@ -13,8 +13,16 @@ declare global {
   }
 }
 
-/** Generate unique event ID for dedup between client-side and server-side */
+/**
+ * Generate a unique event ID shared between the browser conversion and the
+ * server leg (Meta/gateway dedup key). A UUID — NOT a `${Date.now()}-<rand>`
+ * string — so it matches the format the CRM/gateway expect and the skill
+ * README documents. Falls back only on ancient runtimes without randomUUID.
+ */
 export function generateEventId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
   return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 

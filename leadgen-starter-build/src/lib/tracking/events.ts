@@ -11,10 +11,6 @@ function push(event: Record<string, unknown>): void {
   window.dataLayer.push(event);
 }
 
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-}
-
 // ── CALCULATOR ──
 
 export function trackCalculatorStart(calculatorId: string): void {
@@ -23,51 +19,45 @@ export function trackCalculatorStart(calculatorId: string): void {
 }
 
 // ── CONVERSIONS ──
+//
+// The dataLayer carries EVENT METADATA ONLY — never PII, not even hashed
+// (CLAUDE.md §15). Advanced Matching happens on the SERVER leg: the API route
+// forwards name/email/phone to the CRM signed webhook, and the CRM hashes and
+// dispatches to the gateway using the SAME event_id these events carry, so the
+// browser Pixel event and the server CAPI event deduplicate.
 
-/** SHA-256 hash for PII before pushing to dataLayer */
-async function hashPii(value: string): Promise<string> {
-  if (!value) return '';
-  const data = new TextEncoder().encode(value.toLowerCase().trim());
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-export async function pushLeadConversion(data: {
-  email: string;
-  phone?: string;
+export function pushLeadConversion(data: {
   eventId: string;
   formId: string;
   value?: number;
-}): Promise<void> {
+  currency?: string;
+}): void {
   if (!hasMarketingConsent()) return;
-  push({
+  const event: Record<string, unknown> = {
     event: 'generate_lead',
     event_id: data.eventId,
     form_id: data.formId,
-    currency: 'GBP',
-    value: data.value || 0,
-    user_data: {
-      sha256_email: await hashPii(data.email),
-      sha256_phone: data.phone ? await hashPii(data.phone) : '',
-    },
-  });
+  };
+  // CLAUDE.md §3: omit `value` entirely when there is none, and `currency` is
+  // mandatory whenever `value` is present. NEVER push value:0 — Meta logs it as
+  // a real amount and skews ROAS. Currency comes from the caller (site config),
+  // never hardcoded, so a non-GBP site is not silently mislabelled.
+  if (typeof data.value === 'number' && data.value > 0 && data.currency) {
+    event.value = data.value;
+    event.currency = data.currency;
+  }
+  push(event);
 }
 
-export async function pushContactConversion(data: {
-  email: string;
-  phone?: string;
+export function pushContactConversion(data: {
   eventId: string;
   formId: string;
-}): Promise<void> {
+}): void {
   if (!hasMarketingConsent()) return;
   push({
     event: 'contact',
     event_id: data.eventId,
     form_id: data.formId,
-    user_data: {
-      sha256_email: await hashPii(data.email),
-      sha256_phone: data.phone ? await hashPii(data.phone) : '',
-    },
   });
 }
 

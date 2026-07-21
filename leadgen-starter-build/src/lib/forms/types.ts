@@ -10,6 +10,13 @@ export interface FormSubmission {
   postcode?: string;
   message?: string;
   consent: boolean;
+  /**
+   * Marketing/ad-tracking consent (CookieYes `marketing` category), captured
+   * from a hidden field the form populates at submit time. Gates whether the
+   * CRM lets the initial ad conversion fire (`consent.marketing` → CRM
+   * `adAllowed` → gateway). Distinct from `consent` (privacy-policy accept).
+   */
+  marketingConsent?: boolean;
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;

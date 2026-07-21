@@ -9,7 +9,7 @@ import { handleFormSubmission } from '../../lib/forms/submit';
 import { createLogger } from '../../lib/forms/logger';
 import { config } from '../../config/siteConfig.example';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   const logger = createLogger();
   logger.info('Form submission received');
 
@@ -53,16 +53,36 @@ export const POST: APIRoute = async ({ request }) => {
       GOOGLE_SERVICE_ACCOUNT_EMAIL: (env.GOOGLE_SERVICE_ACCOUNT_EMAIL as string) || '',
       GOOGLE_PRIVATE_KEY: (env.GOOGLE_PRIVATE_KEY as string) || '',
       GOOGLE_SHEET_ID: (env.GOOGLE_SHEET_ID as string) || '',
+      // CRM signed-webhook config (dormant when unset — see lib/forms/crm.ts).
+      CRM_BASE_URL: (env.CRM_BASE_URL as string) || '',
+      CRM_WEBHOOK_SECRET: (env.CRM_WEBHOOK_SECRET as string) || '',
+      CRM_COMPANY_ID: (env.CRM_COMPANY_ID as string) || '',
+      CRM_WEBHOOK_SOURCE: (env.CRM_WEBHOOK_SOURCE as string) || '',
     };
 
-    const result = await handleFormSubmission(formData, workerEnv, request);
+    // `ctx.waitUntil` (Cloudflare adapter) lets a transient CRM re-delivery
+    // finish in the background without holding the response open.
+    const runtime = (locals as { runtime?: { ctx?: ExecutionContext } }).runtime;
+    const waitUntil = runtime?.ctx
+      ? runtime.ctx.waitUntil.bind(runtime.ctx)
+      : undefined;
+
+    const result = await handleFormSubmission(formData, workerEnv, request, waitUntil);
 
     if (result.success) {
       logger.info('Form submission successful');
-      return new Response(null, {
-        status: 302,
-        headers: { Location: config.forms.thankYouPath },
-      });
+      // JSON, not a 302 — the browser reads {success, redirect, eventId} and
+      // fires the conversion (with the SHARED event_id) only after this success,
+      // then navigates. An opaque redirect would leave the client guessing.
+      return new Response(
+        JSON.stringify({
+          success: true,
+          redirect: config.forms.thankYouPath,
+          eventId: result.eventId,
+          leadId: result.leadId,
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
     }
 
     logger.warn('Form submission failed', { error: result.error, code: result.code });

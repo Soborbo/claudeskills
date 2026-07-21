@@ -10,10 +10,11 @@ import { checkRateLimit } from './rate-limit';
 import { isDuplicate } from './dedupe';
 import { appendRow } from './sheets';
 import { sendEmail } from './email/send';
+import { forwardToCrm, isCrmConfigured, type CrmEnv } from './crm';
 import { config } from '../../config/siteConfig.example';
 import type { FormSubmission } from './types';
 
-interface Env {
+interface Env extends Partial<CrmEnv> {
   RATE_LIMIT_KV: KVNamespace;
   RESEND_API_KEY: string;
   BREVO_API_KEY: string;
@@ -27,12 +28,26 @@ interface SubmitResult {
   success: boolean;
   error?: string;
   code?: string;
+  /**
+   * The shared conversion event id (browser Pixel ↔ server CAPI dedup key). The
+   * browser fires its conversion with THIS id after a successful response, so
+   * the two legs deduplicate even if the hidden field was never populated.
+   */
+  eventId?: string;
+  /** CRM lead id, when the inline CRM delivery returned one. */
+  leadId?: string;
 }
 
 export async function handleFormSubmission(
   formData: FormData,
   env: Env,
   request: Request,
+  /**
+   * `ctx.waitUntil` from the route, when available. Used to finish a durable
+   * background CRM re-delivery after a transient failure without holding the
+   * response open. Omit in tests / non-Workers runtimes.
+   */
+  waitUntil?: (promise: Promise<unknown>) => void,
 ): Promise<SubmitResult> {
   const raw = Object.fromEntries(formData);
 
@@ -75,7 +90,12 @@ export async function handleFormSubmission(
     return { success: false, error: 'Duplicate submission detected', code: 'FORM-DUPE-001' };
   }
 
-  // 6. Sanitize (including UTM params to prevent Sheets formula injection)
+  // 6. Sanitize (including UTM params to prevent Sheets formula injection).
+  //    The event id is the shared browser↔server dedup key: use the hidden
+  //    field when present, otherwise mint one server-side (the response returns
+  //    it so the browser conversion reuses the SAME id — never a fresh one,
+  //    which would double-count the lead).
+  const eventId = data.event_id ? sanitizeInput(data.event_id) : crypto.randomUUID();
   const submission: FormSubmission = {
     leadId: crypto.randomUUID(),
     formId: 'contact',
@@ -86,10 +106,11 @@ export async function handleFormSubmission(
     postcode: data.postcode ? sanitizeInput(data.postcode) : undefined,
     message: data.message ? sanitizeInput(data.message) : undefined,
     consent: true,
+    marketingConsent: data.marketing_consent === 'true',
     utmSource: data.utm_source ? sanitizeInput(data.utm_source) : undefined,
     utmMedium: data.utm_medium ? sanitizeInput(data.utm_medium) : undefined,
     utmCampaign: data.utm_campaign ? sanitizeInput(data.utm_campaign) : undefined,
-    eventId: data.event_id ? sanitizeInput(data.event_id) : undefined,
+    eventId,
     timestamp: new Date().toISOString(),
     ip,
   };
@@ -152,5 +173,37 @@ export async function handleFormSubmission(
     return { success: false, error: 'Failed to process your request. Please call us directly.', code: 'EMAIL-BOTH-001' };
   }
 
-  return { success: true };
+  // 9. Forward the lead to the CRM signed webhook. The CRM stores it AND — via
+  //    the shared event_id — writes an initial_conversion outbox row that its
+  //    cron dispatches to the event-gateway (durable ad conversion, off the
+  //    request path). BEST-EFFORT: a CRM problem never fails the submission —
+  //    the email above is the fallback record of the lead.
+  //
+  //    Inline: a single fast attempt so a healthy CRM returns the lead_id in
+  //    the response. On a transient failure, hand a full-retry re-delivery to
+  //    waitUntil so the lead still reaches the CRM (idempotent on event_id).
+  let leadId: string | undefined;
+  const crmEnv = env as Partial<CrmEnv>;
+  if (isCrmConfigured(crmEnv as CrmEnv)) {
+    try {
+      const first = await forwardToCrm(submission, crmEnv as CrmEnv, {
+        retryDelaysMs: [],
+        timeoutMs: 3000,
+      });
+      if (first.ok) {
+        leadId = first.leadId;
+      } else if (first.retriable) {
+        if (waitUntil) {
+          waitUntil(forwardToCrm(submission, crmEnv as CrmEnv));
+        } else {
+          // No background executor — best-effort retry inline, ignore result.
+          void forwardToCrm(submission, crmEnv as CrmEnv);
+        }
+      }
+    } catch {
+      // forwardToCrm never throws, but guard anyway — the lead is already saved.
+    }
+  }
+
+  return { success: true, eventId, leadId };
 }
