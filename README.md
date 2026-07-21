@@ -7,14 +7,15 @@ sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a ski
 
 | Skill | Status | What it does |
 |---|---|---|
-| [**`soborbo-tracking`**](./soborbo-tracking) | ✅ **Canonical** | The canonical lead-gen tracking solution. Two channels with a shared `event_id`: browser (GTM → GA4 / Meta Pixel / Google Ads) + server-side via the Soborbo event-gateway worker (Meta CAPI + GA4 MP + Google Ads `uploadClickConversions`, Queues retry, consent gating, universal attribution). Drop-in `<Tracking/>`, `<TrackedForm/>`, `<PhoneLink/>`, `<CallbackButton/>`, `<Turnstile/>`. Bilingual HU/UK. |
-| [`tracking`](./tracking) | ⛔ **Deprecated** → `soborbo-tracking` | Legacy Meta-only `/api/track` version. Kept for reference only. |
-| [`tracking-kit`](./tracking-kit) | ⛔ **Deprecated** → `soborbo-tracking` | Older kit with in-app Meta CAPI + GA4 MP routes (obsolete — the server is now the event-gateway worker). |
-| [`old/analytics-measurement`](./old/analytics-measurement) | ⛔ **Deprecated** → `soborbo-tracking` | Legacy analytics skill, kept for reference only. |
+| [`soborbo-tracking`](./soborbo-tracking) | ➡️ **Moved to Serverside** | The canonical lead-gen tracking package (Astro client lib + event-gateway onboarding) was **consolidated INTO the engine repo** on 2026-07-21: `github.com/Soborbo/Serverside` → `soborbo-tracking/`. One repo, one `src/events.json`, no vendored copy. This directory is a pointer stub only. |
+| [`tracking`](./tracking) | ⛔ **Deprecated** → `soborbo-tracking` (in Serverside) | Legacy Meta-only `/api/track` version. Kept for reference only. |
+| [`tracking-kit`](./tracking-kit) | ⛔ **Deprecated** → `soborbo-tracking` (in Serverside) | Older kit with in-app Meta CAPI + GA4 MP routes (obsolete — the server is now the event-gateway worker). |
+| [`old/analytics-measurement`](./old/analytics-measurement) | ⛔ **Deprecated** → `soborbo-tracking` (in Serverside) | Legacy analytics skill, kept for reference only. |
 
-> **Use `soborbo-tracking` for all new GA4 + Meta + Google Ads tracking work.** The
-> three deprecated skills above are superseded by it and remain only for migration
-> reference.
+> **For all new GA4 + Meta + Google Ads tracking work, use the `soborbo-tracking`
+> package in `github.com/Soborbo/Serverside` (`soborbo-tracking/`).** It moved out of
+> this repo on 2026-07-21; the stub here just points there. The three deprecated
+> skills above are superseded by it and remain only for migration reference.
 
 ## Astro site skills
 

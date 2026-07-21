@@ -1,10 +1,11 @@
 ---
 name: analytics-measurement
-description: DEPRECATED (legacy, in old/) — use the `soborbo-tracking` skill instead for GA4 + Meta + Google Ads tracking on Astro. Kept for reference only.
+description: DEPRECATED (legacy, in old/) — use the `soborbo-tracking` package (now in github.com/Soborbo/Serverside → soborbo-tracking/) instead for GA4 + Meta + Google Ads tracking on Astro. Kept for reference only.
 ---
 
-> **⚠️ DEPRECATED — use the `soborbo-tracking` skill instead.** (This is the
-> legacy measurement doctrine under `old/`, kept for reference only.)
+> **⚠️ DEPRECATED — use the `soborbo-tracking` package instead** (moved 2026-07-21 to
+> `github.com/Soborbo/Serverside` → `soborbo-tracking/`). This is the legacy
+> measurement doctrine under `old/`, kept for reference only.
 
 # Analytics & Measurement Skill
 
