@@ -2,5 +2,28 @@
   "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/schemas/config/wrangler.json",
   "name": "leadgen-starter",
   "compatibility_date": "2025-04-01",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Rate-limit + form-dedupe store. Create per site and paste the id here:
+  //   wrangler kv namespace create RATE_LIMIT_KV
+  "kv_namespaces": [
+    { "binding": "RATE_LIMIT_KV", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+  ],
+
+  // Non-secret vars. Fill per site (or via the dashboard). The CRM signed
+  // webhook stays DORMANT until CRM_BASE_URL + CRM_COMPANY_ID are set here AND
+  // the CRM_WEBHOOK_SECRET secret is added — an unconfigured CRM never fails a
+  // submission (the notification email is the fallback record).
+  "vars": {
+    "CRM_BASE_URL": "",
+    "CRM_COMPANY_ID": "",
+    "CRM_WEBHOOK_SOURCE": "website"
+  }
+
+  // Secrets (NEVER commit — `wrangler secret put <NAME>`):
+  //   CRM_WEBHOOK_SECRET        — HMAC key shared with the CRM signed webhook
+  //   RESEND_API_KEY            — transactional email (primary)
+  //   BREVO_API_KEY             — transactional email (fallback)
+  //   TURNSTILE_SECRET_KEY      — form anti-spam (optional)
+  //   GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY / GOOGLE_SHEET_ID — Sheets backup (optional)
 }
