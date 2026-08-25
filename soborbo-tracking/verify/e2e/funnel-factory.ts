@@ -232,7 +232,20 @@ export function defineFunnelSpecs(adapter: SiteAdapter): void {
         expect(hit!.at, 'gateway dispatch was only issued AFTER the navigation committed').toBeLessThanOrEqual(navCommitAt);
         // A beacon survives navigation by design; a cancelled one means the
         // dispatch was NOT a beacon/keepalive — exactly the regression.
-        expect(hit!.failed, `gateway dispatch was cancelled in flight (${hit!.failed ?? ''})`).toBeUndefined();
+        // Mirror the GA4 branch: requestfinished may land AFTER waitForURL
+        // resolves, so poll for delivery instead of reading `finishedAt`
+        // synchronously (which would pass on an in-flight, not-yet-cancelled
+        // request).
+        await expect.poll(
+          () => net.gateway.some(
+            (r) => r.payload.event_name === adapter.gatewayNames.callback
+              && r.at <= navCommitAt && r.finishedAt !== undefined && r.failed === undefined,
+          ),
+          {
+            timeout: 5_000,
+            message: 'no gateway callback dispatch was BOTH issued before the navigation commit AND delivered (finishedAt set, no failed) — cancelled in flight by the race?',
+          },
+        ).toBe(true);
       });
       await ifCapable(net.capabilities.gtmLoaded, 'callback pixel requests before nav', async () => {
         await expect.poll(
