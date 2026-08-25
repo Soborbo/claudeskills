@@ -58,6 +58,11 @@ const PII_KEYS = [
 ];
 const EVENT_NAME_RE = /\b(?:trackEvent|trackEventBeforeNavigate)\(\s*['"]([A-Za-z0-9_.]+)['"]/g;
 const DL_PUSH_EVENT_RE = /dataLayer\.push\(\s*\{[^}]*?\bevent:\s*['"]([A-Za-z0-9_.]+)['"]/gs;
+// The package's own emitter (lib/events.ts): bare `push({ event: '...' })`
+// calls — no `dataLayer.` / `trackEvent(` prefix, so the two regexes above
+// miss every event the library itself dispatches. Overlaps `dataLayer.push`
+// on purpose; the Set dedupes.
+const BARE_PUSH_EVENT_RE = /(?<![\w.$])push\(\s*\{[^}]*?\bevent:\s*['"]([A-Za-z0-9_.]+)['"]/gs;
 // Events routed through a variable (`eventName = 'email_conversion'; ...
 // trackEvent(eventName, ...)`) — the literal is at the assignment site.
 const EVENT_VAR_RE = /\beventName\s*=\s*['"]([A-Za-z0-9_.]+)['"]/g;
@@ -178,7 +183,7 @@ function checkFile(file, text, failures, events) {
   }
 
   // Event vocabulary extraction (for verify-gtm-live).
-  for (const re of [EVENT_NAME_RE, DL_PUSH_EVENT_RE, EVENT_VAR_RE]) {
+  for (const re of [EVENT_NAME_RE, DL_PUSH_EVENT_RE, BARE_PUSH_EVENT_RE, EVENT_VAR_RE]) {
     for (const m of text.matchAll(re)) events.add(m[1]);
   }
 }

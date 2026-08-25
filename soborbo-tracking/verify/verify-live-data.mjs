@@ -80,7 +80,7 @@ async function runReport(token, keyEvents, days) {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'yesterday' }],
-        dimensions: [{ name: 'eventName' }, { name: 'sessionSource' }],
+        dimensions: [{ name: 'eventName' }, { name: 'sessionSource' }, { name: 'sessionDefaultChannelGroup' }],
         metrics: [{ name: 'eventCount' }],
         dimensionFilter: { filter: { fieldName: 'eventName', inListFilter: { values: keyEvents } } },
         limit: 1000,
@@ -115,13 +115,15 @@ async function main() {
   /** @type {Map<string, {total:number, unassigned:number, sources:Map<string,number>}>} */
   const byEvent = new Map(keyEvents.map((e) => [e, { total: 0, unassigned: 0, sources: new Map() }]));
   for (const r of data.rows ?? []) {
-    const [ev, source] = r.dimensionValues.map((d) => d.value);
+    const [ev, source, channel] = r.dimensionValues.map((d) => d.value);
     const n = Number(r.metricValues[0].value);
     const agg = byEvent.get(ev);
     if (!agg) continue;
     agg.total += n;
     agg.sources.set(source, (agg.sources.get(source) ?? 0) + n);
-    if (source === '(not set)' || source === '') agg.unassigned += n;
+    // A hit can carry a real-looking source yet still land in the
+    // "Unassigned" channel group (no session stitching) — count both.
+    if (source === '(not set)' || source === '' || channel === 'Unassigned') agg.unassigned += n;
   }
 
   const failures = [];
@@ -134,7 +136,7 @@ async function main() {
     if (agg.total < minCount) {
       failures.push(`\`${ev}\`: only ${agg.total} occurrence(s) in ${days} day(s) (min ${minCount}) — the event is not arriving; the machinery may look fine while firing into the void`);
     } else if (share > maxUnassigned) {
-      failures.push(`\`${ev}\`: ${(share * 100).toFixed(0)}% of hits land with source "(not set)" (max ${(maxUnassigned * 100).toFixed(0)}%) — attribution is broken (missing session stitching / client_id), Ads cannot match a gclid`);
+      failures.push(`\`${ev}\`: ${(share * 100).toFixed(0)}% of hits land with source "(not set)" or channel "Unassigned" (max ${(maxUnassigned * 100).toFixed(0)}%) — attribution is broken (missing session stitching / client_id), Ads cannot match a gclid`);
     }
   }
 
