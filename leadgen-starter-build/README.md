@@ -44,12 +44,12 @@ the notification email is the fallback record of the lead.
 Ad tracking is gated on real consent, fail-closed:
 
 ```
-CookieYes `marketing` ──▶ hidden `marketing_consent` field (set at submit)
+CookieYes `advertisement` ──▶ hidden `marketing_consent` field (set at submit)
    ──▶ crm.ts consent.marketing ──▶ CRM adAllowed ──▶ gateway
 ```
 
 The privacy-policy checkbox is `consent.gdpr` (lawful basis to process the
-lead); it does **not** imply ad consent. Without the CookieYes `marketing`
+lead); it does **not** imply ad consent. Without the CookieYes `advertisement`
 category the initial ad conversion is skipped.
 
 ## Wiring a new site

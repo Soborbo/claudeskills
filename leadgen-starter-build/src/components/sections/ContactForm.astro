@@ -192,7 +192,7 @@ const { class: className = '' } = Astro.props;
       });
       if (!allValid) return;
 
-      // Snapshot the ad-tracking consent (CookieYes marketing category) into a
+      // Snapshot the ad-tracking consent (CookieYes `advertisement` category) into a
       // hidden field so the server leg can gate the CRM ad conversion on it.
       const consentField = form.querySelector<HTMLInputElement>('[name="marketing_consent"]');
       if (consentField) consentField.value = hasMarketingConsent() ? 'true' : 'false';

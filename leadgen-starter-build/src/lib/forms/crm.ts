@@ -162,7 +162,7 @@ export function buildContactEnvelope(
       gdpr: submission.consent === true,
       // Ad-tracking consent. Governs whether the CRM lets the initial ad
       // conversion fire (adAllowed). Fail-closed: only true when the visitor
-      // actually granted the CookieYes `marketing` category.
+      // actually granted the CookieYes `advertisement` category.
       marketing: submission.marketingConsent === true,
     },
   };

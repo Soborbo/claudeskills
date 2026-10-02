@@ -1,33 +1,46 @@
 /**
  * Consent management via CookieYes
+ *
+ * Reads the official CookieYes JS API: `window.getCkyConsent().categories`
+ * (https://www.cookieyes.com/documentation/retrieving-consent-data-using-api-getckyconsent/).
+ * There is NO `marketing` category: the ads/marketing category is
+ * `advertisement`. Reading `marketing` returns `undefined` and silently kills
+ * every ad conversion (this happened on live sites in 2026). Do not rename it
+ * back. Same key set as Serverside/soborbo-tracking `lib/consent.ts`.
+ *
+ * Fail-closed: no CMP loaded or the API throws → no consent.
  */
 
 declare global {
   interface Window {
-    CookieYes?: {
-      getConsent: () => Record<string, boolean>;
+    getCkyConsent?: () => {
+      categories: Partial<Record<ConsentCategory, boolean>>;
     };
   }
 }
 
-type ConsentCategory = 'analytics' | 'marketing' | 'functional' | 'necessary';
+export type ConsentCategory = 'necessary' | 'functional' | 'analytics' | 'performance' | 'advertisement';
 
-function getConsent(): Record<string, boolean> {
+function getConsent(): Partial<Record<ConsentCategory, boolean>> {
   if (typeof window === 'undefined') return {};
-  return window.CookieYes?.getConsent?.() || {};
+  if (typeof window.getCkyConsent !== 'function') return {};
+  try {
+    return window.getCkyConsent().categories ?? {};
+  } catch {
+    return {};
+  }
 }
 
 export function hasAnalyticsConsent(): boolean {
-  const consent = getConsent();
-  return consent.analytics === true;
+  return getConsent().analytics === true;
 }
 
+/** Ad-tracking consent = CookieYes `advertisement` category. */
 export function hasMarketingConsent(): boolean {
-  const consent = getConsent();
-  return consent.marketing === true;
+  return getConsent().advertisement === true;
 }
 
-export function onConsentChange(callback: (consent: Record<string, boolean>) => void): void {
+export function onConsentChange(callback: (consent: Partial<Record<ConsentCategory, boolean>>) => void): void {
   if (typeof window === 'undefined') return;
   document.addEventListener('cookieyes_consent_update', () => {
     callback(getConsent());
@@ -36,8 +49,7 @@ export function onConsentChange(callback: (consent: Record<string, boolean>) => 
 
 export function waitForConsent(category: ConsentCategory, timeoutMs = 5000): Promise<boolean> {
   return new Promise((resolve) => {
-    const consent = getConsent();
-    if (consent[category] === true) {
+    if (getConsent()[category] === true) {
       resolve(true);
       return;
     }
@@ -45,8 +57,7 @@ export function waitForConsent(category: ConsentCategory, timeoutMs = 5000): Pro
     const timer = setTimeout(() => resolve(false), timeoutMs);
 
     document.addEventListener('cookieyes_consent_update', () => {
-      const updated = getConsent();
-      if (updated[category] === true) {
+      if (getConsent()[category] === true) {
         clearTimeout(timer);
         resolve(true);
       }
