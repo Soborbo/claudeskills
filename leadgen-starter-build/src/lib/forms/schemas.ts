@@ -16,7 +16,7 @@ export const contactSchema = z.object({
   // Hidden fields
   website: z.string().max(0).optional(), // honeypot
   event_id: z.string().max(100).optional(),
-  // Ad-tracking consent snapshot at submit time (CookieYes `marketing`
+  // Ad-tracking consent snapshot at submit time (CookieYes `advertisement`
   // category), forwarded to the CRM so the initial ad conversion is gated on
   // real consent. String because form fields are strings; absent = not granted.
   marketing_consent: z.enum(['true', 'false']).optional(),

@@ -5,14 +5,14 @@ import { pushLeadConversion, pushContactConversion } from '../src/lib/tracking/e
 // no jsdom. Default consent = marketing granted; individual tests override it.
 type TestWindow = {
   dataLayer: Record<string, unknown>[];
-  CookieYes: { getConsent: () => Record<string, boolean> };
+  getCkyConsent: () => { categories: Record<string, boolean> };
 };
 
 function setup(marketing = true): Record<string, unknown>[] {
   const layer: Record<string, unknown>[] = [];
   (globalThis as unknown as { window: TestWindow }).window = {
     dataLayer: layer,
-    CookieYes: { getConsent: () => ({ marketing, analytics: true }) },
+    getCkyConsent: () => ({ categories: { advertisement: marketing, analytics: true } }),
   };
   return layer;
 }
@@ -58,6 +58,22 @@ describe('pushLeadConversion', () => {
 
   it('pushes nothing without marketing consent', () => {
     const layer = setup(false);
+    pushLeadConversion({ eventId: 'e1', formId: 'contact' });
+    expect(layer).toHaveLength(0);
+  });
+
+  it('reads the CookieYes `advertisement` key, never a `marketing` key', () => {
+    const layer = setup(false);
+    (globalThis as unknown as { window: Record<string, unknown> }).window.getCkyConsent = () => ({
+      categories: { marketing: true, advertisement: false, analytics: true },
+    });
+    pushLeadConversion({ eventId: 'e1', formId: 'contact' });
+    expect(layer).toHaveLength(0);
+  });
+
+  it('pushes nothing when the CookieYes API is missing (fail-closed)', () => {
+    const layer = setup();
+    delete (globalThis as unknown as { window: Record<string, unknown> }).window.getCkyConsent;
     pushLeadConversion({ eventId: 'e1', formId: 'contact' });
     expect(layer).toHaveLength(0);
   });
