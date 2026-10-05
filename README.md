@@ -3,6 +3,8 @@
 A collection of skills for building, optimizing, and operating Astro.js lead-gen
 sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a skill.
 
+**Every new or rewritten skill must follow [SKILL-STANDARD.md](./SKILL-STANDARD.md)** (one intent per skill, no quotas, sourced and dated facts, code lives in the code repo, and a list of advice that must never come back).
+
 ## Tracking & analytics
 
 | Skill | Status | What it does |
