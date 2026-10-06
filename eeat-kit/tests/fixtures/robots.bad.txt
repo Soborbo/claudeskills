@@ -1,8 +1,0 @@
-User-agent: *
-Allow: /
-
-User-agent: PerplexityBot
-Disallow: /
-
-User-agent: GPTBot
-Disallow: /

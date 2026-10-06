@@ -1,0 +1,60 @@
+name: EEAT Signals Tests
+
+# Copy this file to .github/workflows/eeat-signals-tests.yml in the claudeskills repo.
+
+on:
+  pull_request:
+    paths:
+      - 'eeat-signals/**'
+      - '.github/workflows/eeat-signals-tests.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'eeat-signals/**'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Typecheck · Security · Unit · Integration · Coverage
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: eeat-signals
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: eeat-signals/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Security scanner (forbidden patterns)
+        run: npm run test:security
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Coverage report
+        run: npm run test:coverage
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eeat-signals-coverage
+          path: eeat-signals/coverage
+          if-no-files-found: ignore
