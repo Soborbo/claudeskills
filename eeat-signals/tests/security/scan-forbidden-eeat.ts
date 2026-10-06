@@ -32,7 +32,7 @@ const FORBIDDEN: ForbiddenRule[] = [
   {
     id: 'hardcoded-aggregate-rating',
     pattern: /ratingValue\s*[:=]\s*['"]?\d/,
-    reason: 'No hardcoded review/rating literals — ratings must reflect real, verifiable data (owned by schema-audit).',
+    reason: 'No hardcoded review/rating literals — ratings must reflect real, verifiable data (owned by the schema skill).',
   },
   {
     id: 'placeholder-domain',

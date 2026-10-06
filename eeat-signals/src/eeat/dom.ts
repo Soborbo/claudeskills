@@ -30,7 +30,7 @@ export function jsonLd(doc: Document): unknown[] {
       if (Array.isArray(parsed)) out.push(...parsed);
       else out.push(parsed);
     } catch {
-      /* skip malformed JSON-LD — schema-audit owns validity, not this kit */
+      /* skip malformed JSON-LD — the schema skill owns validity, not this kit */
     }
   });
   return out;

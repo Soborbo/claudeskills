@@ -2,7 +2,7 @@
 
 Each signal lists: what to add (visible), the auditor check that verifies it, and
 where the **schema** form (if any) is owned. Add the visible signal here; emit the
-markup via schema-entity-graph; validate it via schema-audit.
+markup and validate it via the `schema` skill.
 
 ## Experience (first-hand) — the asymmetric edge
 - Real, original photography of actual jobs/products/installs (not stock). Caption them.
@@ -39,9 +39,10 @@ leave the block out rather than filling it.
 ## Expertise
 - Named author with a bio stating **specific** credentials: years in trade, dates,
   certifications, named qualifications, concrete results — never "passionate about".
-- Topical depth: pillar + spokes covering the full question universe; cite primary sources.
+- Topical depth: cover the questions customers actually ask; cite primary sources.
+  Page/keyword map and internal linking: `seo-onpage`.
 - Verified by: `author.bio-credentials`. Schema (`Person.hasOccupation/knowsAbout`):
-  schema-entity-graph builds, schema-audit validates.
+  built and validated by `schema`.
 
 ## Authoritativeness
 - Consistent entity identity (same name/address/phone everywhere).
@@ -49,7 +50,7 @@ leave the block out rather than filling it.
 - Third-party presence (directories, reviews, PR) — see ai-visibility.md; AI answers
   lean heavily on third-party pages, so off-site presence is a real lever.
 - Verified by: `business.accreditations`, `business.address`. Schema (`sameAs`):
-  schema-entity-graph / schema-audit.
+  `schema`.
 
 ## Trust (the load-bearing pillar)
 - Visible: phone, postal address, company registration (UK number / HU cégjegyzékszám
@@ -60,11 +61,11 @@ leave the block out rather than filling it.
 - HU: an Impresszum with the Ekertv. 4. § fields (`business.impresszum*`); see
   market-hu.md.
 - Verified by: `business.phone`, `business.address`, `business.registration`,
-  `trust-page.*`. Review **schema** eligibility & self-serving rules: schema-audit.
+  `trust-page.*`. Review **schema** eligibility & self-serving rules: `schema`.
 
 ## Authorship visibility
 - A visible byline on every article/blog page, linking to an author/profile page.
-- Verified by: `author.visible-byline`. (The `Person` entity + `@id` is schema-audit.)
+- Verified by: `author.visible-byline`. (The `Person` entity + `@id` is `schema`.)
 
 ## GEO / AI readiness
 - Answer-first opening (~40–360 chars) that directly answers the page's core question.

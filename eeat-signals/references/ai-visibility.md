@@ -45,6 +45,6 @@ below as working assumptions, not measured facts. Dated sources:
    participation, supplier listings, local/industry PR.
 2. Publish proprietary data others will cite, when you genuinely have it.
 3. Keep entity identity consistent so engines resolve "who you are" confidently
-   (the schema side is schema-entity-graph/schema-audit).
+   (the schema side is the `schema` skill).
 4. Benchmark: test 10–20 buyer-intent prompts across engines; track citation frequency
    before/after. If on-page is done but citations stay flat, shift effort off-page.

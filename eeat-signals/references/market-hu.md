@@ -65,4 +65,4 @@ Magyar Wikipédia + magas tekintélyű kiadók (hvg.hu, portfolio.hu) a valósz�
 ## Megjegyzés
 A .hu ccTLD Magyarországra céloz (standard); dokumentált külön „bizalmi szorzó” nincs.
 SMB-nél az entitás-bizalom útja: Organization schema + GBP + cégadatok + azonos NAP a
-fenti katalógusokban (a schema oldalt a schema-entity-graph/schema-audit kezeli).
+fenti katalógusokban (a schema oldalt a `schema` skill kezeli).

@@ -25,14 +25,14 @@ tool used to make content.
 - Seeding Google Business Profile Q&A with your own or friends' questions.
 - **Self-serving** review/AggregateRating markup (a business marking up reviews about
   itself) — ineligible for rich results since Sep 2019 and a manual-action risk.
-  (Detection/validation of this is **schema-audit's** job; don't add it as a "win".)
+  (Detection/validation of this is the **schema** skill's job; don't add it as a "win".)
 
 ## Fabrication
 - Invented statistics, fake case studies, made-up test results, citing summaries of
   summaries. If it can't be verified, omit it. Unverified first-hand blocks fail the
   audit (`experience.verified`).
 
-## Schema misuse (owned by schema-audit — do not reintroduce)
+## Schema misuse (owned by `schema` — do not reintroduce)
 - **Speakable** schema on a non-news site → remove. Nothing in this kit requires
   Speakable, FAQ or HowTo markup.
 - Markup that doesn't match visible page content.

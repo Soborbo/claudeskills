@@ -14,15 +14,14 @@ has over a larger competitor.
 
 This skill owns the **human-visible + crawler-visible** signal layer. It does **not**:
 
-- generate JSON-LD → that is **schema-entity-graph** (`schema-skill`);
-- validate JSON-LD / `@id` wiring / rich-result eligibility → that is **schema-audit**;
-- place keywords, write titles/meta or plan pages → on-page SEO, not this skill;
+- generate or validate JSON-LD / `@id` wiring / rich-result eligibility → that is **schema**;
+- place keywords, write titles/meta, plan pages or internal links → that is **seo-onpage**;
 - rewrite copy tone/voice → that is **humanize-copy**;
 - do build/perf/a11y/Lighthouse → that is **soborbo-astro-cloudflare** (its audit checklist) and **web-perf**.
 
 See [BOUNDARIES.md](./BOUNDARIES.md) for the exact seams. When a signal also has a
 schema form (author, reviews, sameAs, knowsAbout), check the **visible** side here
-and leave the markup to the schema skills. Never duplicate their rules.
+and leave the markup to `schema`. Never duplicate their rules.
 
 ## The auditor (runnable)
 
@@ -71,7 +70,7 @@ Full detail: [references/do-signals.md](./references/do-signals.md),
 - Fake authors, AI-generated headshots, invented credentials, exaggerated experience.
 - Scaled/mass-generated content; paraphrase-only pages with no added first-hand value.
 - Fake, incentivised or gated reviews; GBP Q&A seeding; **self-serving** review markup
-  (defer detail to schema-audit).
+  (defer detail to `schema`).
 - Fabricated stats/case studies; claims of expertise with nothing demonstrated.
 - Blocking AI **retrieval** bots while expecting AI visibility.
 - Speakable schema on a non-news site; schema that doesn't match visible content.
@@ -104,7 +103,7 @@ don't ship heavy author-photo galleries that blow the LCP budget — optimise fi
 
 1. Run `npm run audit` against the built site (or a page) with the right `--market`.
 2. Fix every `fail`; weigh each `warn`; ignore `not_found`.
-3. For any schema-expressed signal, hand off to schema-entity-graph / schema-audit.
+3. For any schema-expressed signal, hand off to `schema`.
 4. Re-run until exit `0`. Then run the pre-release checklist of `soborbo-astro-cloudflare`.
 
 ## References

@@ -5,7 +5,7 @@ Formerly `eeat-kit` (renamed 2026-10; the skill `name` was already `eeat-signals
 A **standalone, test-backed** skill that audits the **visible** and **crawler-visible**
 E-E-A-T signals on a built site, and the AI-search (GEO) readiness that lives in your
 own HTML/robots. Schema generation and validation are intentionally **not** here — they
-belong to `schema-entity-graph` and `schema-audit`. See [BOUNDARIES.md](./BOUNDARIES.md).
+belong to the `schema` skill; keyword placement and internal links to `seo-onpage`. See [BOUNDARIES.md](./BOUNDARIES.md).
 
 ## Why it exists
 E-E-A-T is not a ranking dial — it's the quality framework Google's systems approximate
@@ -57,8 +57,8 @@ eeat-signals/
 ## Integrate
 - Drop the folder into a project; `npm run audit` against `dist/` after build.
 - Run it next to the pre-release checklist of **soborbo-astro-cloudflare** (`references/audit-checklist.md`).
-- For any schema-expressed signal, hand off to **schema-entity-graph** (build) and
-  **schema-audit** (validate). For copy tone, hand off to **humanize-copy**.
+- For any schema-expressed signal, hand off to **schema** (build + validate). For keywords,
+  titles and internal links, **seo-onpage**. For copy tone, **humanize-copy**.
 
 ## Tests
 `npm test` runs deterministic unit tests for every check plus an integration pass over a

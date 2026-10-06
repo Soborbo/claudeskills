@@ -2,7 +2,7 @@
 
 Genuine reviews are a Trust signal people actually read, and they feed the third-party
 sources AI engines quote. This file covers the visible and operational side. Review
-**markup** (AggregateRating, self-serving rules) belongs to the schema skills.
+**markup** (AggregateRating, self-serving rules) belongs to the `schema` skill.
 
 Open this file when a site needs a review-request flow, a "leave us a review" link, or a
 check that existing review practice is legal.
@@ -124,4 +124,4 @@ Ha van egy perce, értékelje munkánkat a Google-ön: [rövid link]
 - If you show a selection, don't present it as representative. The safest option is an
   embed or link to the full list.
 - Star ratings on the page are content, not markup. Whether any markup is allowed is a
-  schema-skill question (self-serving AggregateRating is not eligible).
+  `schema` question (self-serving AggregateRating is not eligible).

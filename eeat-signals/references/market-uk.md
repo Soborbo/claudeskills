@@ -6,7 +6,7 @@
 ## Registration / transparency
 - **Companies House number** — display it (8 digits, or 2 letters + 6 digits e.g.
   SC/NI/OC). `business.registration` looks for it near a "Company No / Registered in
-  England…" label. Link `sameAs` to the public register (schema side: schema-entity-graph).
+  England…" label. Link `sameAs` to the public register (schema side: `schema`).
 - `vatID` where applicable.
 
 ## Accreditations / trust marks (logo + link to the register = the signal)

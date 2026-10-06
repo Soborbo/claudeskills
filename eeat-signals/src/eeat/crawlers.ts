@@ -15,8 +15,8 @@
  * references/perishable-facts.md.
  *
  * Classic Googlebot (which also powers Google AI Overviews) is intentionally
- * out of scope here — normal crawl/index rules belong to schema-audit /
- * soborbo-astro-cloudflare, not to this kit.
+ * out of scope here — normal crawl/index rules belong to seo-onpage, not to
+ * this kit.
  */
 import type { CheckResult } from './types';
 

@@ -3,8 +3,7 @@
  *
  * SCOPE BOUNDARY: this module audits the *human-visible* and *crawler-visible*
  * signals on the rendered page. It deliberately does NOT validate JSON-LD
- * wiring (that is the schema-audit skill) and does NOT generate schema (that
- * is schema-entity-graph). Where a signal also has a schema expression, this
+ * wiring and does NOT generate schema (both are the `schema` skill). Where a signal also has a schema expression, this
  * module checks the visible side and leaves the markup to those skills.
  */
 import type { CheckResult, PageKind, Market } from './types';

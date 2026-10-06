@@ -12,6 +12,7 @@ national brand that has ten times the budget but weak local execution.
 3. **Niche topical depth** — own one narrow topic completely; indexes and ranks faster.
 4. **Proprietary data/proof** — original specs, tests, comparisons (also the top GEO lever).
 5. **Hyper-local targeting** — "[service] in [neighbourhood]" beats broad head terms.
+   Which page owns which local keyword, and how area pages link: `seo-onpage`.
 6. **AI-search structure** — fact-dense, answer-first content lifts lower-authority sites
    disproportionately.
 
@@ -38,13 +39,14 @@ national brand that has ten times the budget but weak local execution.
   table — citable by AI, uncopyable by a reseller.
 - **Topical depth**: pillar "trapézlemez" + spokes (profil-típusok, bevonatok, rögzítés,
   páralecsapódás/HRV, m² kalkulátor, "melyik trapézlemez kell" döntési útmutató), each
-  answer-first with cited specs.
+  answer-first with cited specs. The page/keyword map and internal links behind it:
+  `seo-onpage`.
 - **Trust**: visible cégjegyzékszám + adószám, phone, address, an Impresszum with the
   Ekertv. 4. § fields; Árukereső Megbízható Bolt if a webshop; genuine Google reviews.
 - **Authoritativeness off-site**: gyakorikérdések threads, építkezés/felújítás forums,
   supplier directories (Cylex, Arany Oldalak).
 - **Schema** (hand-off): Organization/LocalBusiness (e.g. `RoofingContractor`/
   `HardwareStore`), Product with real Offers, Person for the expert — built by
-  schema-entity-graph, validated by schema-audit.
+  the `schema` skill.
 
 Run `npm run audit -- --dir ./dist --market hu` to verify the visible side of all of this.
