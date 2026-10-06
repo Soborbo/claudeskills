@@ -53,7 +53,7 @@ eeat-kit/
 
 ## Integrate
 - Drop the folder into a project; `npm run audit` against `dist/` after build.
-- Register it as an EEAT compliance step inside **astro-audit**'s pre-deploy gate.
+- Run it next to the pre-release checklist of **soborbo-astro-cloudflare** (`references/audit-checklist.md`).
 - For any schema-expressed signal, hand off to **schema-entity-graph** (build) and
   **schema-audit** (validate). For copy tone, hand off to **humanise-copy**.
 

@@ -17,7 +17,7 @@ This skill owns the **human-visible + crawler-visible** signal layer. It does **
 - generate JSON-LD → that is **schema-entity-graph** (`schema-skill`);
 - validate JSON-LD / `@id` wiring / rich-result eligibility → that is **schema-audit**;
 - rewrite copy tone/voice → that is **humanise-copy**;
-- do build/perf/a11y/Lighthouse → that is **astro-audit** (plug EEAT in as a compliance check).
+- do build/perf/a11y/Lighthouse → that is **soborbo-astro-cloudflare** (its audit checklist) and **web-perf**.
 
 See [BOUNDARIES.md](./BOUNDARIES.md) for the exact seams. When a signal also has a
 schema form (author, reviews, sameAs, knowsAbout), check the **visible** side here
@@ -90,7 +90,7 @@ don't ship heavy author-photo galleries that blow the LCP budget — optimise fi
 1. Run `npm run audit` against the built site (or a page) with the right `--market`.
 2. Fix every `fail`; weigh each `warn`; ignore `not_found`.
 3. For any schema-expressed signal, hand off to schema-entity-graph / schema-audit.
-4. Re-run until exit `0`. Then run `astro-audit` for the full pre-deploy gate.
+4. Re-run until exit `0`. Then run the pre-release checklist of `soborbo-astro-cloudflare`.
 
 ## References
 

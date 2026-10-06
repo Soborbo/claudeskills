@@ -11,7 +11,7 @@ This file is the contract.
 | **schema-entity-graph** (`schema-skill`) | Building the JSON-LD graph from `siteConfig` (Organization/LocalBusiness/Person/Service/Product, `@id`, sameAs, knowsAbout, AggregateRating). | Generate or emit any JSON-LD. | When a visible signal needs markup (author, reviews, registration, accreditations), pass the data to this skill. |
 | **schema-audit** | Validating JSON-LD: `@id` resolution, duplicate entities, rich-result status, AggregateRating correctness, FAQ/Speakable rules, GBP↔schema alignment. | Validate or lint JSON-LD. We check the *visible* side of the same facts. | Any schema FAIL/WARN is schema-audit's; we only assert the human-visible counterpart exists. |
 | **humanise-copy** | Copy voice/tone — making text sound like a real owner. | Rewrite or score tone. Our only copy touch is a tiny credibility check (does the bio state a *specific* credential vs. an adjective). | If the bio reads as fluff, fixing the *wording* is humanise-copy; we just flag the missing specificity. |
-| **astro-audit** | Pre-deploy gate: build, TypeScript, Lighthouse perf/a11y, security, deps, forms. Has a "Skill Compliance" section. | Build/perf/a11y/security. | Register `npm run audit` from this kit as an EEAT compliance step inside astro-audit. |
+| **soborbo-astro-cloudflare** | Pre-release checklist (`references/audit-checklist.md`): build, types, secrets placement, images, a11y, deploy surface. | Build/perf/a11y/security. | Run `npm run audit` from this kit alongside that checklist. |
 | **tracking-kit** | GTM/GA4/Ads/Meta CAPI tracking + consent. | Anything tracking/analytics. | None — orthogonal. |
 | **astro-forms-v3** | Form capture, validation, spam, delivery. | Forms. | Contact-page existence is an EEAT trust check; the form itself is astro-forms. |
 
@@ -47,5 +47,5 @@ their **signal layer** and modernises the guidance:
   **surfaced on the page** (`business.accreditations`). 
 - **FAQ / Speakable**: owned by schema-audit. We do not check FAQ markup; we only
   reward an answer-first, fact-dense opening (`geo.answer-first`).
-- **robots.txt**: classic crawl/index directives are astro-audit/schema-audit's; we
+- **robots.txt**: classic crawl/index directives are soborbo-astro-cloudflare/schema-audit's; we
   only assert **AI-bot** access. Different user-agents, no collision.

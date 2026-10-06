@@ -9,7 +9,7 @@
  *
  * Classic Googlebot (which also powers Google AI Overviews) is intentionally
  * out of scope here — normal crawl/index rules belong to schema-audit /
- * astro-audit, not to this kit.
+ * soborbo-astro-cloudflare, not to this kit.
  */
 import type { CheckResult } from './types';
 
