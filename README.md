@@ -21,12 +21,8 @@ sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a ski
 
 | Skill | What it does |
 |---|---|
-| [`astro-audit`](./astro-audit) | Full pre-deploy code audit: build, deps, performance, security, a11y, SEO, browser compat, form testing. |
 | [`astro-forms-v3`](./astro-forms-v3) | Form infrastructure: contact/booking/quote forms, Zod validation, email delivery (Resend/Brevo), rate limiting, Sheets, spam protection. |
-| [`astro-images`](./astro-images) | Width-based responsive images: build-time processing, per-format quality (AVIF/WebP/JPG/PNG), art direction, OG generation, image SEO. |
-| [`astro-performance`](./astro-performance) | Core Web Vitals tuning: LCP preloading, font strategy, critical path, third-party scripts, Cloudflare Tag Gateway. |
-| [`deployment`](./deployment) | Deployment workflow for Astro on Cloudflare Workers + GitHub: wrangler config, build failures, 500s, preview deployments. |
-| [`design-tokens`](./design-tokens) | Design-system foundation: color scales, typography, spacing from `siteConfig`. No raw values in components. |
+| [`soborbo-astro-cloudflare`](./soborbo-astro-cloudflare) | Production-learned pitfalls and conventions for Astro on Cloudflare Workers: deploy/secrets, build-time image pipeline (points to leadgen-template-site), siteConfig → Tailwind 4 `@theme` tokens, fonts, preview noindex, observability, pre-release checklist. Use with the official `wrangler` / `workers-best-practices` / `web-perf` skills. Replaces `deployment`, `astro-performance`, `astro-audit`, `design-tokens`, `astro-images` (removed 2026-10). |
 | [`schema-skill`](./schema-skill) | Build/assemble a complete Schema.org entity graph (JSON-LD) for Astro lead-gen sites, driven from `siteConfig`. |
 | [`eeat-kit`](./eeat-kit) | Audit and strengthen visible E-E-A-T signals and AI-search (GEO) readiness. |
 | [`error-pipeline`](./error-pipeline) | Per-site client tracker + Astro endpoint for the centralised error-pipeline workers (client JS errors via sendBeacon + server exceptions). |
