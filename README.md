@@ -28,6 +28,7 @@ sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a ski
 | [`deployment`](./deployment) | Deployment workflow for Astro on Cloudflare Workers + GitHub: wrangler config, build failures, 500s, preview deployments. |
 | [`design-tokens`](./design-tokens) | Design-system foundation: color scales, typography, spacing from `siteConfig`. No raw values in components. |
 | [`schema-skill`](./schema-skill) | Build/assemble a complete Schema.org entity graph (JSON-LD) for Astro lead-gen sites, driven from `siteConfig`. |
+| [`seo-onpage`](./seo-onpage) | On-page SEO rules: one keyword per page in title/slug/H1/first sentence/meta, title formula, keyword ownership, service and area pages tied to the GBP, internal linking, server-rendered content, indexing controls. |
 | [`eeat-kit`](./eeat-kit) | Audit and strengthen visible E-E-A-T signals and AI-search (GEO) readiness. |
 | [`error-pipeline`](./error-pipeline) | Per-site client tracker + Astro endpoint for the centralised error-pipeline workers (client JS errors via sendBeacon + server exceptions). |
 | [`humanise-copy-skill.md`](./humanise-copy-skill.md) | Transform AI-sounding copy into human, business-owner voice (UK local service pages). |
