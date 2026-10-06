@@ -22,7 +22,7 @@ sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a ski
 | Skill | What it does |
 |---|---|
 | [`astro-audit`](./astro-audit) | Full pre-deploy code audit: build, deps, performance, security, a11y, SEO, browser compat, form testing. |
-| [`astro-forms-v3`](./astro-forms-v3) | Form infrastructure: contact/booking/quote forms, Zod validation, email delivery (Resend/Brevo), rate limiting, Sheets, spam protection. |
+| [`astro-forms`](./astro-forms) | Lead-capture form backend (contact, callback, quote forms): Zod 4 validation, fail-closed Turnstile, honeypot, Rate Limiting binding, dedupe, Soborbo CRM signed webhook, Resend emails (EU region), UK/HU postcode autofill. Code lives in `Soborbo/leadgen-template-site`; the calculator UI is not covered. |
 | [`astro-images`](./astro-images) | Width-based responsive images: build-time processing, per-format quality (AVIF/WebP/JPG/PNG), art direction, OG generation, image SEO. |
 | [`astro-performance`](./astro-performance) | Core Web Vitals tuning: LCP preloading, font strategy, critical path, third-party scripts, Cloudflare Tag Gateway. |
 | [`deployment`](./deployment) | Deployment workflow for Astro on Cloudflare Workers + GitHub: wrangler config, build failures, 500s, preview deployments. |

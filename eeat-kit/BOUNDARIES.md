@@ -13,7 +13,7 @@ This file is the contract.
 | **humanise-copy** | Copy voice/tone — making text sound like a real owner. | Rewrite or score tone. Our only copy touch is a tiny credibility check (does the bio state a *specific* credential vs. an adjective). | If the bio reads as fluff, fixing the *wording* is humanise-copy; we just flag the missing specificity. |
 | **astro-audit** | Pre-deploy gate: build, TypeScript, Lighthouse perf/a11y, security, deps, forms. Has a "Skill Compliance" section. | Build/perf/a11y/security. | Register `npm run audit` from this kit as an EEAT compliance step inside astro-audit. |
 | **tracking-kit** | GTM/GA4/Ads/Meta CAPI tracking + consent. | Anything tracking/analytics. | None — orthogonal. |
-| **astro-forms-v3** | Form capture, validation, spam, delivery. | Forms. | Contact-page existence is an EEAT trust check; the form itself is astro-forms. |
+| **astro-forms** | Form capture, validation, spam, delivery. | Forms. | Contact-page existence is an EEAT trust check; the form itself is astro-forms. |
 
 ## Archived skills this supersedes (in `old/`)
 
