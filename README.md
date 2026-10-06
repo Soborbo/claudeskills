@@ -30,7 +30,8 @@ sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a ski
 | [`schema-skill`](./schema-skill) | Build/assemble a complete Schema.org entity graph (JSON-LD) for Astro lead-gen sites, driven from `siteConfig`. |
 | [`eeat-kit`](./eeat-kit) | Audit and strengthen visible E-E-A-T signals and AI-search (GEO) readiness. |
 | [`error-pipeline`](./error-pipeline) | Per-site client tracker + Astro endpoint for the centralised error-pipeline workers (client JS errors via sendBeacon + server exceptions). |
-| [`humanise-copy-skill.md`](./humanise-copy-skill.md) | Transform AI-sounding copy into human, business-owner voice (UK local service pages). |
+| [`humanize-copy-uk`](./humanize-copy-uk) | Write or review English (UK) customer-facing copy so it reads like the owner wrote it: only real facts, British English, no AI tells or dashes, superlatives and reviews only with evidence (CAP Code, DMCCA). |
+| [`humanize-copy-hu`](./humanize-copy-hu) | The same for Hungarian customer copy: formal "Ön" address, natural Hungarian, Hungarian AI tells and calques, AkH 12 typography with László's house rules, Fttv. |
 | [`leadgen-starter-build`](./leadgen-starter-build) | Starter Astro lead-gen project scaffold. |
 
 ## Archive
