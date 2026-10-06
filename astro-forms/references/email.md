@@ -36,8 +36,11 @@ Secrets: `RESEND_API_KEY` via `wrangler secret put`, never in `wrangler.jsonc`,
 - Timeout every call (`AbortSignal.timeout`), check `res.ok`, log the status and
   the first part of the body on failure. A 429 with `daily_quota_exceeded` means
   the free plan's daily cap; see perishable facts.
-- Subject: plain text, **no emoji**, strip CR/LF and control characters, cap the
-  interpolated name (template: 50 characters). Do not HTML-escape the subject.
+- Subject: customer-facing emails have **no emoji** (spam filters and inbox
+  previews). The internal admin notification MAY start with a coloured emoji as a
+  type cue (owner's choice, 2026-10-06), followed by the type in words. Always
+  strip CR/LF and control characters and cap the interpolated name (template: 50
+  characters). Do not HTML-escape the subject.
 - Body: escape every interpolated value at output time (`escapeHtml`), including
   values that "can't" contain HTML. Never escape on input.
 
@@ -48,7 +51,7 @@ Secrets: `RESEND_API_KEY` via `wrangler secret put`, never in `wrangler.jsonc`,
 | Subject | Lead type + name, e.g. `New callback request - Jane Smith` / `Visszahívást kér: Kiss Anna` |
 | Reply-To | The customer's email (so "reply" goes to the lead) |
 | Body | Name, email, phone, postcode, message, source page, UTM source/medium/campaign, "how did you hear", referrer, server timestamp |
-| Priority cue | Callback requests are visually distinct (red header) so the business calls at once. Put the type in words in the subject, not as an emoji. |
+| Priority cue | Callback requests are visually distinct (red header) so the business calls at once. Put the type in words in the subject; a coloured emoji in front of it is allowed here (internal email). |
 
 ## Customer confirmation (on by default)
 

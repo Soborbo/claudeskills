@@ -193,8 +193,9 @@ link. Skip it for callback requests where the visitor already has the quote emai
 Rules that matter for deliverability and correctness:
 
 - Always send a **plain-text part** as well as HTML.
-- **Subject lines without emoji**, plain text (strip control characters; do not
-  HTML-escape a subject, it would show `&amp;`).
+- **Customer-facing subject lines without emoji**, plain text (strip control
+  characters; do not HTML-escape a subject, it would show `&amp;`). The internal
+  admin notification may keep a coloured emoji type cue.
 - Send with an **`Idempotency-Key`** derived from `eventId` + template name, so a
   retried request cannot send the same email twice.
 - From `noreply@<client domain>`, domain verified in Resend in the **EU region**.

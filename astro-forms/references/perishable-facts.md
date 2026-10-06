@@ -114,7 +114,7 @@ State of `origin/main` 8595c8c plus PR #1 (`fix/turnstile-fail-closed`,
 | 4 | CRM first, emails in `waitUntil` | Admin email awaited first, then CRM; confirmation in `waitUntil` |
 | 5 | No Google Sheets in the default path (I5) | Sheets leg still in `submit.ts`, dormant unless `GOOGLE_SHEET_ID` is set |
 | 6 | Resend `Idempotency-Key` | Not sent (`email/resend.ts`) |
-| 7 | Subjects without emoji | Admin subject starts with a coloured emoji (`email-templates.ts` `adminSubject`) |
+| 7 | Customer subjects without emoji | OK: only the internal admin subject has a coloured emoji, which is allowed (owner's choice, 2026-10-06) |
 | 8 | HU postcode selector for shared codes | `public/postcodes.json` 3047 single-value entries, no selector, no GeoNames notice |
 | 9 | Logging to Workers Logs (I13) | Reports go to a tail-consumer Worker that is being retired (`reportServerError`, `tail_consumers`); no `observability` block in `wrangler.jsonc` |
 | 10 | Required env not masked | `contact.ts` copies env with `\|\| ''` (harmless for Turnstile after PR #1, still hides other gaps) |
