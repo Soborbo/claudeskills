@@ -27,7 +27,7 @@ sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a ski
 | [`astro-performance`](./astro-performance) | Core Web Vitals tuning: LCP preloading, font strategy, critical path, third-party scripts, Cloudflare Tag Gateway. |
 | [`deployment`](./deployment) | Deployment workflow for Astro on Cloudflare Workers + GitHub: wrangler config, build failures, 500s, preview deployments. |
 | [`design-tokens`](./design-tokens) | Design-system foundation: color scales, typography, spacing from `siteConfig`. No raw values in components. |
-| [`schema-skill`](./schema-skill) | Build/assemble a complete Schema.org entity graph (JSON-LD) for Astro lead-gen sites, driven from `siteConfig`. |
+| [`schema`](./schema) | Build, audit and debug the JSON-LD entity graph (LocalBusiness subtype, WebSite, Service, Person, Article, breadcrumbs) for UK and HU lead-gen sites: @id and sameAs conventions, GBP alignment, every useful property from real data, no self-serving ratings, links to the live Google/schema.org docs. Code lives in `Soborbo/leadgen-template-site` (`src/config/jsonld.ts`). Replaces `schema-skill` and the claude.ai `schema-audit`. |
 | [`eeat-kit`](./eeat-kit) | Audit and strengthen visible E-E-A-T signals and AI-search (GEO) readiness. |
 | [`error-pipeline`](./error-pipeline) | Per-site client tracker + Astro endpoint for the centralised error-pipeline workers (client JS errors via sendBeacon + server exceptions). |
 | [`humanise-copy-skill.md`](./humanise-copy-skill.md) | Transform AI-sounding copy into human, business-owner voice (UK local service pages). |
