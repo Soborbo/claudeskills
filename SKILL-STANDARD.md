@@ -19,6 +19,8 @@ Minden új vagy átírt skill ennek feleljen meg. Elfogadva: 2026-10-05 (Skillve
 
 Tilos minden olyan szám, ami a tartalmat mennyiségre kényszeríti: „egy anekdota oldalanként”, „5 helynév 800 szavanként”, „minden mező kitöltve”, karakterlimit a title-re, belső link-keret. Ezek kitalált tényeket és gépies szöveget szülnek.
 
+A kvóta-tilalom a **kódra vonatkozó szabályokra is** áll: sorszám-határ fájlra, kötelező tesztfájl-szám rétegenként, minden védelemre kötelező mutáció. Ezek átrendezést és teszt-zajt szülnek, nem minőséget (soborbo-crm mérés, 2026-10-10: a 200 soros fájlszabály miatti átrendezés egy PR termékkód-sorainak 57%-a volt).
+
 Mérhető **határ** lehet (pl. „legfeljebb 7 kalkulátor-lépés”), ha indokolt, és felülírható a projekt adatai alapján.
 
 ## 4. Forrásfegyelem
