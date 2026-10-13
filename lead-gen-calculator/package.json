@@ -1,0 +1,16 @@
+{
+  "name": "lead-gen-calculator",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Correctness invariants + reference modules for multi-step lead-gen calculators on Astro/Cloudflare. Test-backed.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "test:ci": "npm run typecheck && npm run test"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "2.1.9"
+  }
+}

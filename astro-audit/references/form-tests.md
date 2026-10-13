@@ -202,3 +202,10 @@ testForm('/api/contact', {
 - [ ] Email delivery confirmed
 - [ ] Data storage confirmed
 - [ ] GTM tracking confirmed
+
+## Multi-step calculators and quote flows
+
+Single-form scenarios above are not enough for calculators. Also walk the
+invariants A–L in `lead-gen-calculator/references/audit-checklist.md`
+(composite selections, stale branch state, client/server bounds, duplicate
+conversions, attribution, funnel-event semantics, server price recompute).
