@@ -11,6 +11,8 @@ Server-side form handling for lead generation sites on Cloudflare Workers.
 
 This skill covers the **backend pipeline**: validation → spam check → storage → email → redirect → analytics. For form UI components, field layout, and styling see the project's frontend patterns. The one exception is `modifiers.md` which documents common form layout variants for reference.
 
+For **multi-step calculators / quote tools** also follow `lead-gen-calculator`: the server must recompute the price from answers, dedupe by `event_id` only after successful delivery, and share one bounds spec with the client.
+
 ## Implementation Sequence
 
 When building a form, follow this order:

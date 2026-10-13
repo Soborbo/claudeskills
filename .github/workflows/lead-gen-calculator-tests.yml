@@ -1,0 +1,32 @@
+name: Lead-gen Calculator Tests
+
+on:
+  pull_request:
+    paths:
+      - 'lead-gen-calculator/**'
+      - '.github/workflows/lead-gen-calculator-tests.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'lead-gen-calculator/**'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Typecheck · Unit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lead-gen-calculator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: lead-gen-calculator/package-lock.json
+      - run: npm ci
+      - run: npm run test:ci
