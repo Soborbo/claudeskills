@@ -14,11 +14,11 @@ where possible) before reporting. Never submit real leads to production.
 | E | `addEventListener` inside click/open handlers; submit buttons never disabled |
 | F | compare HTML `min/max`, client JS checks, server schema for each numeric/text field; library-default error messages reaching the UI |
 | G | reset/start-over handler vs every dynamic UI piece |
-| H | `dataLayer.push` of conversions: before or after the server 2xx? guard storage = sessionStorage only? fires on page load of a result/thank-you page? |
+| H | `dataLayer.push` of conversions: before or after the server's explicit acceptance (not just a 2xx)? guard storage = sessionStorage only? fires on page load of a result/thank-you page? once-flag written before the push succeeded (or when the push is skipped for consent)? |
 | I | attribution fields per form payload; `a.gclid \|\| b.gclid` merges; `localStorage` without try/catch; consent gating that drops click ids |
-| J | where `step_completed` fires (render vs forward); `value:` with strings; GTM tag param list vs pushed keys |
+| J | where `step_completed` fires (render vs forward); `opened`/step flag set before the push succeeded; `value:` with strings; GTM tag param list vs pushed keys |
 | K | does the API recompute price? order of dedupe write vs delivery; what returns 4xx/5xx when one sink fails |
-| L | `.catch(()=>{})`, `.catch(function(){})`; result shown before fetch resolves; middleware allowlists without path normalisation |
+| L | `.catch(()=>{})`, `.catch(function(){})`; result shown before fetch resolves; `res.ok` treated as success without checking `success`/`ok`/`deferred`/`pending`; tracking code inside the same `try` as the fetch (a tracking throw shown as a send error); stored lead answered 5xx because the e-mail failed; middleware allowlists without path normalisation |
 
 ## Tracking checks (GTM / GA4 APIs)
 

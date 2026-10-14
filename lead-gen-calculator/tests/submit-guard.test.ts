@@ -44,4 +44,71 @@ describe('createSubmitGuard (invariants E/H/L)', () => {
     g.reset();
     expect(g.currentEventId()).not.toBe(ids[0]);
   });
+
+  it('review repro: HTTP 200 with ok:false is rejected and no conversion fires', async () => {
+    const g = createSubmitGuard({ fallbackError: 'error', fetchImpl: (async () => json(200, { ok: false, error: 'rejected' })) as typeof fetch });
+    let conversions = 0;
+    const out = await g.submit('/fake', {}, () => { conversions++; });
+    expect(out).toMatchObject({ ok: false, state: 'rejected', status: 200, error: 'rejected' });
+    expect(conversions).toBe(0);
+  });
+
+  it.each([
+    ['202 success:true deferred:true (painlessremovals)', 202, { success: true, deferred: true }],
+    ['200 status:"pending"', 200, { success: true, status: 'pending' }],
+    ['200 pending:true', 200, { ok: true, pending: true }],
+    ['202 without a body flag', 202, { success: true }],
+  ])('pending / deferred is its own outcome, not success: %s', async (_n, status, body) => {
+    const onSuccess = vi.fn();
+    const g = createSubmitGuard({ fallbackError: 'x', fetchImpl: (async () => json(status, body)) as typeof fetch });
+    const out = await g.submit('/api/x', {}, onSuccess);
+    expect(out).toMatchObject({ ok: false, state: 'pending', status });
+    expect(out.error).toBeUndefined();
+    expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  it('2xx ≠ business success: a 2xx without an explicit acceptance flag is not accepted by default', async () => {
+    const onSuccess = vi.fn();
+    const g1 = createSubmitGuard({ fallbackError: 'Hívjon minket', fetchImpl: (async () => json(200, {})) as typeof fetch });
+    expect(await g1.submit('/api/x', {}, onSuccess)).toMatchObject({ ok: false, state: 'rejected', error: 'Hívjon minket' });
+    const g2 = createSubmitGuard({ fallbackError: 'x', fetchImpl: (async () => new Response('<html>ok</html>', { status: 200 })) as typeof fetch });
+    expect(await g2.submit('/api/x', {}, onSuccess)).toMatchObject({ ok: false, state: 'rejected' });
+    expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  it('isAccepted is configurable (e.g. the site contract is `leadAccepted: true`)', async () => {
+    const onSuccess = vi.fn();
+    const isAccepted = (_res: Response, data: unknown) => ((data as { leadAccepted?: boolean })?.leadAccepted ? 'accepted' as const : 'rejected' as const);
+    const g = createSubmitGuard({ fallbackError: 'x', isAccepted, fetchImpl: (async () => json(200, { leadAccepted: true, emailSent: false })) as typeof fetch });
+    expect(await g.submit('/api/x', {}, onSuccess)).toMatchObject({ ok: true, state: 'accepted' });
+    const g2 = createSubmitGuard({ fallbackError: 'x', isAccepted, fetchImpl: (async () => json(200, { success: true, leadAccepted: false })) as typeof fetch });
+    expect(await g2.submit('/api/x', {}, onSuccess)).toMatchObject({ ok: false, state: 'rejected' });
+    expect(onSuccess).toHaveBeenCalledOnce();
+  });
+
+  it('a non-2xx is never accepted, even if isAccepted says so', async () => {
+    const g = createSubmitGuard({ fallbackError: 'x', isAccepted: () => true, fetchImpl: (async () => json(500, { success: true })) as typeof fetch });
+    expect(await g.submit('/api/x', {})).toMatchObject({ ok: false, state: 'rejected', status: 500 });
+  });
+
+  it('review repro: a throwing onSuccess (tracking) does not turn an accepted lead into a network error', async () => {
+    const g = createSubmitGuard({ fallbackError: 'Hálózati hiba', fetchImpl: (async () => json(200, { success: true })) as typeof fetch });
+    const out = await g.submit('/api/x', {}, () => { throw new Error('dataLayer is not defined'); });
+    expect(out).toMatchObject({ ok: true, state: 'accepted', status: 200 });
+    expect(out.error).toBeUndefined();
+    expect((out.callbackError as Error).message).toBe('dataLayer is not defined');
+    expect(g.inFlight).toBe(false);
+  });
+
+  it('a rejecting async onSuccess is isolated the same way', async () => {
+    const g = createSubmitGuard({ fallbackError: 'x', fetchImpl: (async () => json(200, { success: true })) as typeof fetch });
+    const out = await g.submit('/api/x', {}, async () => { throw new Error('beacon'); });
+    expect(out).toMatchObject({ ok: true, state: 'accepted' });
+    expect((out.callbackError as Error).message).toBe('beacon');
+  });
+
+  it('a network error is reported as state network-error', async () => {
+    const g = createSubmitGuard({ fallbackError: 'x', fetchImpl: (async () => { throw new TypeError('offline'); }) as typeof fetch });
+    expect(await g.submit('/api/x', {})).toMatchObject({ ok: false, state: 'network-error', status: 0 });
+  });
 });

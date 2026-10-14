@@ -8,6 +8,19 @@
  * beautyflow calculator_result_view, lomtalan /koszonjuk form_submit).
  *
  * Order: localStorage → sessionStorage → in-memory. Any storage may throw.
+ *
+ * The id is marked only AFTER the event was actually sent:
+ *  - the callback throws            → not marked (error propagates), retry fires;
+ *  - the callback returns `false`   → "not sent" (no consent yet, no dataLayer,
+ *                                     beacon refused) → not marked, returns false;
+ *  - `undefined` / `true`           → sent → marked, returns true.
+ *
+ * Async callbacks: `fireOnce` is synchronous and REFUSES a callback that returns
+ * a Promise/thenable (TypeError, not marked) — marking before it settles would
+ * re-create the "marked but never sent" bug. Use `fireOnceAsync`, which marks
+ * only after the promise resolves (to anything but `false`), does not mark on
+ * rejection (rethrows), and suppresses concurrent calls for the same id while
+ * the first one is pending.
  */
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
@@ -17,7 +30,15 @@ export interface OnceGuardOptions {
   prefix?: string;
 }
 
+export type OnceResult = void | boolean;
+
 const memory = new Set<string>();
+/** Ids whose async send is in progress (shared by every guard in this tab). */
+const pending = new Set<string>();
+
+function isThenable(v: unknown): v is PromiseLike<unknown> {
+  return v != null && (typeof v === 'object' || typeof v === 'function') && typeof (v as { then?: unknown }).then === 'function';
+}
 
 function defaultStorages(): Array<() => StorageLike | null | undefined> {
   return [
@@ -59,18 +80,47 @@ export function createOnceGuard(opts: OnceGuardOptions = {}) {
     }
   }
 
-  /** Runs `fn` only the first time `id` is seen. Marks AFTER fn succeeds. */
-  function fireOnce(id: string, fn: () => void): boolean {
-    if (!id || seen(id)) return false;
-    fn();
+  /**
+   * Runs `fn` until it succeeds once for `id`. Marks only after `fn` returned
+   * without throwing and without returning `false`. Synchronous callbacks only.
+   */
+  function fireOnce(id: string, fn: () => OnceResult): boolean {
+    if (!id || seen(id) || pending.has(prefix + id)) return false;
+    const r: unknown = fn();
+    if (isThenable(r)) {
+      // Do not leave an unhandled rejection behind; the caller gets the TypeError.
+      Promise.resolve(r).catch(() => {});
+      throw new TypeError('createOnceGuard.fireOnce: callback returned a Promise — use fireOnceAsync so the id is marked only after it resolves');
+    }
+    if (r === false) return false;
     mark(id);
     return true;
   }
 
-  return { seen, mark, fireOnce };
+  /**
+   * Async variant: marks only after the returned promise resolves to anything
+   * but `false`. A rejection is rethrown and leaves the id unmarked. While a
+   * send for `id` is pending, further calls return false without calling `fn`.
+   */
+  async function fireOnceAsync(id: string, fn: () => OnceResult | PromiseLike<OnceResult>): Promise<boolean> {
+    const k = prefix + id;
+    if (!id || seen(id) || pending.has(k)) return false;
+    pending.add(k);
+    try {
+      const r = await fn();
+      if (r === false) return false;
+      mark(id);
+      return true;
+    } finally {
+      pending.delete(k);
+    }
+  }
+
+  return { seen, mark, fireOnce, fireOnceAsync };
 }
 
 /** Test helper: forget the in-memory layer. */
 export function __resetOnceMemory(): void {
   memory.clear();
+  pending.clear();
 }

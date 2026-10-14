@@ -52,4 +52,71 @@ describe('createOnceGuard (invariant H)', () => {
     expect(createOnceGuard({ storages: [] }).fireOnce('', fn)).toBe(false);
     expect(fn).not.toHaveBeenCalled();
   });
+
+  it('review repro: a callback returning false (not sent: no consent / no dataLayer) does not mark, so a retry fires', () => {
+    const g = createOnceGuard({ storages: [], prefix: 'review_' });
+    expect(g.fireOnce('consent', () => false)).toBe(false);
+    expect(g.seen('consent')).toBe(false);
+    const fn = vi.fn();
+    expect(g.fireOnce('consent', fn)).toBe(true);
+    expect(fn).toHaveBeenCalledOnce();
+    expect(g.seen('consent')).toBe(true);
+  });
+
+  it('true / undefined return count as sent', () => {
+    const g = createOnceGuard({ storages: [] });
+    expect(g.fireOnce('a', () => true)).toBe(true);
+    expect(g.fireOnce('b', () => undefined)).toBe(true);
+    expect(g.seen('a') && g.seen('b')).toBe(true);
+  });
+
+  it('sync fireOnce refuses an async callback instead of marking before it settles', async () => {
+    const g = createOnceGuard({ storages: [] });
+    const asyncFn = () => Promise.reject(new Error('push failed'));
+    expect(() => g.fireOnce('p', asyncFn as unknown as () => void)).toThrow(TypeError);
+    expect(g.seen('p')).toBe(false);
+  });
+});
+
+describe('createOnceGuard.fireOnceAsync', () => {
+  beforeEach(() => __resetOnceMemory());
+
+  it('marks only after the promise resolves', async () => {
+    const g = createOnceGuard({ storages: [] });
+    let resolve!: () => void;
+    const p = g.fireOnceAsync('q', () => new Promise<void>((r) => { resolve = r; }));
+    expect(g.seen('q')).toBe(false);
+    resolve();
+    expect(await p).toBe(true);
+    expect(g.seen('q')).toBe(true);
+  });
+
+  it('a rejected promise does not mark and rethrows; the retry fires', async () => {
+    const g = createOnceGuard({ storages: [] });
+    await expect(g.fireOnceAsync('r', async () => { throw new Error('beacon failed'); })).rejects.toThrow('beacon failed');
+    expect(g.seen('r')).toBe(false);
+    const fn = vi.fn(async () => {});
+    expect(await g.fireOnceAsync('r', fn)).toBe(true);
+    expect(fn).toHaveBeenCalledOnce();
+  });
+
+  it('resolving to false does not mark', async () => {
+    const g = createOnceGuard({ storages: [] });
+    expect(await g.fireOnceAsync('f', async () => false)).toBe(false);
+    expect(g.seen('f')).toBe(false);
+  });
+
+  it('a concurrent call for the same id while the first is pending does not fire twice', async () => {
+    const g = createOnceGuard({ storages: [] });
+    let resolve!: () => void;
+    const fn = vi.fn(() => new Promise<void>((r) => { resolve = r; }));
+    const p1 = g.fireOnceAsync('c', fn);
+    const sync = vi.fn();
+    expect(await g.fireOnceAsync('c', fn)).toBe(false);
+    expect(g.fireOnce('c', sync)).toBe(false);
+    expect(sync).not.toHaveBeenCalled();
+    resolve();
+    expect(await p1).toBe(true);
+    expect(fn).toHaveBeenCalledOnce();
+  });
 });
