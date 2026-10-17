@@ -16,3 +16,8 @@ id = "your-kv-namespace-id"
 # GOOGLE_PRIVATE_KEY
 # GOOGLE_SHEET_ID
 # IP_HASH_SALT
+
+# Workers Logs: invocation logs, console output and uncaught exceptions
+# (7-day retention), queryable in the dashboard and the Observability API/MCP.
+[observability]
+enabled = true
