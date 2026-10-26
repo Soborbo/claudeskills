@@ -58,7 +58,7 @@ eeat-signals/
 - Drop the folder into a project; `npm run audit` against `dist/` after build.
 - Run it next to the pre-release checklist of **soborbo-astro-cloudflare** (`references/audit-checklist.md`).
 - For any schema-expressed signal, hand off to **schema** (build + validate). For keywords,
-  titles and internal links, **seo-onpage**. For copy tone, **humanize-copy**.
+  titles and internal links, **seo-onpage**. For copy tone, **humanize-copy-uk** (English) or **humanize-copy-hu** (Hungarian).
 
 ## Tests
 `npm test` runs deterministic unit tests for every check plus an integration pass over a

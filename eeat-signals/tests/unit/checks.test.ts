@@ -154,6 +154,53 @@ describe('checkHuImpresszum (Ekertv. 4. §)', () => {
     expect(checkHuImpresszum(parse('<h1>Impresszum</h1><p>Példa Kft.</p>')).status).toBe('fail');
   });
 
+  it('detects the impresszum H1 after trimming, case-insensitively', () => {
+    expect(checkHuImpresszum(parse('<h1>  IMPRINT \n</h1><p>Példa Kft.</p>')).status).toBe('fail');
+  });
+
+  it('does not treat an article that merely mentions impresszum in its H1 as the impresszum', () => {
+    const doc = parse('<h1>Hogyan készíts impresszumot?</h1><footer><a href="/impresszum/">Impresszum</a></footer>');
+    const r = checkHuImpresszum(doc, '/blog/hogyan-keszits-impresszumot/');
+    expect(r.id).toBe('business.impresszum');
+    expect(r.status).toBe('pass');
+  });
+
+  it('still detects the impresszum page from its URL whatever the H1 says', () => {
+    expect(checkHuImpresszum(parse('<h1>Cégadatok és jogi információk</h1><p>Példa Kft.</p>'), '/impresszum/').id).toBe(
+      'business.impresszum-fields',
+    );
+  });
+
+  const withHosting = (hosting: string) =>
+    parse(full.replace('Tárhelyszolgáltató: Tárhely Kft., 1132 Budapest, Váci út 1., info@tarhely.hu', hosting));
+
+  it('fails (h) when the hosting label is present but empty', () => {
+    const r = checkHuImpresszum(withHosting('Tárhelyszolgáltató:'), '/impresszum/');
+    expect(r.status).toBe('fail');
+    expect(r.observed_differences).toMatch(/tárhely/);
+  });
+
+  it('fails (h) when the hosting label is immediately followed by another field', () => {
+    const doc = parse(
+      '<h1>Impresszum</h1><p>Példa Kft. Székhely: 9021 Győr, Fő tér 1. E-mail: info@pelda.hu. Tárhelyszolgáltató: ' +
+        'Cégjegyzékszám: 01-09-264581, Fővárosi Törvényszék Cégbírósága. Adószám: 12180439-2-41.</p>',
+    );
+    expect(checkHuImpresszum(doc, '/impresszum/').observed_differences).toMatch(/tárhely/);
+  });
+
+  it('fails (h) when only a name is given, without address or contact', () => {
+    expect(checkHuImpresszum(withHosting('Tárhelyszolgáltató: Tárhely Kft.'), '/impresszum/').status).toBe('fail');
+  });
+
+  it('fails (h) when the label is followed only by a contact label', () => {
+    expect(checkHuImpresszum(withHosting('Tárhelyszolgáltató adatai: E-mail:'), '/impresszum/').status).toBe('fail');
+  });
+
+  it('passes (h) with a provider name and a non-HU contact (Cloudflare)', () => {
+    const doc = withHosting('Tárhelyszolgáltató: Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, https://www.cloudflare.com');
+    expect(checkHuImpresszum(doc, '/impresszum/').status).toBe('pass');
+  });
+
   it('passes an ordinary page that links to the impresszum', () => {
     expect(checkHuImpresszum(parse('<footer><a href="/impresszum/">Impresszum</a></footer>'), '/').status).toBe('pass');
   });
