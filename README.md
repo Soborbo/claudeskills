@@ -25,7 +25,7 @@ sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a ski
 | [`soborbo-astro-cloudflare`](./soborbo-astro-cloudflare) | Production-learned pitfalls and conventions for Astro on Cloudflare Workers: deploy/secrets, build-time image pipeline (points to leadgen-template-site), siteConfig → Tailwind 4 `@theme` tokens, fonts, preview noindex, observability, pre-release checklist. Use with the official `wrangler` / `workers-best-practices` / `web-perf` skills. Replaces `deployment`, `astro-performance`, `astro-audit`, `design-tokens`, `astro-images` (removed 2026-10). |
 | [`schema-skill`](./schema-skill) | Build/assemble a complete Schema.org entity graph (JSON-LD) for Astro lead-gen sites, driven from `siteConfig`. |
 | [`eeat-kit`](./eeat-kit) | Audit and strengthen visible E-E-A-T signals and AI-search (GEO) readiness. |
-| [`error-pipeline`](./error-pipeline) | Per-site client tracker + Astro endpoint for the centralised error-pipeline workers (client JS errors via sendBeacon + server exceptions). |
+| [`error-pipeline`](./error-pipeline) | ⛔ **Deprecated** → `soborbo-astro-cloudflare` (`references/deploy-and-preview.md`, Workers Logs). The self-hosted error pipeline is retired; do not install it. Kept only to recognise and remove the old wiring. |
 | [`humanise-copy-skill.md`](./humanise-copy-skill.md) | Transform AI-sounding copy into human, business-owner voice (UK local service pages). |
 | [`leadgen-starter-build`](./leadgen-starter-build) | Starter Astro lead-gen project scaffold. |
 

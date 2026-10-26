@@ -1,14 +1,21 @@
 ---
 name: error-pipeline
 description: >-
-  Per-site client tracker and Astro endpoint for the centralised
-  soborbo-error-pipeline workers. Captures client JS errors via sendBeacon,
-  forwards via console.error → Tail Worker. Server-side uncaught exceptions
-  are captured automatically. ~1.5KB client bundle, no external deps. Email
-  throttled to 1 per (site, code) per 4 hours by the notifier worker.
+  DEPRECATED (2026-10): the self-hosted error pipeline is retired. Do not
+  install it. Use soborbo-astro-cloudflare
+  (references/deploy-and-preview.md, observability: Workers Logs) instead.
+  Kept for reference and for removing the old wiring from existing sites.
 ---
 
-# Error Pipeline Skill
+# Error Pipeline Skill (deprecated)
+
+> ⛔ **Deprecated, do not install.** The self-hosted error pipeline
+> (`tail_consumers: [{ "service": "error-notifier" }]`, the client tracker and
+> `/api/error-log`) is retired: its alerts never reached anyone. Use
+> `soborbo-astro-cloudflare` → `references/deploy-and-preview.md` (observability:
+> Workers Logs) instead. On an existing site, remove the `tail_consumers` entry and
+> the tracker wiring in its next substantive PR. The instructions below describe
+> the old setup and are kept only so that wiring can be recognised and removed.
 
 ## When To Use
 
