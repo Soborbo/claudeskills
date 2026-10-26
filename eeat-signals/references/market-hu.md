@@ -18,10 +18,10 @@ közvetlenül és folyamatosan, könnyen hozzáférhető módon" közzé kell te
 | e) | engedélyköteles tevékenységnél: engedélyező hatóság, elérhetősége, engedélyszám | kézi ellenőrzés |
 | f) | adószám, ha áfaalany | CDV-helyes adószám |
 | g) | szabályozott szakmánál: kamara, szakképesítés, szakmai szabályok elérése | kézi ellenőrzés |
-| h) | a tárhelyszolgáltató székhelye, elérhetősége (e-mail) | „tárhely” szó a lapon |
+| h) | a tárhelyszolgáltató székhelye, elérhetősége (e-mail) | a „Tárhelyszolgáltató” címke után név + cím vagy elérhetőség (e-mail, web, telefon); üres címke nem elég |
 
 - Az auditor az impresszum-oldalon (`/impresszum/`, `/cegadatok/`, `/jogi-nyilatkozat/`,
-  vagy „Impresszum” H1) **fail**-t ad, ha a gépileg ellenőrizhető mezők bármelyike hiányzik
+  vagy pontosan „Impresszum” / „Imprint” H1; egy „Hogyan készíts impresszumot?” cikk nem az) **fail**-t ad, ha a gépileg ellenőrizhető mezők bármelyike hiányzik
   (`business.impresszum-fields`). Minden más oldalon azt nézi, van-e impresszum-link
   (vagy inline minden adat); ha nincs: **warn** (`business.impresszum`).
 - Az a), e), g) pontot gép nem tudja megítélni: a név egyezzen a cégnyilvántartással,

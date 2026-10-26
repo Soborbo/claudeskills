@@ -16,7 +16,7 @@ This skill owns the **human-visible + crawler-visible** signal layer. It does **
 
 - generate or validate JSON-LD / `@id` wiring / rich-result eligibility → that is **schema**;
 - place keywords, write titles/meta, plan pages or internal links → that is **seo-onpage**;
-- rewrite copy tone/voice → that is **humanize-copy**;
+- rewrite copy tone/voice → that is **humanize-copy-uk** (English copy) or **humanize-copy-hu** (Hungarian copy);
 - do build/perf/a11y/Lighthouse → that is **soborbo-astro-cloudflare** (its audit checklist) and **web-perf**.
 
 See [BOUNDARIES.md](./BOUNDARIES.md) for the exact seams. When a signal also has a

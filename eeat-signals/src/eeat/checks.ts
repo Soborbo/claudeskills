@@ -19,7 +19,7 @@ import {
 } from './markets';
 
 /** Vague phrases that, inside an author/about block, signal a CLAIM of
- * experience rather than a demonstration of it. Copy *voice* is humanize-copy's
+ * experience rather than a demonstration of it. Copy *voice* is humanize-copy-uk's / humanize-copy-hu's
  * job; this list is intentionally tiny and credibility-specific. */
 const FLUFF = [
   'passionate about',
@@ -237,8 +237,38 @@ const IMPRESSZUM_PAGE_RE = /\/(impresszum|imprint|jogi-nyilatkozat|cegadatok)\b/
 
 function isImpresszumPage(doc: Document, url: string): boolean {
   if (IMPRESSZUM_PAGE_RE.test(url)) return true;
+  // Exact H1 only: an article titled "Hogyan készíts impresszumot?" is not the
+  // site's legal impresszum and must not be held to Ekertv. 4. §.
   const h = doc.querySelector('h1');
-  return h !== null && /impresszum|imprint/i.test(text(h));
+  return h !== null && /^(impresszum|imprint)$/i.test(text(h).trim());
+}
+
+/** Labels of the other impresszum fields: the hosting segment ends where one starts. */
+const OTHER_FIELD_LABEL_RE =
+  /\b(?:ad[óo]sz[áa]m|c[ée]gjegyz[ée]ksz[áa]m|nyilv[áa]ntart[áa]si sz[áa]m|nyilv[áa]ntartja|kamara)/i;
+const HOSTING_LABEL_RE = /t[áa]rhely(?:-?szolg[áa]ltat[óo])?(?:\s+adatai)?\s*[:–-]?\s*/giu;
+/** A provider name: starts with a letter and is not just the next field's label. */
+const PROVIDER_NAME_RE = /^(?!(?:e-?mail|telefon|sz[ée]khely|c[íi]m|ad[óo]sz[áa]m|c[ée]gjegyz[ée]k)\b)\p{L}[\p{L}\d.&'’\- ]{1,}/iu;
+const PROVIDER_CONTACT_RES = [
+  /[\w.+-]+@[\w-]+\.[\w.-]+/, // e-mail
+  /\b(?:https?:\/\/|www\.)\S+|\b[\w-]+\.(?:hu|com|net|eu|io|org)\b/i, // web
+  /\+?\d[\d ()/-]{7,}\d/, // phone
+];
+
+/**
+ * Ekertv. 4. § (h): the label alone ("Tárhelyszolgáltató:") is not the data.
+ * Some occurrence of the label must be followed by a provider name and an
+ * address or contact before the next impresszum field begins.
+ */
+export function hasHostingProviderDetails(raw: string): boolean {
+  for (const m of raw.matchAll(HOSTING_LABEL_RE)) {
+    let seg = raw.slice((m.index ?? 0) + m[0].length, (m.index ?? 0) + m[0].length + 250);
+    const next = OTHER_FIELD_LABEL_RE.exec(seg);
+    if (next) seg = seg.slice(0, next.index);
+    if (!PROVIDER_NAME_RE.test(seg)) continue;
+    if (hasHuPostalAddress(seg) || PROVIDER_CONTACT_RES.some((re) => re.test(seg))) return true;
+  }
+  return false;
 }
 
 /**
@@ -264,7 +294,7 @@ export function impresszumFields(raw: string, doc: Document): { field: string; o
     },
     { field: 'nyilvántartó bíróság / hatóság (d)', ok: /c[ée]gb[íi]r[óo]s[áa]g|t[öo]rv[ée]nysz[ée]k|hat[óo]s[áa]g|nyilv[áa]ntart[óo]/i.test(raw) },
     { field: 'adószám (f)', ok: ado !== null && isValidHuAdoszam(ado[0]) },
-    { field: 'tárhelyszolgáltató adatai (h)', ok: /t[áa]rhely/i.test(raw) },
+    { field: 'tárhelyszolgáltató adatai (h)', ok: hasHostingProviderDetails(raw) },
   ];
 }
 
