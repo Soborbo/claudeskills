@@ -208,8 +208,10 @@ Template structure (EN/HU), quote email layout, test matrix: `references/email.m
 
 ## Postcode autofill
 
-- **UK:** postcodes.io (free, keyless), outward-code lookup, tidy the admin name
-  ("Bristol, City of" -> "Bristol"). Optional convenience: failure is silent.
+- **UK:** postcodes.io (free, keyless), tidy the admin name ("Bristol, City of"
+  -> "Bristol"). An outward code can return several districts: autofill only a
+  single value, otherwise offer a choice or use the full postcode. Optional
+  convenience: failure is silent.
 - **HU:** full GeoNames HU list (CC-BY 4.0, attribution required). Several
   settlements share one postcode, so a lookup can return a choice, not a single
   value. Load lazily (static JSON on first focus, or an `/api` endpoint).

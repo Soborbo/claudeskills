@@ -87,6 +87,10 @@ or the official docs below before relying on API details.
 
 - Free, keyless, ONS data updated quarterly, no published SLA or rate limit.
   Source: https://postcodes.io/docs/overview/
+- `/outcodes/{outcode}` returns `admin_district` as `string[]` (BR8 ->
+  `["Bromley", "Dartford", "Sevenoaks"]`, live check 2026-10-26);
+  `/postcodes/{postcode}` returns a single string. Source:
+  https://postcodes.io/docs/outcode/schema/
 
 ## GeoNames HU (checked 2026-10-05)
 
@@ -119,3 +123,4 @@ State of `origin/main` 8595c8c plus PR #1 (`fix/turnstile-fail-closed`,
 | 9 | Logging to Workers Logs (I13) | Reports go to a tail-consumer Worker that is being retired (`reportServerError`, `tail_consumers`); no `observability` block in `wrangler.jsonc` |
 | 10 | Required env not masked | `contact.ts` copies env with `\|\| ''` (harmless for Turnstile after PR #1, still hides other gaps) |
 | 11 | CookieYes `advertisement` | Code is correct (kit), but a comment in `schemas.ts` still says `marketing` |
+| 12 | Missing Turnstile action rejected in production, dummy secret as an explicit test branch | PR #1 branch accepts any token with no action (`submit.ts` action map) |
