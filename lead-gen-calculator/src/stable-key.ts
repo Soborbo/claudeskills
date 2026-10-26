@@ -25,14 +25,36 @@ export function stableStringify(value: unknown): string {
   return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(',')}}`;
 }
 
-/** FNV-1a 32-bit — enough for a client-side dedupe key, not for security. */
-export function hashString(input: string): string {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < input.length; i++) {
-    h ^= input.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
+const FNV64_PRIME = 0x100000001b3n;
+const FNV64_OFFSET = 0xcbf29ce484222325n;
+// Second, independent lane: a different offset basis AND the bytes in reverse
+// order, so a collision in one lane does not imply a collision in the other.
+const FNV64_OFFSET_B = 0x84222325cbf29ce4n;
+const MASK64 = 0xffffffffffffffffn;
+
+function fnv1a64(bytes: Uint8Array, offset: bigint, reverse: boolean): bigint {
+  let h = offset;
+  for (let i = 0; i < bytes.length; i++) {
+    h ^= BigInt(bytes[reverse ? bytes.length - 1 - i : i]);
+    h = (h * FNV64_PRIME) & MASK64;
   }
-  return (h >>> 0).toString(16).padStart(8, '0');
+  return h;
+}
+
+/**
+ * 128-bit dedupe digest: two independent 64-bit FNV-1a lanes over the UTF-8
+ * bytes, as 32 hex characters. Synchronous on purpose (no SubtleCrypto await in
+ * the submit path). A 32-bit hash hits ~1% collision odds after ~10,000 distinct
+ * payloads, and a collision silently suppresses a real submission (invariant A);
+ * at 128 bits accidental collisions are negligible. Not for security: an
+ * attacker can still construct collisions, which a client dedupe key does not
+ * need to resist.
+ */
+export function hashString(input: string): string {
+  const bytes = new TextEncoder().encode(input);
+  const a = fnv1a64(bytes, FNV64_OFFSET, false);
+  const b = fnv1a64(bytes, FNV64_OFFSET_B, true);
+  return a.toString(16).padStart(16, '0') + b.toString(16).padStart(16, '0');
 }
 
 export function keyFromPayload(payload: unknown, prefix = 'idem'): string {
