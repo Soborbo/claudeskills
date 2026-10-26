@@ -22,6 +22,7 @@ sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a ski
 | Skill | What it does |
 |---|---|
 | [`astro-audit`](./astro-audit) | Full pre-deploy code audit: build, deps, performance, security, a11y, SEO, browser compat, form testing. |
+| [`lead-gen-calculator`](./lead-gen-calculator) | Correctness rules + tested reference modules for multi-step calculators/quote flows: additive branches, stale-state cleanup, shared bounds, idempotency, server price recompute, one-shot conversions, attribution, funnel events. Built from the 2026-10 six-site audit. |
 | [`astro-forms-v3`](./astro-forms-v3) | Form infrastructure: contact/booking/quote forms, Zod validation, email delivery (Resend/Brevo), rate limiting, Sheets, spam protection. |
 | [`astro-images`](./astro-images) | Width-based responsive images: build-time processing, per-format quality (AVIF/WebP/JPG/PNG), art direction, OG generation, image SEO. |
 | [`astro-performance`](./astro-performance) | Core Web Vitals tuning: LCP preloading, font strategy, critical path, third-party scripts, Cloudflare Tag Gateway. |
