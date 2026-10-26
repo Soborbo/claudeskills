@@ -51,8 +51,13 @@ listed actions for that `formId`:
 | `quote-callback` | `quote`, `callback` (the result page reuses the quote widget) |
 | `quote-exit` | `exit-callback` |
 
-A token with no action at all is accepted (widgets without `data-action`, some
-test keys). If you add a form, add its action to the map in `submit.ts`.
+In production a token with no action is rejected (`TURN-VERIFY-001`): every
+widget sets `data-action`, so an actionless token could otherwise be replayed
+against any form on the same host. The only exception is an explicit test branch:
+when the configured secret is one of the Turnstile dummy secrets (perishable
+facts), a missing or `test` action is tolerated, because dummy secrets do not echo
+the widget's action. Never key that branch on the token or on the request, only on
+the configured secret. If you add a form, add its action to the map in `submit.ts`.
 
 ## Browser side
 
@@ -73,4 +78,5 @@ in `perishable-facts.md`. Production secrets reject dummy tokens. With the dummy
 secret, check what `hostname` and `action` siteverify actually returns before
 setting `TURNSTILE_HOSTNAMES` in `.dev.vars`: the PR #1 author observed
 `example.com` with no action, while the Cloudflare docs page says `localhost` and
-`test`. A returned action of `test` would fail the action check for every form.
+`test`. Either way the dummy-secret branch above tolerates it; a production secret
+never does.

@@ -14,7 +14,13 @@ the filled field is enough.
   facts), so time out fast (3 s) and fail silently.
 - The response has no `post_town`. `admin_district` gives administrative names
   such as "Bristol, City of": strip the `, City of` / `, County of` suffix.
-- Outward code is enough for a town; a full postcode is not needed.
+- An outward code alone is often ambiguous. The outcode endpoint
+  (`/outcodes/{outcode}`) returns `admin_district` as a `string[]`, because one
+  outcode can span several districts (BR8 -> Bromley, Dartford, Sevenoaks). Exactly
+  one value -> autofill it. More than one -> do not autofill: offer those values as
+  a choice (select or datalist), or wait for the full postcode
+  (`/postcodes/{postcode}`, where `admin_district` is a single string). Source:
+  https://postcodes.io/docs/outcode/schema/
 - If the browser calls it directly, no proxy is needed. If you proxy through the
   Worker (to cache), use `caches.default` and the same timeout.
 
