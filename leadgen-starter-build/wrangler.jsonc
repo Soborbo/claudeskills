@@ -4,8 +4,9 @@
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat"],
 
-  // Workers Logs: invocation logs, console output and uncaught exceptions
-  // (7-day retention), queryable in the dashboard and the Observability API/MCP.
+  // Workers Logs: invocation logs, console output and uncaught exceptions,
+  // queryable in the dashboard and the Observability API/MCP. Retention depends
+  // on the Workers plan: 7 days on Workers Paid, 3 days on Workers Free.
   "observability": { "enabled": true },
 
   // Rate-limit + form-dedupe store. Create per site and paste the id here:
