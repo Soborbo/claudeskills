@@ -143,8 +143,8 @@ change the prose only: keep components, props, links, slugs and code untouched.
   voice, including sentences you would have written differently.
 - Quotes, review text, legal or regulated wording (terms, privacy, insurance wording,
   CAP-required disclaimers), product names and trade terms.
-- A single dash or a single list of three in otherwise specific copy. One tell alone is
-  weak evidence; several together are the signal.
+- A single list of three in otherwise specific copy. One tell alone is weak evidence;
+  several together are the signal. Dashes are not an exception: rule 7 removes every one.
 - Unusual, specific details that carry the voice (a real street, an odd remark from a
   real customer, a dry aside the owner wrote). They are what makes copy human.
 
