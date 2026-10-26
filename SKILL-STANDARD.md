@@ -43,7 +43,7 @@ A régi skillekben (`old/`) ártalmas tanácsok voltak. Egyik skill sem tartalma
 - szándékos helyesírási hibák vagy „tökéletlenségek” beírása a szövegbe;
 - „bucket brigade” és hasonló kattintásvadász klisék;
 - kitalált hatásszámok („+19,72%”, „3× AI-láthatóság”);
-- kötelező FAQ / HowTo / Speakable schema (a FAQ rich result 2026-05-07 óta senkinek nem jelenik meg, HowTo 2023 óta nincs);
+- kötelező FAQ / HowTo / Speakable schema;
 - saját (self-serving) AggregateRating a saját cégen, vagy platformok közötti értékelés-összesítés;
 - a CookieYes `marketing` kulcsa (a helyes: `advertisement`);
 - Google-cégprofil Q&A „seedelése”, kategória-trükközés;
