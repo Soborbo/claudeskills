@@ -1,0 +1,29 @@
+[
+ {"name":"HU koltoztetes RSA A (fix ar)","format":"rsa","lang":"hu","keywords":["költöztetés"],
+  "claims_ok":["ingyenes","garancia"],
+  "headlines":[
+   {"text":"{KeyWord:Költöztetés Budapesten}","pin":1},
+   "Költöztetés fix áron","Költöztetés Budapesten","Fix ár, rejtett díj nélkül",
+   "12 év, 1400+ költözés","4,9/5 – 300+ Google értékelés","Biztosított szállítás",
+   "Nincs kiszállási díj","Ingyenes felmérés","Kérjen ajánlatot még ma",
+   "Árajánlat 2 perc alatt","Hétvégén is költöztetünk","Dobozt is viszünk","Painless Költöztetés"],
+  "descriptions":[
+   "Fix árat adunk a felmérés után, így a költözés napján nincs meglepetés.",
+   "12 éve költöztetünk Budapesten. Biztosított csapat, saját autókkal.",
+   "Kérjen ingyenes felmérést: 2 perc alatt megadja az adatokat, még ma visszahívjuk.",
+   "Bútorszerelés, csomagolás és dobozok egy helyen. Nézze meg az árainkat."],
+  "paths":["koltoztetes","budapest"],
+  "sitelinks":[{"text":"Árak és kalkulátor","d1":"Számolja ki 2 perc alatt","d2":"Fix ár, rejtett díj nélkül"}],
+  "callouts":["Fix ár","Biztosított szállítás","Hétvégén is","Ingyenes felmérés"]},
+ {"name":"BAD example","format":"pmax","lang":"hu",
+  "headlines":["A LEGJOBB költöztetők Budapesten!!","Hívj most: 06 30 123 4567","Kérjen ajánlatot","Kattints ide az árakért"],
+  "long_headlines":["Költöztetés Budapesten fix áron"],
+  "descriptions":["Garantáltan a legolcsóbb költöztetés a városban, nálunk mindig nyersz, hívj minket most azonnal!"],
+  "business_name":"Painless Költöztetés Budapest Kft."},
+ {"name":"UK pest RSA","format":"rsa","lang":"en","keywords":["pest control"],"claims_ok":["free"],
+  "headlines":[{"text":"Pest Control in Bristol","pin":1},"Same-day pest control","Fixed price, no call-out fee",
+   "BPCA-certified technicians","4.9/5 from 300+ reviews","Rats, mice, wasps, bed bugs","Book a free survey today",
+   "Local Bristol team","Evening visits available","Discreet unmarked vans"],
+  "descriptions":["Fixed quote before we start. BPCA-certified local team, out the same day.",
+   "Rated 4.9/5 by 300+ Bristol customers. Book your free survey online in 2 minutes."]}
+]
