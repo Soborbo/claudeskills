@@ -1,7 +1,7 @@
 # Claude Skills
 
 A collection of skills for building, optimizing, and operating Astro.js lead-gen
-sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a skill.
+sites on Cloudflare Workers, plus the paid-ads work that feeds them. Each top-level directory with a `SKILL.md` is a skill.
 
 ## Tracking & analytics
 
@@ -16,6 +16,12 @@ sites on Cloudflare Workers. Each top-level directory with a `SKILL.md` is a ski
 > package in `github.com/Soborbo/Serverside` (`soborbo-tracking/`).** It moved out of
 > this repo on 2026-07-21; the stub here just points there. The three deprecated
 > skills above are superseded by it and remain only for migration reference.
+
+## Paid ads
+
+| Skill | What it does |
+|---|---|
+| [`google-ads-creative`](./google-ads-creative) | Google Ads creative for every campaign type (RSA, PMax, Demand Gen, Display, video, Shopping titles, sitelinks and other assets) in en-GB or Hungarian: 10-USP intake and scoring, claim ledger, built-in validator for limits and policy, image/video briefs, one-variable split tests for small budgets. Bidding and mutate mechanics stay in `google-ads-pmax-ops`. |
 
 ## Astro site skills
 
